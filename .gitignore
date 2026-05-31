@@ -25,3 +25,9 @@ Thumbs.db
 .kiro/
 .github/java-upgrade/
 backend/.github/
+
+# Đồ án / DATN / database dump (chỉ lưu local)
+*.docx
+*.doc
+DatabaseDATN.sql
+DATN-*
