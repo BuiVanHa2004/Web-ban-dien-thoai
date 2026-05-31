@@ -1,0 +1,379 @@
+@import "tailwindcss";
+
+@config "../../tailwind.config.ts";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+ :root.dark {
+   --background: #0a0a0a;
+   --foreground: #ededed;
+ }
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+@keyframes authPageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animate-auth-page {
+  animation: authPageEnter 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page {
+  animation: pageEnter 520ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes sectionEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-section {
+  animation: sectionEnter 640ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.customer-banner-slide {
+  transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-banner-slide {
+    transition-duration: 0.01ms;
+  }
+}
+.delay-300 { animation-delay: 0.3s; }
+
+@keyframes popoverZoomIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animate-popover {
+  transform-origin: top;
+  animation: popoverZoomIn 180ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50%      { transform: scale(1.15); opacity: 0.7; }
+}
+.animate-pulse-slow { animation: pulse-slow 8s infinite ease-in-out; }
+
+/* Admin ProductPage sparkle input (moved from styled-jsx to avoid hydration mismatch) */
+.productSearchSparkle {
+  background: linear-gradient(
+    110deg,
+    rgba(34, 211, 238, 0.35),
+    rgba(56, 189, 248, 0.18),
+    rgba(168, 85, 247, 0.35),
+    rgba(34, 211, 238, 0.3)
+  );
+  background-size: 360% 360%;
+  animation: productSearchSparkleGradient 7s ease-in-out infinite;
+}
+
+.productSearchSparkle::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.28) 45%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  filter: blur(10px);
+  transform: translateX(-30%) rotate(12deg);
+  animation: productSearchSparkleShine 2.9s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.65;
+  mix-blend-mode: overlay;
+}
+
+@keyframes productSearchSparkleGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes productSearchSparkleShine {
+  0% { transform: translateX(-55%) rotate(12deg); opacity: 0.2; }
+  35% { opacity: 0.75; }
+  70% { transform: translateX(65%) rotate(12deg); opacity: 0.25; }
+  100% { transform: translateX(-55%) rotate(12deg); opacity: 0.2; }
+}
+
+.brandSearchSparkle {
+  background: linear-gradient(
+    110deg,
+    rgba(34, 211, 238, 0.35),
+    rgba(56, 189, 248, 0.18),
+    rgba(168, 85, 247, 0.35),
+    rgba(34, 211, 238, 0.3)
+  );
+  background-size: 360% 360%;
+  animation: productSearchSparkleGradient 7s ease-in-out infinite;
+}
+
+.brandSearchSparkle::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.28) 45%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  filter: blur(10px);
+  transform: translateX(-30%) rotate(12deg);
+  animation: productSearchSparkleShine 2.9s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.65;
+  mix-blend-mode: overlay;
+}
+
+@keyframes productModalOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes productModalIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes sparkle-float {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-1000px); }
+}
+
+@keyframes mesh-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(2%, 2%) scale(1.05); }
+}
+
+button, img, a, [role="button"] {
+  cursor: pointer !important;
+}
+
+/* Global Image Hover Zoom Effect */
+img {
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+img:hover {
+  transform: scale(1.08);
+  position: relative;
+  z-index: 10;
+}
+
+/* Customer portal: neutral gray dark + scroll reveal + touch-friendly images */
+.customer-portal {
+  --customer-bg: #252528;
+  --customer-surface: rgba(39, 39, 42, 0.72);
+  --customer-border: rgba(161, 161, 170, 0.2);
+  --customer-accent: #e4e4e7;
+}
+
+@keyframes customer-bg-morph {
+  0%,
+  100% {
+    background-position: 0% 50%;
+    opacity: 1;
+  }
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.92;
+  }
+}
+
+.customer-portal-bg-base {
+  background-color: #2e2e32;
+}
+
+.customer-portal-bg-shift {
+  background: linear-gradient(
+    125deg,
+    #52525b 0%,
+    #3f3f46 18%,
+    #27272a 38%,
+    #18181b 55%,
+    #3f3f46 72%,
+    #52525b 88%,
+    #27272a 100%
+  );
+  background-size: 320% 320%;
+  animation: customer-bg-morph 14s ease-in-out infinite;
+}
+
+.customer-portal .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+.customer-portal .reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.customer-portal img {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.customer-portal img:hover {
+  transform: none;
+  z-index: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .customer-portal .group:hover img:not(.brand-logo-img) {
+    transform: scale(1.06);
+  }
+}
+
+.customer-portal .scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.customer-portal .scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Card & chữ: ghi đè bg-white / text-slate-900 còn sót trong customer */
+.customer-portal .bg-white:not(.keep-light):not([class*="text-white"]):not([class*="text-rose"]):not([class*="text-emerald"]),
+.customer-portal [class*="bg-white/"]:not(.keep-light) {
+  background-color: rgba(39, 39, 42, 0.72) !important;
+}
+
+.customer-portal .bg-white:not(.keep-light) {
+  border-color: rgba(113, 113, 122, 0.35);
+}
+
+.customer-portal .border-slate-100,
+.customer-portal .border-slate-200,
+.customer-portal .border-black\/5,
+.customer-portal .border-black\/10,
+.customer-portal .border-black\/15 {
+  border-color: rgba(161, 161, 170, 0.45) !important;
+}
+
+.customer-portal [class*="border-zinc-600"],
+.customer-portal [class*="border-zinc-700"] {
+  --tw-border-opacity: 1;
+  border-color: rgba(161, 161, 170, 0.68) !important;
+}
+
+.customer-portal .customer-header {
+  border-bottom-width: 1px !important;
+  border-bottom-style: solid !important;
+  border-bottom-color: rgba(161, 161, 170, 0.6) !important;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.customer-portal .customer-card-surface {
+  border-color: rgba(161, 161, 170, 0.68) !important;
+  box-shadow:
+    0 0 0 1px rgba(82, 82, 91, 0.35),
+    0 10px 15px -3px rgba(0, 0, 0, 0.15);
+}
+
+.customer-portal .text-slate-900:not(.keep-light),
+.customer-portal .text-slate-800:not(.keep-light),
+.customer-portal .text-black:not(.keep-light) {
+  color: #f4f4f5 !important;
+}
+
+.customer-portal .text-slate-700:not(.keep-light) {
+  color: #d4d4d8 !important;
+}
+
+.customer-portal .text-slate-600:not(.keep-light),
+.customer-portal .text-slate-500:not(.keep-light) {
+  color: #a1a1aa !important;
+}
+
+.customer-portal .bg-slate-50:not(.keep-light),
+.customer-portal .bg-slate-100:not(.keep-light) {
+  background-color: rgba(63, 63, 70, 0.45) !important;
+}
+
+.customer-portal .bg-slate-200:not(.keep-light) {
+  background-color: rgba(82, 82, 91, 0.5) !important;
+}
+
+.customer-portal input:not(.keep-light),
+.customer-portal textarea:not(.keep-light),
+.customer-portal select:not(.keep-light) {
+  background-color: rgba(39, 39, 42, 0.75) !important;
+  color: #f4f4f5 !important;
+  border-color: rgba(113, 113, 122, 0.4) !important;
+}
+
+.customer-portal input::placeholder,
+.customer-portal textarea::placeholder {
+  color: #71717a !important;
+}

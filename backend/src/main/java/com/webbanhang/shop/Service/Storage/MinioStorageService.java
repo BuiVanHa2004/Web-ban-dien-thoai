@@ -1,0 +1,357 @@
+package com.webbanhang.shop.Service.Storage;
+
+import com.webbanhang.shop.Config.MinIOConfig;
+import io.minio.BucketExistsArgs;
+import io.minio.GetObjectArgs;
+import io.minio.MakeBucketArgs;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
+import io.minio.StatObjectArgs;
+import io.minio.StatObjectResponse;
+import io.minio.errors.ErrorResponseException;
+import lombok.Getter;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.InputStream;
+import java.util.Objects;
+import java.util.UUID;
+
+@Service
+public class MinioStorageService {
+
+    private final MinioClient minioClient;
+    private final MinIOConfig minIOConfig;
+
+    public MinioStorageService(MinioClient minioClient, MinIOConfig minIOConfig) {
+        this.minioClient = minioClient;
+        this.minIOConfig = minIOConfig;
+    }
+
+    public UploadedObject uploadBrandImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        String original = Objects.toString(file.getOriginalFilename(), "");
+        String ext = "";
+        int dot = original.lastIndexOf('.');
+        if (dot >= 0 && dot < original.length() - 1) {
+            ext = original.substring(dot).toLowerCase();
+        }
+
+        String objectName = "brands/" + UUID.randomUUID() + ext;
+
+        String contentType = file.getContentType();
+        if (contentType == null || contentType.isBlank()) {
+            if (".png".equals(ext)) {
+                contentType = "image/png";
+            } else if (".jpg".equals(ext) || ".jpeg".equals(ext)) {
+                contentType = "image/jpeg";
+            } else if (".webp".equals(ext)) {
+                contentType = "image/webp";
+            } else if (".gif".equals(ext)) {
+                contentType = "image/gif";
+            } else {
+                contentType = "application/octet-stream";
+            }
+        }
+
+        try {
+            ensureBucketExists(minIOConfig.getBucketName());
+            try (InputStream in = file.getInputStream()) {
+                PutObjectArgs args = PutObjectArgs.builder()
+                        .bucket(minIOConfig.getBucketName())
+                        .object(objectName)
+                        .stream(in, file.getSize(), -1)
+                        .contentType(contentType)
+                        .build();
+                minioClient.putObject(args);
+            }
+            String url = minIOConfig.getUrlPrefix().replaceAll("/+$", "") + "/" + objectName;
+            return new UploadedObject(objectName, url);
+        } catch (Exception e) {
+            throw new RuntimeException("Upload to MinIO failed", e);
+        }
+    }
+
+    public UploadedObject uploadContactImage(MultipartFile file) {
+        return uploadImageToFolder("contact", file);
+    }
+
+    public UploadedObject uploadContactReplyImage(MultipartFile file) {
+        return uploadImageToFolder("contact_replies", file);
+    }
+
+    public UploadedObject uploadImageToFolder(String folder, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        String original = Objects.toString(file.getOriginalFilename(), "");
+        String ext = "";
+        int dot = original.lastIndexOf('.');
+        if (dot >= 0 && dot < original.length() - 1) {
+            ext = original.substring(dot).toLowerCase();
+        }
+
+        String objectName = folder.replaceAll("^/+|/+$", "") + "/" + UUID.randomUUID() + ext;
+
+        String contentType = file.getContentType();
+        if (contentType == null || contentType.isBlank()) {
+            if (".png".equals(ext)) {
+                contentType = "image/png";
+            } else if (".jpg".equals(ext) || ".jpeg".equals(ext)) {
+                contentType = "image/jpeg";
+            } else if (".webp".equals(ext)) {
+                contentType = "image/webp";
+            } else if (".gif".equals(ext)) {
+                contentType = "image/gif";
+            } else {
+                contentType = "application/octet-stream";
+            }
+        }
+
+        try {
+            ensureBucketExists(minIOConfig.getBucketName());
+            try (InputStream in = file.getInputStream()) {
+                PutObjectArgs args = PutObjectArgs.builder()
+                        .bucket(minIOConfig.getBucketName())
+                        .object(objectName)
+                        .stream(in, file.getSize(), -1)
+                        .contentType(contentType)
+                        .build();
+                minioClient.putObject(args);
+            }
+            String url = minIOConfig.getUrlPrefix().replaceAll("/+$", "") + "/" + objectName;
+            return new UploadedObject(objectName, url);
+        } catch (Exception e) {
+            throw new RuntimeException("Upload to MinIO failed", e);
+        }
+    }
+
+    public UploadedObject uploadNewsImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        String original = Objects.toString(file.getOriginalFilename(), "");
+        String ext = "";
+        int dot = original.lastIndexOf('.');
+        if (dot >= 0 && dot < original.length() - 1) {
+            ext = original.substring(dot);
+        }
+
+        String objectName = "news/" + UUID.randomUUID() + ext;
+
+        try {
+            ensureBucketExists(minIOConfig.getBucketName());
+            try (InputStream in = file.getInputStream()) {
+                PutObjectArgs args = PutObjectArgs.builder()
+                        .bucket(minIOConfig.getBucketName())
+                        .object(objectName)
+                        .stream(in, file.getSize(), -1)
+                        .contentType(file.getContentType())
+                        .build();
+                minioClient.putObject(args);
+            }
+            String url = minIOConfig.getUrlPrefix().replaceAll("/+$", "") + "/" + objectName;
+            return new UploadedObject(objectName, url);
+        } catch (Exception e) {
+            throw new RuntimeException("Upload to MinIO failed", e);
+        }
+    }
+
+    public UploadedObject uploadProductImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        String original = Objects.toString(file.getOriginalFilename(), "");
+        String ext = "";
+        int dot = original.lastIndexOf('.');
+        if (dot >= 0 && dot < original.length() - 1) {
+            ext = original.substring(dot);
+        }
+
+        String objectName = "products/" + UUID.randomUUID() + ext;
+
+        try {
+            ensureBucketExists(minIOConfig.getBucketName());
+            try (InputStream in = file.getInputStream()) {
+                PutObjectArgs args = PutObjectArgs.builder()
+                        .bucket(minIOConfig.getBucketName())
+                        .object(objectName)
+                        .stream(in, file.getSize(), -1)
+                        .contentType(file.getContentType())
+                        .build();
+                minioClient.putObject(args);
+            }
+            String url = minIOConfig.getUrlPrefix().replaceAll("/+$", "") + "/" + objectName;
+            return new UploadedObject(objectName, url);
+        } catch (Exception e) {
+            throw new RuntimeException("Upload to MinIO failed", e);
+        }
+    }
+
+    public UploadedObject uploadCategoryImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        String original = Objects.toString(file.getOriginalFilename(), "");
+        String ext = "";
+        int dot = original.lastIndexOf('.');
+        if (dot >= 0 && dot < original.length() - 1) {
+            ext = original.substring(dot).toLowerCase();
+        }
+
+        String objectName = "categories/" + UUID.randomUUID() + ext;
+
+        String contentType = file.getContentType();
+        if (contentType == null || contentType.isBlank()) {
+            if (".png".equals(ext)) {
+                contentType = "image/png";
+            } else if (".jpg".equals(ext) || ".jpeg".equals(ext)) {
+                contentType = "image/jpeg";
+            } else if (".webp".equals(ext)) {
+                contentType = "image/webp";
+            } else if (".gif".equals(ext)) {
+                contentType = "image/gif";
+            } else {
+                contentType = "application/octet-stream";
+            }
+        }
+
+        try {
+            ensureBucketExists(minIOConfig.getBucketName());
+            try (InputStream in = file.getInputStream()) {
+                PutObjectArgs args = PutObjectArgs.builder()
+                        .bucket(minIOConfig.getBucketName())
+                        .object(objectName)
+                        .stream(in, file.getSize(), -1)
+                        .contentType(contentType)
+                        .build();
+                minioClient.putObject(args);
+            }
+            String url = minIOConfig.getUrlPrefix().replaceAll("/+$", "") + "/" + objectName;
+            return new UploadedObject(objectName, url);
+        } catch (Exception e) {
+            throw new RuntimeException("Upload to MinIO failed", e);
+        }
+    }
+
+    public void deleteObjectIfExists(String objectName) {
+        if (objectName == null || objectName.isBlank()) {
+            return;
+        }
+
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(minIOConfig.getBucketName())
+                            .object(objectName)
+                            .build()
+            );
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    public void deleteByUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        String prefix = minIOConfig.getUrlPrefix().replaceAll("/+$", "") + "/";
+        if (url.startsWith(prefix)) {
+            String objectName = url.substring(prefix.length());
+            deleteObjectIfExists(objectName);
+        }
+    }
+
+    public boolean objectExists(String objectName) {
+        if (objectName == null || objectName.isBlank()) {
+            return false;
+        }
+
+        try {
+            minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(minIOConfig.getBucketName())
+                            .object(objectName)
+                            .build()
+            );
+            return true;
+        } catch (ErrorResponseException e) {
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public FileObject getObject(String objectName) {
+        if (objectName == null || objectName.isBlank()) {
+            throw new IllegalArgumentException("Object name is empty");
+        }
+
+        try {
+            StatObjectResponse stat = minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(minIOConfig.getBucketName())
+                            .object(objectName)
+                            .build()
+            );
+
+            InputStream stream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(minIOConfig.getBucketName())
+                            .object(objectName)
+                            .build()
+            );
+
+            String contentType = stat.contentType();
+            long size = stat.size();
+            return new FileObject(objectName, contentType, size, stream);
+        } catch (Exception e) {
+            throw new RuntimeException("Read from MinIO failed", e);
+        }
+    }
+
+    private void ensureBucketExists(String bucket) {
+        try {
+            boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
+            if (!exists) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Ensure bucket failed", e);
+        }
+    }
+
+    public UploadedObject uploadEvaluateImage(MultipartFile file) {
+        return uploadImageToFolder("evaluates", file);
+    }
+
+    public UploadedObject uploadBannerImage(MultipartFile file) {
+        return uploadImageToFolder("banners", file);
+    }
+
+    public record UploadedObject(String objectName, String url) {
+    }
+
+    @Getter
+    public static class FileObject {
+        private final String objectName;
+        private final String contentType;
+        private final long size;
+        private final InputStream inputStream;
+
+        public FileObject(String objectName, String contentType, long size, InputStream inputStream) {
+            this.objectName = objectName;
+            this.contentType = contentType;
+            this.size = size;
+            this.inputStream = inputStream;
+        }
+    }
+}

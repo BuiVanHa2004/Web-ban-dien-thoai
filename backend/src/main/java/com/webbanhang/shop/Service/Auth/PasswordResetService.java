@@ -1,0 +1,275 @@
+package com.webbanhang.shop.Service.Auth;
+
+import com.webbanhang.shop.Model.Admins.AdminAccount;
+import com.webbanhang.shop.Model.Auth.PasswordResetCode;
+import com.webbanhang.shop.Model.Customers.CustomerAccount;
+import com.webbanhang.shop.Repository.Admins.AdminAccountRepository;
+import com.webbanhang.shop.Repository.Auth.PasswordResetCodeRepository;
+import com.webbanhang.shop.Repository.Customers.CustomerAccountRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Locale;
+
+@Service
+public class PasswordResetService {
+
+    private static final Logger log = LoggerFactory.getLogger(PasswordResetService.class);
+
+    private static final Duration CODE_TTL = Duration.ofMinutes(10);
+
+    private static final Duration MIN_RESEND_INTERVAL = Duration.ofSeconds(60);
+    private static final int MAX_SENDS_PER_HOUR = 5;
+    private static final int MAX_SENDS_PER_DAY = 20;
+
+    private final CustomerAccountRepository customerAccountRepository;
+    private final AdminAccountRepository adminAccountRepository;
+    private final PasswordResetCodeRepository passwordResetCodeRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender mailSender;
+    private final String mailFrom;
+    private final String mailUsername;
+    private final boolean mailPasswordProvided;
+
+    public PasswordResetService(
+            CustomerAccountRepository customerAccountRepository,
+            AdminAccountRepository adminAccountRepository,
+            PasswordResetCodeRepository passwordResetCodeRepository,
+            PasswordEncoder passwordEncoder,
+            JavaMailSender mailSender,
+            @Value("${mail.from:}") String mailFrom,
+            @Value("${spring.mail.username:}") String mailUsername,
+            @Value("${spring.mail.password:}") String mailPassword
+    ) {
+        this.customerAccountRepository = customerAccountRepository;
+        this.adminAccountRepository = adminAccountRepository;
+        this.passwordResetCodeRepository = passwordResetCodeRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.mailSender = mailSender;
+        this.mailFrom = mailFrom;
+        this.mailUsername = mailUsername;
+        this.mailPasswordProvided = mailPassword != null && !mailPassword.isBlank();
+
+        log.info(
+                "Mail config loaded: username='{}', from='{}', passwordProvided={}.",
+                this.mailUsername,
+                this.mailFrom,
+                this.mailPasswordProvided
+        );
+    }
+
+    @Transactional
+    public void requestReset(String usernameOrEmailOrEmailField) {
+        String key = usernameOrEmailOrEmailField == null ? "" : usernameOrEmailOrEmailField.trim();
+        if (key.isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập email.");
+        }
+
+        String email = resolveEmail(key);
+        if (email == null || email.isBlank()) {
+            // Không tiết lộ thông tin tài khoản: luôn trả về thành công ở controller.
+            return;
+        }
+
+        String emailLower = email.toLowerCase(Locale.ROOT);
+        Instant now = Instant.now();
+
+        // Chống spam: giới hạn tần suất gửi OTP.
+        PasswordResetCode last = passwordResetCodeRepository
+                .findFirstByEmailOrderByCreatedAtDesc(emailLower)
+                .orElse(null);
+
+        if (last != null && last.getCreatedAt() != null) {
+            Duration sinceLast = Duration.between(last.getCreatedAt(), now);
+            if (!sinceLast.isNegative() && sinceLast.compareTo(MIN_RESEND_INTERVAL) < 0) {
+                long remainingSeconds = MIN_RESEND_INTERVAL.minus(sinceLast).getSeconds();
+                if (remainingSeconds < 1) remainingSeconds = 1;
+                throw new IllegalArgumentException(
+                        "Bạn thao tác quá nhanh. Vui lòng thử lại sau " + remainingSeconds + " giây."
+                );
+            }
+        }
+
+        long sentLastHour = passwordResetCodeRepository.countByEmailAndCreatedAtAfter(
+                emailLower,
+                now.minus(Duration.ofHours(1))
+        );
+        if (sentLastHour >= MAX_SENDS_PER_HOUR) {
+            throw new IllegalArgumentException(
+                    "Bạn đã yêu cầu gửi mã quá nhiều lần trong 1 giờ. Vui lòng thử lại sau."
+            );
+        }
+
+        long sentLastDay = passwordResetCodeRepository.countByEmailAndCreatedAtAfter(
+                emailLower,
+                now.minus(Duration.ofDays(1))
+        );
+        if (sentLastDay >= MAX_SENDS_PER_DAY) {
+            throw new IllegalArgumentException(
+                    "Bạn đã yêu cầu gửi mã quá nhiều lần trong 1 ngày. Vui lòng thử lại sau."
+            );
+        }
+
+        String code = generate6DigitCode();
+
+        PasswordResetCode entity = new PasswordResetCode();
+        entity.setEmail(emailLower);
+        entity.setCodeHash(passwordEncoder.encode(code));
+        entity.setExpiresAt(now.plus(CODE_TTL));
+        passwordResetCodeRepository.save(entity);
+
+        try {
+            sendOtpEmail(email, code);
+        } catch (MailException ex) {
+            log.error("Failed to send password reset OTP email to {}", emailLower, ex);
+            throw new IllegalArgumentException("Không thể gửi email. Vui lòng kiểm tra cấu hình email và thử lại sau.");
+        }
+    }
+
+    public void verifyCode(String usernameOrEmail, String code) {
+        String key = usernameOrEmail == null ? "" : usernameOrEmail.trim();
+        String otp = code == null ? "" : code.trim();
+
+        if (key.isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập email.");
+        }
+        if (otp.isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập mã xác thực.");
+        }
+
+        String email = resolveEmail(key);
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Mã xác thực không hợp lệ.");
+        }
+
+        String emailLower = email.toLowerCase(Locale.ROOT);
+
+        PasswordResetCode prc = passwordResetCodeRepository
+                .findFirstByEmailAndUsedAtIsNullAndExpiresAtAfterOrderByCreatedAtDesc(emailLower, Instant.now())
+                .orElseThrow(() -> new IllegalArgumentException("Mã xác thực không hợp lệ hoặc đã hết hạn."));
+
+        if (!passwordEncoder.matches(otp, prc.getCodeHash())) {
+            throw new IllegalArgumentException("Mã xác thực không hợp lệ.");
+        }
+
+        if (prc.getVerifiedAt() == null) {
+            prc.setVerifiedAt(Instant.now());
+            passwordResetCodeRepository.save(prc);
+        }
+    }
+
+    public void resetPassword(String usernameOrEmail, String code, String newPassword) {
+        String key = usernameOrEmail == null ? "" : usernameOrEmail.trim();
+        String otp = code == null ? "" : code.trim();
+        String np = newPassword == null ? "" : newPassword;
+
+        if (key.isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập email.");
+        }
+        if (otp.isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập mã xác thực.");
+        }
+        if (np.isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập mật khẩu mới.");
+        }
+        if (np.length() < 8) {
+            throw new IllegalArgumentException("Mật khẩu phải có tối thiểu 8 ký tự.");
+        }
+
+        String email = resolveEmail(key);
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Mã xác thực không hợp lệ.");
+        }
+
+        String emailLower = email.toLowerCase(Locale.ROOT);
+
+        PasswordResetCode prc = passwordResetCodeRepository
+                .findFirstByEmailAndUsedAtIsNullAndExpiresAtAfterOrderByCreatedAtDesc(emailLower, Instant.now())
+                .orElseThrow(() -> new IllegalArgumentException("Mã xác thực không hợp lệ hoặc đã hết hạn."));
+
+        if (!passwordEncoder.matches(otp, prc.getCodeHash())) {
+            throw new IllegalArgumentException("Mã xác thực không hợp lệ.");
+        }
+
+        // Update password (customer or admin)
+        CustomerAccount customer = customerAccountRepository.findByEmail(emailLower).orElse(null);
+        if (customer != null) {
+            customer.setPassword(passwordEncoder.encode(np));
+            customerAccountRepository.save(customer);
+            prc.setUsedAt(Instant.now());
+            passwordResetCodeRepository.save(prc);
+            return;
+        }
+
+        AdminAccount admin = adminAccountRepository.findByEmailAndDeletedAtIsNull(emailLower).orElse(null);
+        if (admin != null) {
+            admin.setPassword(passwordEncoder.encode(np));
+            adminAccountRepository.save(admin);
+            prc.setUsedAt(Instant.now());
+            passwordResetCodeRepository.save(prc);
+            return;
+        }
+
+        // Không tiết lộ tài khoản
+        prc.setUsedAt(Instant.now());
+        passwordResetCodeRepository.save(prc);
+    }
+
+    private String resolveEmail(String key) {
+        String keyTrim = key.trim();
+        String keyLower = keyTrim.toLowerCase(Locale.ROOT);
+
+        if (keyTrim.contains("@")) {
+            // Nếu nhập email, thử tìm trực tiếp
+            CustomerAccount customer = customerAccountRepository.findByEmail(keyLower).orElse(null);
+            if (customer != null && customer.getEmail() != null) return customer.getEmail();
+
+            AdminAccount admin = adminAccountRepository.findByEmailAndDeletedAtIsNull(keyLower).orElse(null);
+            if (admin != null && admin.getEmail() != null) return admin.getEmail();
+
+            return null;
+        }
+
+        // Nếu nhập username
+        CustomerAccount customer = customerAccountRepository.findByUsername(keyTrim).orElse(null);
+        if (customer != null && customer.getEmail() != null) return customer.getEmail();
+
+        AdminAccount admin = adminAccountRepository.findByUsernameAndDeletedAtIsNull(keyTrim).orElse(null);
+        if (admin != null && admin.getEmail() != null) return admin.getEmail();
+
+        return null;
+    }
+
+    private String generate6DigitCode() {
+        SecureRandom random = new SecureRandom();
+        int n = 100000 + random.nextInt(900000);
+        return String.valueOf(n);
+    }
+
+    private void sendOtpEmail(String to, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        if (mailFrom != null && !mailFrom.isBlank()) {
+            message.setFrom(mailFrom);
+        }
+        message.setTo(to);
+        message.setSubject("MyPhone Store - Mã xác thực đặt lại mật khẩu");
+        message.setText(
+                "Bạn vừa yêu cầu đặt lại mật khẩu.\n\n" +
+                        "Mã xác thực của bạn là: " + code + "\n\n" +
+                        "Mã có hiệu lực trong " + CODE_TTL.toMinutes() + " phút.\n" +
+                        "Nếu bạn không yêu cầu, hãy bỏ qua email này."
+        );
+
+        mailSender.send(message);
+    }
+}
