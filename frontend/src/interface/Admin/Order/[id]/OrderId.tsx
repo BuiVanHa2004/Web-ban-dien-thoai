@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import AdminActionBar from "@/components/admins/AdminActionBar";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 import {
   Package,
   Clock,
@@ -239,17 +242,7 @@ export default function OrderId() {
           </button>
         )}
       </div>
-      <div className="fixed top-[120px] right-[46px] z-50">
-        <Link
-          href="/orders"
-          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Quay lại
-        </Link>
-      </div>
+      <AdminActionBar backHref="/orders" />
 
       {loading ? (
         <div className="rounded-3xl border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-sm dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-200">
@@ -565,181 +558,234 @@ export default function OrderId() {
         </div>
       ) : null}
 
-      {selectedItem ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setSelectedItem(null)}
-        >
-          <div
-            className="relative w-full max-w-5xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200 dark:border-white/10 dark:bg-slate-950"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-slate-100 p-6 dark:border-white/5">
-              <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Thông tin sản phẩm</div>
-                <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">
-                  {selectedItem.productName || "-"}
-                </h3>
-              </div>
-              <button
-                type="button"
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {selectedItem && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 onClick={() => setSelectedItem(null)}
-                className="group flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl bg-slate-50 text-slate-500 transition-all hover:bg-rose-50 hover:text-rose-600 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                className="absolute inset-0"
+                style={{
+                  backgroundColor: "rgba(15, 23, 42, 0.7)",
+                  backdropFilter: "blur(6px)",
+                  WebkitBackdropFilter: "blur(6px)",
+                }}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] max-h-[calc(100vh-2rem)]"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
+                }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="max-h-[70vh] overflow-y-auto p-6 pt-2">
-              {(() => {
-                const rawProductId = (selectedItem as any)?.productId;
-                const productId = rawProductId != null ? Number(rawProductId) : null;
-                const product = productId != null && Number.isFinite(productId) && !Number.isNaN(productId) && productId > 0 ? productMap[productId] : undefined;
-
-                const versionFromSpec = getSpecValue(product, "version");
-                const chipFromSpec = getSpecValue(product, "chip");
-                const screenFromSpec = getSpecValue(product, "screen");
-                const batteryFromSpec = getSpecValue(product, "battery");
-                const cameraRearFromSpec = getSpecValue(product, "cameraRear");
-                const cameraFrontFromSpec = getSpecValue(product, "cameraFront");
-                const osFromSpec = getSpecValue(product, "operatingSystem");
-                const sizeFromSpec = getSpecValue(product, "size");
-                const weightFromSpec = getSpecValue(product, "weight");
-                const materialFromSpec = getSpecValue(product, "material");
-                const refreshRateFromSpec = getSpecValue(product, "refreshRate");
-                const fastChargeFromSpec = getSpecValue(product, "fastCharge");
-                const waterResistanceFromSpec = getSpecValue(product, "waterResistance");
-                const chargingPortFromSpec = getSpecValue(product, "chargingPort");
-                const simFromSpec = getSpecValue(product, "sim");
-                const warrantyFromSpec = getSpecValue(product, "warranty");
-                const support5g = getSpecBoolean(product, "support5g");
-                const nfc = getSpecBoolean(product, "nfc");
-
-                const ram = (selectedItem as any)?.ramGb != null ? `${String((selectedItem as any).ramGb)} GB` : "-";
-                const storage = (selectedItem as any)?.storageGb != null ? `${String((selectedItem as any).storageGb)} GB` : "-";
-                const color = normalizeColor((selectedItem as any)?.productColor ?? (selectedItem as any)?.product_color ?? (selectedItem as any)?.colorName) || "-";
-
-                const allSpecs = [
-                  ...(versionFromSpec ? [{ label: "Phiên bản", value: versionFromSpec }] : []),
-                  { label: "Màu sắc", value: color },
-                  { label: "RAM", value: ram },
-                  { label: "Bộ nhớ", value: storage },
-                  ...(chipFromSpec ? [{ label: "Chip", value: chipFromSpec }] : []),
-                  ...(screenFromSpec ? [{ label: "Màn hình", value: screenFromSpec }] : []),
-                  ...(cameraRearFromSpec ? [{ label: "Camera sau", value: cameraRearFromSpec }] : []),
-                  ...(cameraFrontFromSpec ? [{ label: "Camera trước", value: cameraFrontFromSpec }] : []),
-                  ...(batteryFromSpec ? [{ label: "Pin", value: batteryFromSpec }] : []),
-                  ...(osFromSpec ? [{ label: "Hệ điều hành", value: osFromSpec }] : []),
-                  ...(refreshRateFromSpec ? [{ label: "Tần số quét", value: refreshRateFromSpec }] : []),
-                  ...(fastChargeFromSpec ? [{ label: "Sạc nhanh", value: fastChargeFromSpec }] : []),
-                  ...(sizeFromSpec ? [{ label: "Kích thước", value: sizeFromSpec }] : []),
-                  ...(weightFromSpec ? [{ label: "Trọng lượng", value: weightFromSpec }] : []),
-                  ...(materialFromSpec ? [{ label: "Chất liệu", value: materialFromSpec }] : []),
-                  ...(waterResistanceFromSpec ? [{ label: "Chống nước", value: waterResistanceFromSpec }] : []),
-                  ...(chargingPortFromSpec ? [{ label: "Cổng sạc", value: chargingPortFromSpec }] : []),
-                  ...(simFromSpec ? [{ label: "SIM", value: simFromSpec }] : []),
-                  ...(support5g !== null ? [{ label: "5G", value: support5g ? "Có" : "Không" }] : []),
-                  ...(nfc !== null ? [{ label: "NFC", value: nfc ? "Có" : "Không" }] : []),
-                  ...(warrantyFromSpec ? [{ label: "Bảo hành", value: warrantyFromSpec }] : []),
-                ];
-
-                const mid = Math.ceil(allSpecs.length / 2);
-                const leftSpecs = allSpecs.slice(0, mid);
-                const rightSpecs = allSpecs.slice(mid);
-
-                return (
-                  <div className="flex flex-col gap-6">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      {/* Basic Info Box */}
-                      <div className="rounded-[1.5rem] bg-slate-50 p-4 dark:bg-white/5">
-                        <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          Thông tin cơ bản
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div className="grid grid-cols-[140px_1fr] gap-2">
-                            <span className="text-slate-500">Danh mục:</span>
-                            <span className="text-slate-800 dark:text-slate-200">{product?.categoryName || "-"}</span>
-                          </div>
-                          <div className="grid grid-cols-[140px_1fr] gap-2">
-                            <span className="text-slate-500">Thương hiệu:</span>
-                            <span className="text-slate-800 dark:text-slate-200">{product?.brandName || "-"}</span>
-                          </div>
-                          <div className="mt-3 flex items-center gap-3 border-t border-slate-200 pt-3 dark:border-white/10">
-                            <span className="text-xs text-slate-400 line-through">{formatVnd(toNumberSafe((selectedItem as any)?.originalPrice))}</span>
-                            <span className="text-base font-medium text-emerald-600 dark:text-emerald-400">{formatVnd(toNumberSafe(selectedItem.productPrice))}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Order Details Box */}
-                      <div className="rounded-[1.5rem] bg-slate-50 p-4 dark:bg-white/5">
-                        <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                          </svg>
-                          Chi tiết đặt hàng
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div className="grid grid-cols-[140px_1fr] gap-2">
-                            <span className="text-slate-500">Phân loại:</span>
-                            <span className="text-slate-800 dark:text-slate-200">{color}, {ram}, {storage}</span>
-                          </div>
-                          <div className="grid grid-cols-[140px_1fr] gap-2">
-                            <span className="text-slate-500">Số lượng:</span>
-                            <span className="text-slate-800 dark:text-slate-200">{toNumberSafe(selectedItem.quantity)}</span>
-                          </div>
-                          <div className="mt-3 grid grid-cols-[140px_1fr] gap-2 border-t border-slate-200 pt-3 dark:border-white/10">
-                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Thành tiền</span>
-                            <span className="text-base font-medium text-emerald-600 dark:text-emerald-400">
-                              {formatVnd(toNumberSafe(selectedItem.productPrice) * toNumberSafe(selectedItem.quantity))}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Technical Specs Box */}
-                    {allSpecs.length > 0 && (
-                      <div className="rounded-[1.5rem] border border-slate-100 p-5 dark:border-white/5">
-                        <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                          Thông số kỹ thuật
-                        </div>
-                        <div className="grid grid-cols-1 gap-x-10 gap-y-2 text-sm md:grid-cols-2">
-                          <div className="space-y-2">
-                            {leftSpecs.map((spec, idx) => (
-                              <div key={idx} className="grid grid-cols-[160px_1fr] gap-2 border-b border-slate-50 pb-1.5 dark:border-white/5">
-                                <span className="text-slate-500">{spec.label}:</span>
-                                <span className="text-slate-800 dark:text-slate-200">{spec.value}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="space-y-2">
-                            {rightSpecs.map((spec, idx) => (
-                              <div key={idx} className="grid grid-cols-[160px_1fr] gap-2 border-b border-slate-50 pb-1.5 dark:border-white/5">
-                                <span className="text-slate-500">{spec.label}:</span>
-                                <span className="text-slate-800 dark:text-slate-200">{spec.value}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                {/* Header */}
+                <div
+                  className="flex items-start justify-between gap-3 px-6 py-5 shrink-0"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" }}
+                >
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wider text-cyan-400">Thông tin sản phẩm</div>
+                    <h3 className="mt-1 text-lg font-bold text-white/95">
+                      {selectedItem.productName || "-"}
+                    </h3>
                   </div>
-                );
-              })()}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedItem(null)}
+                    className="inline-flex cursor-pointer h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-white/70 transition hover:-translate-y-0.5 hover:bg-rose-500 hover:text-white active:translate-y-0"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="flex-1 overflow-y-auto p-6">
+                  {(() => {
+                    const rawProductId = (selectedItem as any)?.productId;
+                    const productId = rawProductId != null ? Number(rawProductId) : null;
+                    const product = productId != null && Number.isFinite(productId) && !Number.isNaN(productId) && productId > 0 ? productMap[productId] : undefined;
+
+                    const versionFromSpec = getSpecValue(product, "version");
+                    const chipFromSpec = getSpecValue(product, "chip");
+                    const screenFromSpec = getSpecValue(product, "screen");
+                    const batteryFromSpec = getSpecValue(product, "battery");
+                    const cameraRearFromSpec = getSpecValue(product, "cameraRear");
+                    const cameraFrontFromSpec = getSpecValue(product, "cameraFront");
+                    const osFromSpec = getSpecValue(product, "operatingSystem");
+                    const sizeFromSpec = getSpecValue(product, "size");
+                    const weightFromSpec = getSpecValue(product, "weight");
+                    const materialFromSpec = getSpecValue(product, "material");
+                    const refreshRateFromSpec = getSpecValue(product, "refreshRate");
+                    const fastChargeFromSpec = getSpecValue(product, "fastCharge");
+                    const waterResistanceFromSpec = getSpecValue(product, "waterResistance");
+                    const chargingPortFromSpec = getSpecValue(product, "chargingPort");
+                    const simFromSpec = getSpecValue(product, "sim");
+                    const warrantyFromSpec = getSpecValue(product, "warranty");
+                    const support5g = getSpecBoolean(product, "support5g");
+                    const nfc = getSpecBoolean(product, "nfc");
+
+                    const ram = (selectedItem as any)?.ramGb != null ? `${String((selectedItem as any).ramGb)} GB` : "-";
+                    const storage = (selectedItem as any)?.storageGb != null ? `${String((selectedItem as any).storageGb)} GB` : "-";
+                    const color = normalizeColor((selectedItem as any)?.productColor ?? (selectedItem as any)?.product_color ?? (selectedItem as any)?.colorName) || "-";
+
+                    const allSpecs = [
+                      ...(versionFromSpec ? [{ label: "Phiên bản", value: versionFromSpec }] : []),
+                      { label: "Màu sắc", value: color },
+                      { label: "RAM", value: ram },
+                      { label: "Bộ nhớ", value: storage },
+                      ...(chipFromSpec ? [{ label: "Chip", value: chipFromSpec }] : []),
+                      ...(screenFromSpec ? [{ label: "Màn hình", value: screenFromSpec }] : []),
+                      ...(cameraRearFromSpec ? [{ label: "Camera sau", value: cameraRearFromSpec }] : []),
+                      ...(cameraFrontFromSpec ? [{ label: "Camera trước", value: cameraFrontFromSpec }] : []),
+                      ...(batteryFromSpec ? [{ label: "Pin", value: batteryFromSpec }] : []),
+                      ...(osFromSpec ? [{ label: "Hệ điều hành", value: osFromSpec }] : []),
+                      ...(refreshRateFromSpec ? [{ label: "Tần số quét", value: refreshRateFromSpec }] : []),
+                      ...(fastChargeFromSpec ? [{ label: "Sạc nhanh", value: fastChargeFromSpec }] : []),
+                      ...(sizeFromSpec ? [{ label: "Kích thước", value: sizeFromSpec }] : []),
+                      ...(weightFromSpec ? [{ label: "Trọng lượng", value: weightFromSpec }] : []),
+                      ...(materialFromSpec ? [{ label: "Chất liệu", value: materialFromSpec }] : []),
+                      ...(waterResistanceFromSpec ? [{ label: "Chống nước", value: waterResistanceFromSpec }] : []),
+                      ...(chargingPortFromSpec ? [{ label: "Cổng sạc", value: chargingPortFromSpec }] : []),
+                      ...(simFromSpec ? [{ label: "SIM", value: simFromSpec }] : []),
+                      ...(support5g !== null ? [{ label: "5G", value: support5g ? "Có" : "Không" }] : []),
+                      ...(nfc !== null ? [{ label: "NFC", value: nfc ? "Có" : "Không" }] : []),
+                      ...(warrantyFromSpec ? [{ label: "Bảo hành", value: warrantyFromSpec }] : []),
+                    ];
+
+                    const mid = Math.ceil(allSpecs.length / 2);
+                    const leftSpecs = allSpecs.slice(0, mid);
+                    const rightSpecs = allSpecs.slice(mid);
+
+                    return (
+                      <div className="flex flex-col gap-5">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          {/* Basic Info Box */}
+                          <div
+                            className="rounded-[1.5rem] p-5"
+                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          >
+                            <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/50">
+                              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Thông tin cơ bản
+                            </div>
+                            <div className="space-y-2 text-sm">
+                              <div className="grid grid-cols-[140px_1fr] gap-2">
+                                <span className="text-white/50">Danh mục:</span>
+                                <span className="text-white/90">{product?.categoryName || "-"}</span>
+                              </div>
+                              <div className="grid grid-cols-[140px_1fr] gap-2">
+                                <span className="text-white/50">Thương hiệu:</span>
+                                <span className="text-white/90">{product?.brandName || "-"}</span>
+                              </div>
+                              <div className="mt-3 flex items-center gap-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                                <span className="text-xs text-white/40 line-through">{formatVnd(toNumberSafe((selectedItem as any)?.originalPrice))}</span>
+                                <span className="text-base font-medium text-emerald-400">{formatVnd(toNumberSafe(selectedItem.productPrice))}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Order Details Box */}
+                          <div
+                            className="rounded-[1.5rem] p-5"
+                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          >
+                            <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/50">
+                              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                              </svg>
+                              Chi tiết đặt hàng
+                            </div>
+                            <div className="space-y-2 text-sm">
+                              <div className="grid grid-cols-[140px_1fr] gap-2">
+                                <span className="text-white/50">Phân loại:</span>
+                                <span className="text-white/90">{color}, {ram}, {storage}</span>
+                              </div>
+                              <div className="grid grid-cols-[140px_1fr] gap-2">
+                                <span className="text-white/50">Số lượng:</span>
+                                <span className="text-white/90">{toNumberSafe(selectedItem.quantity)}</span>
+                              </div>
+                              <div className="mt-3 grid grid-cols-[140px_1fr] gap-2 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                                <span className="text-xs font-bold uppercase tracking-wider text-white/40">Thành tiền</span>
+                                <span className="text-base font-medium text-emerald-400">
+                                  {formatVnd(toNumberSafe(selectedItem.productPrice) * toNumberSafe(selectedItem.quantity))}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Technical Specs */}
+                        {allSpecs.length > 0 && (
+                          <div
+                            className="rounded-[1.5rem] p-5"
+                            style={{ border: "1px solid rgba(255,255,255,0.1)" }}
+                          >
+                            <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/50">
+                              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              Thông số kỹ thuật
+                            </div>
+                            <div className="grid grid-cols-1 gap-x-10 gap-y-2 text-sm md:grid-cols-2">
+                              <div className="space-y-2">
+                                {leftSpecs.map((spec, idx) => (
+                                  <div key={idx} className="grid grid-cols-[160px_1fr] gap-2 pb-1.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                    <span className="text-white/50">{spec.label}:</span>
+                                    <span className="text-white/90">{spec.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="space-y-2">
+                                {rightSpecs.map((spec, idx) => (
+                                  <div key={idx} className="grid grid-cols-[160px_1fr] gap-2 pb-1.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                    <span className="text-white/50">{spec.label}:</span>
+                                    <span className="text-white/90">{spec.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Footer */}
+                <div
+                  className="flex items-center justify-end px-6 py-4 shrink-0"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)" }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSelectedItem(null)}
+                    className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-6 text-sm font-semibold text-white/80 transition-all hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </motion.div>
             </div>
-          </div>
-        </div>
-      ) : null}
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <AdminCancelOrderModal
         isOpen={isAdminCancelOpen}

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 import { AlertCircle, HelpCircle } from "lucide-react";
 
 interface ConfirmModalProps {
@@ -25,7 +26,14 @@ export default function ConfirmModal({
   cancelText = "HỦY",
   type = "warning"
 }: ConfirmModalProps) {
-  
+  React.useEffect(() => {
+    if (isOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "unset";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   const getColors = () => {
     switch (type) {
       case "danger":
@@ -51,30 +59,38 @@ export default function ConfirmModal({
 
   const colors = getColors();
 
-  return (
+  const content = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[210] flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ zIndex: 99999 }}
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            className="absolute inset-0"
+            style={{
+              backgroundColor: "rgba(15, 23, 42, 0.7)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+            }}
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-2xl dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800"
+            className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white/60 p-8 text-center shadow-2xl backdrop-blur-sm dark:bg-slate-900/80 ring-1 ring-slate-200 dark:ring-slate-800"
           >
             <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${colors.bg}`}>
               <HelpCircle className={`h-12 w-12 ${colors.icon}`} />
             </div>
-            <h3 className="mb-2 text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight text-center">
+            <h3 className="mb-2 text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
               {title}
             </h3>
-            <p className="mb-8 text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed text-center">
+            <p className="mb-8 text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
               {message}
             </p>
             <div className="flex gap-3">
@@ -99,4 +115,6 @@ export default function ConfirmModal({
       )}
     </AnimatePresence>
   );
+
+  return typeof document !== "undefined" ? createPortal(content, document.body) : null;
 }

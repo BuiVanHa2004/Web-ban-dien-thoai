@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 import { brandService, BrandDto } from "@/services/brandService";
 
@@ -340,30 +341,57 @@ export default function BrandPage() {
         </div>
       </div>
 
-      <AnimatePresence>
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
         {selectedBrand && (
-          <div className="fixed inset-0 z-50 grid place-items-center p-4">
+          <div
+            className="fixed inset-0 flex items-center justify-center p-4"
+            style={{ zIndex: 99999 }}
+          >
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedBrand(null)}
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
+              className="absolute inset-0"
+              style={{
+                backgroundColor: "rgba(15, 23, 42, 0.7)",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+              }}
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-950 max-h-[calc(100vh-2rem)]"
+              className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl max-h-[calc(100vh-2rem)]"
+              style={{
+                background: "rgba(255, 255, 255, 0.08)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
+              }}
             >
-              <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950/60">
+              {/* Header */}
+              <div
+                className="flex items-start justify-between gap-3 px-5 py-4"
+                style={{
+                  borderBottom: "1px solid rgba(255,255,255,0.1)",
+                  background: "rgba(255,255,255,0.05)",
+                }}
+              >
                 <div className="min-w-0">
-                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Chi tiết thương hiệu</div>
+                  <div className="text-sm font-semibold text-white/90">Chi tiết thương hiệu</div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedBrand(null)}
-                  className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                  className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl text-white/70 transition hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
                   aria-label="Đóng"
                 >
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -373,10 +401,24 @@ export default function BrandPage() {
                 </button>
               </div>
 
+              {/* Body */}
               <div className="flex-1 overflow-y-auto p-5">
                 <div className="space-y-4">
-                  <div className="flex flex-col gap-5 rounded-3xl bg-white p-5 ring-1 ring-slate-200 dark:bg-slate-950/60 dark:ring-white/10 sm:flex-row sm:items-center">
-                    <div className="h-32 w-32 shrink-0 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                  {/* Thông tin chính */}
+                  <div
+                    className="flex flex-col gap-5 rounded-3xl p-5 sm:flex-row sm:items-center"
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                  >
+                    <div
+                      className="h-32 w-32 shrink-0 overflow-hidden rounded-full"
+                      style={{
+                        background: "rgba(255,255,255,0.08)",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                      }}
+                    >
                       <Image
                         src={
                           (selectedBrand.brandImages && selectedBrand.brandImages.length > 0)
@@ -392,31 +434,38 @@ export default function BrandPage() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      <div className="text-lg font-semibold text-white/95">
                         {selectedBrand.name}
                       </div>
-                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-200">
+                      <div className="mt-2 text-sm text-white/65 leading-relaxed">
                         {selectedBrand.description || "(Không có mô tả)"}
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3 rounded-3xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 sm:grid-cols-3">
+                  {/* Meta info */}
+                  <div
+                    className="grid grid-cols-1 gap-3 rounded-3xl p-4 sm:grid-cols-3"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Slug</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100 font-mono">
+                      <div className="text-xs font-semibold text-white/50 uppercase tracking-wide">Slug</div>
+                      <div className="mt-1 text-sm text-white/85 font-mono">
                         {selectedBrand.slug || "-"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Tạo lúc</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold text-white/50 uppercase tracking-wide">Tạo lúc</div>
+                      <div className="mt-1 text-sm text-white/85">
                         {formatDate(selectedBrand.createdAt) || "-"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Cập nhật</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold text-white/50 uppercase tracking-wide">Cập nhật</div>
+                      <div className="mt-1 text-sm text-white/85">
                         {formatDate(selectedBrand.updatedAt) || "-"}
                       </div>
                     </div>
@@ -424,11 +473,22 @@ export default function BrandPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4 dark:border-white/10 dark:bg-slate-950/40">
+              {/* Footer */}
+              <div
+                className="flex items-center justify-end gap-2 px-5 py-4"
+                style={{
+                  borderTop: "1px solid rgba(255,255,255,0.1)",
+                  background: "rgba(255,255,255,0.04)",
+                }}
+              >
                 <button
                   type="button"
                   onClick={() => setSelectedBrand(null)}
-                  className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                  className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-white/75 transition-all hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
                 >
                   Đóng
                 </button>
@@ -438,7 +498,12 @@ export default function BrandPage() {
                     setSelectedBrand(null);
                     router.push(`/brands/update?id=${encodeURIComponent(selectedBrand.id)}`);
                   }}
-                  className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl bg-amber-500 px-4 text-sm font-semibold text-amber-950 shadow-sm ring-1 ring-amber-500/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-amber-400 hover:shadow-md active:translate-y-0 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-1 dark:ring-amber-400/20 dark:hover:bg-amber-500/20 dark:hover:ring-amber-400/30 dark:hover:shadow-black/30"
+                  className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-amber-950 transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
+                  style={{
+                    background: "rgba(245, 158, 11, 0.85)",
+                    border: "1px solid rgba(245,158,11,0.3)",
+                    boxShadow: "0 4px 20px rgba(245,158,11,0.25)",
+                  }}
                 >
                   Chỉnh sửa
                 </button>
@@ -446,7 +511,9 @@ export default function BrandPage() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
     </motion.div>
   );
 }

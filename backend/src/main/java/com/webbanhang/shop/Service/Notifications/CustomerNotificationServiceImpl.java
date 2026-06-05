@@ -3,9 +3,6 @@ package com.webbanhang.shop.Service.Notifications;
 import com.webbanhang.shop.DTO.Notifications.NotificationDto;
 import com.webbanhang.shop.Model.Customers.CustomerAccount;
 import com.webbanhang.shop.Model.Notifications.CustomerNotification;
-import com.webbanhang.shop.Model.Notifications.NotificationType;
-import com.webbanhang.shop.Model.Notifications.NotificationAction;
-import com.webbanhang.shop.Model.Notifications.ActorType;
 import com.webbanhang.shop.Repository.Contacts.ContactRepository;
 import com.webbanhang.shop.Repository.Customers.CustomerAccountRepository;
 import com.webbanhang.shop.Repository.Notifications.CustomerNotificationRepository;
@@ -19,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 
 @Service
+@SuppressWarnings("null")
 public class CustomerNotificationServiceImpl implements CustomerNotificationService {
 
     private final CustomerNotificationRepository notificationRepository;

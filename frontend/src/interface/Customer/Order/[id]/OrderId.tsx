@@ -681,6 +681,21 @@ export default function OrderId() {
                                 </div>
                                 <p className="text-sm font-medium text-slate-600 dark:text-slate-300 italic">"{review?.content || "N/A"}"</p>
 
+                                {/* Ảnh đính kèm đánh giá */}
+                                {review.images && review.images.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    {review.images.map((img, i) => (
+                                      <div key={i} className="w-16 overflow-hidden rounded-lg" style={{ aspectRatio: "9/16" }}>
+                                        <img
+                                          src={resolveImageUrl(img.imageUrl)}
+                                          className="h-full w-full object-cover ring-1 ring-slate-200"
+                                          alt={`review-img-${i}`}
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+
                                 {review.adminReply && (
                                   <div className="mt-2 rounded-lg border border-emerald-100 bg-emerald-50/30 p-3 dark:border-emerald-900/10">
                                     <div className="flex items-center gap-2 mb-1">
@@ -703,9 +718,17 @@ export default function OrderId() {
                                   </div>
                                   <label className="flex cursor-pointer items-center gap-1 text-[10px] font-bold text-purple-600">
                                     <Camera className="h-3 w-3" /> <span>Thêm ảnh</span>
-                                    <input type="file" multiple className="hidden" onChange={e => {
-                                      const files = (e.target as HTMLInputElement).files;
-                                      setDraft(orderItemId, { images: Array.from(files || []) });
+                                    <input type="file" multiple accept="image/*" className="hidden" onChange={e => {
+                                      const files = Array.from((e.target as HTMLInputElement).files || []);
+                                      if (files.length === 0) return;
+                                      setDraft(orderItemId, {
+                                        images: [
+                                          ...(reviewDraftMap[orderItemId]?.images || []),
+                                          ...files,
+                                        ]
+                                      });
+                                      // reset input để có thể chọn lại cùng file
+                                      (e.target as HTMLInputElement).value = "";
                                     }} />
                                   </label>
                                 </div>
@@ -715,6 +738,52 @@ export default function OrderId() {
                                   value={draft?.content || ""}
                                   onChange={e => setDraft(orderItemId, { content: (e.target as HTMLTextAreaElement).value })}
                                 />
+
+                                {/* Preview ảnh đã chọn */}
+                                {((draft?.images?.length || 0) > 0 || (draft?.existingImageUrls?.length || 0) > 0) && (
+                                  <div className="flex flex-wrap gap-2">
+                                    {/* Ảnh cũ từ server */}
+                                    {(draft?.existingImageUrls || []).map((url, i) => (
+                                      <div key={`existing-${i}`} className="relative group/img w-16" style={{ aspectRatio: "9/16" }}>
+                                        <img
+                                          src={resolveImageUrl(url)}
+                                          className="h-full w-full rounded-lg object-cover ring-1 ring-slate-200"
+                                          alt={`review-existing-${i}`}
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const next = (draft?.existingImageUrls || []).filter((_, idx) => idx !== i);
+                                            setDraft(orderItemId, { existingImageUrls: next });
+                                          }}
+                                          className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-white opacity-0 group-hover/img:opacity-100 transition-opacity text-[10px]"
+                                        >×</button>
+                                      </div>
+                                    ))}
+                                    {/* Ảnh mới chọn */}
+                                    {(draft?.images || []).map((file, i) => {
+                                      const previewUrl = URL.createObjectURL(file);
+                                      return (
+                                        <div key={`new-${i}`} className="relative group/img w-16" style={{ aspectRatio: "9/16" }}>
+                                          <img
+                                            src={previewUrl}
+                                            className="h-full w-full rounded-lg object-cover ring-1 ring-purple-200"
+                                            alt={`review-new-${i}`}
+                                            onLoad={() => URL.revokeObjectURL(previewUrl)}
+                                          />
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const next = (draft?.images || []).filter((_, idx) => idx !== i);
+                                              setDraft(orderItemId, { images: next });
+                                            }}
+                                            className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-white opacity-0 group-hover/img:opacity-100 transition-opacity text-[10px]"
+                                          >×</button>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
                                 <div className="flex justify-end gap-2">
                                   {isEditing && <button onClick={() => setEditingReviewItemIds(prev => ({ ...prev, [orderItemId]: false }))} className="text-[10px] font-bold text-slate-400 uppercase">Hủy</button>}
                                   <button onClick={() => saveReview(orderItemId)} className="rounded-lg bg-purple-600 px-4 py-1.5 text-[10px] font-black text-white shadow-md">Gửi</button>

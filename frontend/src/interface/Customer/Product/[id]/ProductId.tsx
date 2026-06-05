@@ -834,15 +834,17 @@ export default function ProductId() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mx-auto flex w-full max-w-4xl gap-4 rounded-[2rem] border border-black/10 bg-white/80 p-3 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/80"
+              className="customer-card-surface mx-auto flex w-full max-w-4xl gap-3 rounded-[2rem] border-2 border-zinc-500/70 bg-zinc-900/90 p-3 shadow-2xl shadow-black/40 ring-1 ring-zinc-500/40 backdrop-blur-xl sm:gap-4"
             >
               <button
                 type="button"
                 onClick={(e) => addToCartOnly(e.currentTarget)}
                 disabled={isOutOfStock}
                 className={
-                  "inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 px-6 text-sm font-bold text-cyan-600 transition dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-400 " +
-                  (isOutOfStock ? "opacity-50 cursor-not-allowed" : "hover:bg-cyan-500 hover:text-white hover:shadow-lg hover:shadow-cyan-500/20 cursor-pointer active:scale-95")
+                  "inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-zinc-500/70 bg-zinc-800/70 px-6 text-sm font-bold text-zinc-100 shadow-md shadow-black/20 ring-1 ring-zinc-500/35 transition " +
+                  (isOutOfStock
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer hover:border-purple-500/55 hover:bg-zinc-700/90 hover:text-purple-200 hover:ring-purple-500/30 active:scale-[0.98]")
                 }
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -855,8 +857,10 @@ export default function ProductId() {
                 onClick={() => addToCartAndGo()}
                 disabled={isOutOfStock}
                 className={
-                  "inline-flex h-14 flex-[1.5] items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-600 to-indigo-600 px-6 text-sm font-bold text-white shadow-xl shadow-cyan-600/20 transition " +
-                  (isOutOfStock ? "opacity-50 cursor-not-allowed" : "hover:scale-[1.02] hover:opacity-95 hover:shadow-2xl hover:shadow-cyan-600/40 cursor-pointer active:scale-98")
+                  "inline-flex h-14 flex-[1.5] items-center justify-center rounded-2xl border-2 border-purple-500/60 bg-gradient-to-r from-purple-600 to-indigo-600 px-6 text-sm font-bold text-white shadow-xl shadow-purple-600/30 ring-1 ring-purple-400/40 transition " +
+                  (isOutOfStock
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer hover:border-purple-400/80 hover:shadow-2xl hover:shadow-purple-500/35 active:scale-[0.98]")
                 }
               >
                 Mua ngay bây giờ

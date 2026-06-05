@@ -172,6 +172,7 @@ export default function PremiumHeader() {
     { href: "/product", label: "Sản phẩm" },
     { href: "/new", label: "Tin tức" },
     { href: "/contact", label: "Liên hệ" },
+    { href: "/about", label: "Về chúng tôi" },
   ];
 
   const isActive = (href: string) => {

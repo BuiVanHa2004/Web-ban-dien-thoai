@@ -22,17 +22,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final CategoryImageRepository categoryImageRepository;
     private final MinioStorageService minioStorageService;
     private final PriceSegmentRepository priceSegmentRepository;
     private final ProductRepository productRepository;
 
     public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryImageRepository categoryImageRepository, MinioStorageService minioStorageService, PriceSegmentRepository priceSegmentRepository, ProductRepository productRepository) {
         this.categoryRepository = categoryRepository;
-        this.categoryImageRepository = categoryImageRepository;
         this.minioStorageService = minioStorageService;
         this.priceSegmentRepository = priceSegmentRepository;
         this.productRepository = productRepository;

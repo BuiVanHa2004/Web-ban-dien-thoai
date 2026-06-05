@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 import { Check, X, Info, AlertTriangle, Loader2 } from "lucide-react";
 
 export type ModalType = "success" | "error" | "info" | "warning" | "loading";
@@ -39,16 +40,32 @@ export default function StatusModal({ isOpen, onClose, title, message, type = "i
     }
   };
 
-  return (
+  React.useEffect(() => {
+    if (isOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "unset";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  const content = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ zIndex: 99999 }}
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={type !== "loading" ? onClose : undefined}
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            className="absolute inset-0"
+            style={{
+              backgroundColor: "rgba(15, 23, 42, 0.7)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+            }}
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -78,4 +95,6 @@ export default function StatusModal({ isOpen, onClose, title, message, type = "i
       )}
     </AnimatePresence>
   );
+
+  return typeof document !== "undefined" ? createPortal(content, document.body) : null;
 }

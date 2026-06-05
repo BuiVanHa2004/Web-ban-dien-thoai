@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class NewsServiceImpl implements NewsService {
 
     private final NewsRepository newsRepository;

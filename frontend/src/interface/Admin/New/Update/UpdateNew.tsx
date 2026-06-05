@@ -1,14 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import AdminActionBar from "@/components/admins/AdminActionBar";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import ModalPortal from "@/components/admins/ModalPortal";
+import ValidationModal from "@/components/admins/ValidationModal";
 
 import { newsService } from "@/services/newsService";
+import { useAppNotification } from "@/providers/AppNotificationProvider";
 
 export default function UpdateNew() {
   const router = useRouter();
+  const { showToast } = useAppNotification();
   const searchParams = useSearchParams();
   const id = searchParams.get("id") || "";
   const newsId = Number(id);
@@ -21,19 +27,11 @@ export default function UpdateNew() {
   const [description, setDescription] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [toastOpen, setToastOpen] = React.useState(false);
-  const [toastMessage, setToastMessage] = React.useState("");
   const [validationModal, setValidationModal] = React.useState<{ open: boolean; fields: string[] }>({ open: false, fields: [] });
 
   const [descriptionModalOpen, setDescriptionModalOpen] = React.useState(false);
   const descriptionModalRef = React.useRef<HTMLTextAreaElement | null>(null);
   const [isDraggingFile, setIsDraggingFile] = React.useState(false);
-
-  function showToast(message: string) {
-    setToastMessage(message);
-    setToastOpen(true);
-    window.setTimeout(() => setToastOpen(false), 4000);
-  }
 
   function removeImage(index: number) {
     const item = imageItems[index];
@@ -117,7 +115,6 @@ export default function UpdateNew() {
 
     window.setTimeout(async () => {
       try {
-        // Upload new files
         const finalUrls = await Promise.all(
           imageItems.map(async item => {
             if (item.file) {
@@ -162,32 +159,7 @@ export default function UpdateNew() {
         </div>
       </div>
 
-      <div className="fixed top-[119px] right-[41px] z-50 flex items-center gap-3">
-        <Link
-          href="/news"
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Quay lại
-        </Link>
-        <button
-          type="submit"
-          form="news-form"
-          disabled={submitting || formDisabled}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 disabled:opacity-70"
-        >
-          {submitting ? (
-            <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M16.5 3.5l4 4L7 21H3v-4z" />
-            </svg>
-          )}
-          Lưu
-        </button>
-      </div>
+      <AdminActionBar backHref="/news" formId="news-form" submitting={submitting} disabled={formDisabled} />
 
       <div className="grid gap-4 lg:grid-cols-5">
         <form
@@ -341,7 +313,6 @@ export default function UpdateNew() {
                       <path d="M22 14v5a2 2 0 0 1-2 2" />
                     </svg>
                   </div>
-
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                       Tải ảnh lên
@@ -352,81 +323,80 @@ export default function UpdateNew() {
                   </div>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">Thông tin</label>
-                <textarea
-                  value={description}
-                  readOnly
-                  onClick={() => setDescriptionModalOpen(true)}
-                  disabled={formDisabled}
-                  className="min-h-[160px] w-full resize-none rounded-2xl bg-slate-100 px-3 py-2 text-sm cursor-pointer text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 disabled:opacity-70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:ring-cyan-400/25"
-                  placeholder="Nhấn để phóng to và nhập thông tin..."
-                />
-              </div>
-
-              {descriptionModalOpen ? (
-                <div
-                  className="fixed inset-0 z-90"
-                  role="dialog"
-                  aria-modal="true"
-                  onClick={() => setDescriptionModalOpen(false)}
-                >
-                  <div className="absolute inset-0 bg-black/55 backdrop-blur-sm animate-fade-in-up" />
-
-                  <div className="absolute inset-0 flex items-center justify-center p-4">
-                    <div
-                      className="w-full max-w-4xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-slate-950 animate-auth-page"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950/60">
-                        <div>
-                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Nhập mô tả</div>
-                          <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">Không gian lớn để nhập nội dung bao quát hơn.</div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => setDescriptionModalOpen(false)}
-                          className="inline-flex cursor-pointer h-10 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-                        >
-                          Đóng
-                        </button>
-                      </div>
-
-                      <div className="p-5">
-                        <textarea
-                          ref={descriptionModalRef}
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          className="min-h-[420px] w-full resize-none rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                          placeholder="Mô tả tin tức..."
-                        />
-                        <div className="mt-4 flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setDescriptionModalOpen(false)}
-                            className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-                          >
-                            Hủy
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDescriptionModalOpen(false)}
-                            className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl bg-emerald-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0"
-                          >
-                            Lưu
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
             </div>
 
-          </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">Thông tin</label>
+              <textarea
+                value={description}
+                readOnly
+                onClick={() => setDescriptionModalOpen(true)}
+                disabled={formDisabled}
+                className="min-h-[160px] w-full resize-none rounded-2xl bg-slate-100 px-3 py-2 text-sm cursor-pointer text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 disabled:opacity-70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:ring-cyan-400/25"
+                placeholder="Nhấn để phóng to và nhập thông tin..."
+              />
+            </div>
 
+            {descriptionModalOpen ? (
+              <ModalPortal isOpen={descriptionModalOpen} onClose={() => setDescriptionModalOpen(false)} glass>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  className="relative w-full max-w-4xl overflow-hidden rounded-3xl"
+                  style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between gap-3 px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" }}>
+                    <div>
+                      <div className="text-sm font-semibold text-white/90">Nhập mô tả</div>
+                      <div className="mt-1 text-xs text-white/55">Không gian lớn để nhập nội dung bao quát hơn.</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setDescriptionModalOpen(false)}
+                      className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl text-white/70 transition hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                      style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                      aria-label="Đóng"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="p-5">
+                    <textarea
+                      ref={descriptionModalRef}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="min-h-[420px] w-full resize-none rounded-2xl px-4 py-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                      placeholder="Mô tả tin tức..."
+                    />
+                  </div>
+                  <div className="flex items-center justify-end gap-2 px-5 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)" }}>
+                    <button
+                      type="button"
+                      onClick={() => setDescriptionModalOpen(false)}
+                      className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-white/75 transition-all hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                      style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDescriptionModalOpen(false)}
+                      className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-6 text-sm font-semibold text-amber-950 transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
+                      style={{ background: "rgba(52,211,153,0.85)", border: "1px solid rgba(52,211,153,0.3)", boxShadow: "0 4px 20px rgba(52,211,153,0.25)" }}
+                    >
+                      Lưu
+                    </button>
+                  </div>
+                </motion.div>
+              </ModalPortal>
+            ) : null}
+
+          </div>
         </form>
 
         <div className="lg:col-span-2">
@@ -471,43 +441,11 @@ export default function UpdateNew() {
         </div>
       </div>
 
-      {/* Validation Modal */}
-      {validationModal.open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setValidationModal({ ...validationModal, open: false })} />
-          <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl animate-scale-in dark:border-white/10 dark:bg-slate-900">
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
-                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Bạn chưa điền đầy đủ thông tin</h3>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Vui lòng hoàn thiện các mục sau:</p>
-              <ul className="mt-3 space-y-1">
-                {validationModal.fields.map((f, i) => (
-                  <li key={i} className="text-sm font-medium text-rose-600 dark:text-rose-400">• {f}</li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                onClick={() => setValidationModal({ ...validationModal, open: false })}
-                className="mt-6 w-full cursor-pointer rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-              >
-                Đã hiểu
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {toastOpen ? (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-          <div className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-xl dark:bg-white dark:text-slate-900">
-            {toastMessage}
-          </div>
-        </div>
-      ) : null}
+      <ValidationModal
+        open={validationModal.open}
+        fields={validationModal.fields}
+        onClose={() => setValidationModal({ open: false, fields: [] })}
+      />
     </div>
   );
 }

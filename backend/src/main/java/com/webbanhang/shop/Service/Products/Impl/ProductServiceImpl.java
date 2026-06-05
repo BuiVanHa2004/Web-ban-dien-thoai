@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@SuppressWarnings("null")
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;

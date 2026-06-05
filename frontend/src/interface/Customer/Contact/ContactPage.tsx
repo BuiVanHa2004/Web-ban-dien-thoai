@@ -123,6 +123,13 @@ export default function ContactPage() {
         setEmail((v) => (v.trim() ? v : dto?.email || ""));
         setPhone((v) => (v.trim() ? v : dto?.phone || ""));
         setPrefilled(true);
+        // load contact history once we have an email (so navigating to this page shows history)
+        try {
+          const finalEmail = dto?.email || (u?.email as string) || "";
+          if (mounted) await loadHistoryByEmail(String(finalEmail));
+        } catch {
+          // ignore
+        }
       } catch {
         // ignore
       }
@@ -201,7 +208,28 @@ export default function ContactPage() {
   }
 
   useEffect(() => {
-    void loadHistoryByEmail(email);
+    // Ensure history loads when navigating to this page from anywhere:
+    // - try email from state (if already set)
+    // - otherwise read cached user from localStorage and load by that email immediately
+    if (email && email.trim()) {
+      void loadHistoryByEmail(email);
+      return;
+    }
+
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+      if (raw) {
+        const u = JSON.parse(raw) as User;
+        const candidate = String(u?.email || "").trim();
+        if (candidate) {
+          setEmail((v) => (v.trim() ? v : candidate));
+          void loadHistoryByEmail(candidate);
+        }
+      }
+    } catch {
+      // ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email]);
 
   useEffect(() => {

@@ -2,9 +2,13 @@
 "use client";
 
 import Link from "next/link";
+import AdminActionBar from "@/components/admins/AdminActionBar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import ModalPortal from "@/components/admins/ModalPortal";
+import ValidationModal from "@/components/admins/ValidationModal";
 
 import { brandService, BrandDto } from "@/services/brandService";
 import { categoryService, CategoryDto } from "@/services/categoryService";
@@ -615,37 +619,7 @@ export default function CreateProduct() {
         </div>
       </div>
 
-      <div className="fixed top-[115px] right-[46px] z-50 flex items-center gap-3">
-        <Link
-          href="/products"
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Quay lại
-        </Link>
-        <button
-          type="submit"
-          form="product-form"
-          disabled={submitting || uploading}
-          className={
-            "inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 " +
-            (submitting || uploading ? "opacity-70 pointer-events-none" : "")
-          }
-        >
-          {submitting || uploading ? (
-            <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2z" />
-              <path d="M17 21v-8H7v8" />
-              <path d="M7 3v4h8" />
-            </svg>
-          )}
-          Lưu
-        </button>
-      </div>
+      <AdminActionBar backHref="/products" formId="product-form" submitting={submitting} disabled={uploading} />
 
       <div className="grid gap-4 lg:grid-cols-5">
         <form
@@ -1618,202 +1592,202 @@ export default function CreateProduct() {
               </div>
             </div>
 
-            {descriptionModalOpen ? (
-              <div
-                className="fixed inset-0 z-[90]"
-                role="dialog"
-                aria-modal="true"
-                onClick={() => setDescriptionModalOpen(false)}
+            <ModalPortal isOpen={descriptionModalOpen} onClose={() => setDescriptionModalOpen(false)} glass>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-5xl overflow-hidden rounded-3xl"
+                style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <div className="absolute inset-0 bg-black/55 backdrop-blur-sm animate-fade-in-up" />
-
-                <div className="absolute inset-0 flex items-center justify-center p-4">
-                  <div
-                    className="w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-slate-950 animate-auth-page"
-                    onClick={(e) => e.stopPropagation()}
+                <div className="flex items-center justify-between gap-3 px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" }}>
+                  <div>
+                    <div className="text-sm font-semibold text-white/90">Nhập mô tả</div>
+                    <div className="mt-1 text-xs text-white/55">Không gian lớn để nhập nội dung bao quát hơn.</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDescriptionModalOpen(false)}
+                    className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl text-white/70 transition hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                    aria-label="Đóng"
                   >
-                    <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950/60">
-                      <div>
-                        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Nhập mô tả</div>
-                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">Không gian lớn để nhập nội dung bao quát hơn.</div>
-                      </div>
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-5">
+                  <textarea
+                    ref={descriptionModalRef}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="min-h-[420px] w-full resize-none rounded-2xl px-4 py-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                    placeholder="Nhập mô tả sản phẩm..."
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-2 px-5 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)" }}>
+                  <button
+                    type="button"
+                    onClick={() => setDescriptionModalOpen(false)}
+                    className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-white/75 transition-all hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDescriptionModalOpen(false)}
+                    className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-6 text-sm font-semibold text-amber-950 transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
+                    style={{ background: "rgba(52,211,153,0.85)", border: "1px solid rgba(52,211,153,0.3)", boxShadow: "0 4px 20px rgba(52,211,153,0.25)" }}
+                  >
+                    Lưu
+                  </button>
+                </div>
+              </motion.div>
+            </ModalPortal>
 
-                      <button
-                        type="button"
-                        onClick={() => setDescriptionModalOpen(false)}
-                        className="inline-flex h-10 cursor-pointer items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-                      >
-                        Đã hiểu
-                      </button>
-                    </div>
+            <ModalPortal isOpen={variantsModalOpen} onClose={closeVariantsModal} glass>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-5xl overflow-hidden rounded-3xl"
+                style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between gap-3 px-5 py-4 flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" }}>
+                  <div>
+                    <div className="text-sm font-semibold text-white/90">Nhập biến thể</div>
+                    <div className="mt-1 text-xs text-white/55">RAM / Bộ nhớ / Số lượng / Giá</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeVariantsModal}
+                    className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl text-white/70 transition hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                    aria-label="Đóng"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="p-5">
+                  <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 pb-2 text-xs font-semibold text-white/60">
+                    <div>RAM (GB)</div>
+                    <div>Bộ nhớ (GB)</div>
+                    <div>Số lượng</div>
+                    <div>Giá</div>
+                    <div></div>
+                  </div>
 
-                    <div className="p-5">
-                      <textarea
-                        ref={descriptionModalRef}
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="min-h-[420px] w-full resize-none rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        placeholder="Nhập mô tả sản phẩm..."
-                      />
-                      <div className="mt-4 flex items-center justify-end gap-2">
+                  {(variantsModalMode === "draft" ? draftVariants : (productColors.find((x) => x.key === variantsModalColorKey)?.variants || [])).map((v) => {
+                    const updateVariant = (patch: Partial<typeof v>) => {
+                      if (variantsModalMode === "draft") {
+                        setDraftVariants((prev) => prev.map((x) => (x.key === v.key ? { ...x, ...patch } : x)));
+                        return;
+                      }
+                      const colorKey = variantsModalColorKey;
+                      if (!colorKey) return;
+                      setProductColors((prev) =>
+                        prev.map((c) => {
+                          if (c.key !== colorKey) return c;
+                          const nextVariants = c.variants.map((z) => (z.key === v.key ? { ...z, ...patch } : z));
+                          return { ...c, variants: nextVariants, quantity: sumVariantQuantity(nextVariants) };
+                        })
+                      );
+                    };
+
+                    const removeVariant = () => {
+                      if (variantsModalMode === "draft") {
+                        setDraftVariants((prev) => (prev.length <= 1 ? prev : prev.filter((x) => x.key !== v.key)));
+                        return;
+                      }
+                      const colorKey = variantsModalColorKey;
+                      if (!colorKey) return;
+                      setProductColors((prev) =>
+                        prev.map((c) => {
+                          if (c.key !== colorKey) return c;
+                          const nextVariants = c.variants.length <= 1 ? c.variants : c.variants.filter((x) => x.key !== v.key);
+                          return { ...c, variants: nextVariants, quantity: sumVariantQuantity(nextVariants) };
+                        })
+                      );
+                    };
+
+                    return (
+                      <div key={v.key} className="mt-3 grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 items-center">
+                        <input
+                          type="number"
+                          min={0}
+                          value={v.ramGb}
+                          onChange={(e) => updateVariant({ ramGb: e.target.value === "" ? "" : Number(e.target.value) })}
+                          className="h-11 rounded-2xl px-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          placeholder="RAM (GB)"
+                        />
+                        <input
+                          type="number"
+                          min={0}
+                          value={v.storageGb}
+                          onChange={(e) => updateVariant({ storageGb: e.target.value === "" ? "" : Number(e.target.value) })}
+                          className="h-11 rounded-2xl px-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          placeholder="Bộ nhớ (GB)"
+                        />
+                        <input
+                          type="number"
+                          min={0}
+                          value={v.quantity}
+                          onChange={(e) => updateVariant({ quantity: e.target.value === "" ? "" : Number(e.target.value) })}
+                          className="h-11 rounded-2xl px-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          placeholder="Số lượng"
+                        />
+                        <input
+                          type="number"
+                          min={0}
+                          value={v.price}
+                          onChange={(e) => updateVariant({ price: e.target.value === "" ? "" : Number(e.target.value) })}
+                          className="h-11 rounded-2xl px-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          placeholder="Giá"
+                        />
                         <button
                           type="button"
-                          onClick={() => setDescriptionModalOpen(false)}
-                          className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                          onClick={removeVariant}
+                          className="h-11 cursor-pointer rounded-2xl px-4 text-xs font-semibold text-white transition"
+                          style={{ background: "rgba(239,68,68,0.75)", border: "1px solid rgba(239,68,68,0.3)" }}
                         >
-                          Hủy
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDescriptionModalOpen(false)}
-                          className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl bg-emerald-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0"
-                        >
-                          Lưu
+                          Xóa
                         </button>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
+                    );
+                  })}
 
-            {variantsModalOpen ? (
-              <div
-                className="fixed inset-0 z-[90]"
-                role="dialog"
-                aria-modal="true"
-                onClick={closeVariantsModal}
-              >
-                <div className="absolute inset-0 bg-black/55 backdrop-blur-sm animate-fade-in-up" />
-
-                <div className="absolute inset-0 flex items-center justify-center p-4">
-                  <div
-                    className="w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-slate-950 animate-auth-page"
-                    onClick={(e) => e.stopPropagation()}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (variantsModalMode === "draft") {
+                        setDraftVariants((prev) => [...prev, createEmptyVariantInput()]);
+                        return;
+                      }
+                      const colorKey = variantsModalColorKey;
+                      if (!colorKey) return;
+                      setProductColors((prev) =>
+                        prev.map((c) => (c.key === colorKey ? { ...c, variants: [...c.variants, createEmptyVariantInput()] } : c))
+                      );
+                    }}
+                    className="mt-4 h-10 w-full cursor-pointer rounded-2xl px-3 text-xs font-semibold text-white/70 transition hover:text-white"
+                    style={{ border: "2px dashed rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.04)" }}
                   >
-                    <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950/60">
-                      <div>
-                        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Nhập biến thể</div>
-                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">RAM / Bộ nhớ / Số lượng / Giá</div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={closeVariantsModal}
-                        className="inline-flex cursor-pointer h-10 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-                      >
-                        Đã hiểu
-                      </button>
-                    </div>
-
-                    <div className="p-5">
-                      <div className="grid grid-cols-4 gap-3 pb-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                        <div>RAM (GB)</div>
-                        <div>Bộ nhớ (GB)</div>
-                        <div>Số lượng</div>
-                        <div>Giá</div>
-                      </div>
-
-                      {(variantsModalMode === "draft" ? draftVariants : (productColors.find((x) => x.key === variantsModalColorKey)?.variants || [])).map((v) => {
-                        const updateVariant = (patch: Partial<typeof v>) => {
-                          if (variantsModalMode === "draft") {
-                            setDraftVariants((prev) => prev.map((x) => (x.key === v.key ? { ...x, ...patch } : x)));
-                            return;
-                          }
-                          const colorKey = variantsModalColorKey;
-                          if (!colorKey) return;
-                          setProductColors((prev) =>
-                            prev.map((c) => {
-                              if (c.key !== colorKey) return c;
-                              const nextVariants = c.variants.map((z) => (z.key === v.key ? { ...z, ...patch } : z));
-                              return { ...c, variants: nextVariants, quantity: sumVariantQuantity(nextVariants) };
-                            })
-                          );
-                        };
-
-                        const removeVariant = () => {
-                          if (variantsModalMode === "draft") {
-                            setDraftVariants((prev) => (prev.length <= 1 ? prev : prev.filter((x) => x.key !== v.key)));
-                            return;
-                          }
-                          const colorKey = variantsModalColorKey;
-                          if (!colorKey) return;
-                          setProductColors((prev) =>
-                            prev.map((c) => {
-                              if (c.key !== colorKey) return c;
-                              const nextVariants = c.variants.length <= 1 ? c.variants : c.variants.filter((x) => x.key !== v.key);
-                              return { ...c, variants: nextVariants, quantity: sumVariantQuantity(nextVariants) };
-                            })
-                          );
-                        };
-
-                        return (
-                          <div key={v.key} className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] sm:items-center">
-                            <input
-                              type="number"
-                              min={0}
-                              value={v.ramGb}
-                              onChange={(e) => updateVariant({ ramGb: e.target.value === "" ? "" : Number(e.target.value) })}
-                              className="h-11 rounded-2xl bg-slate-100 px-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                              placeholder="RAM (GB)"
-                            />
-                            <input
-                              type="number"
-                              min={0}
-                              value={v.storageGb}
-                              onChange={(e) => updateVariant({ storageGb: e.target.value === "" ? "" : Number(e.target.value) })}
-                              className="h-11 rounded-2xl bg-slate-100 px-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                              placeholder="Bộ nhớ (GB)"
-                            />
-                            <input
-                              type="number"
-                              min={0}
-                              value={v.quantity}
-                              onChange={(e) => updateVariant({ quantity: e.target.value === "" ? "" : Number(e.target.value) })}
-                              className="h-11 rounded-2xl bg-slate-100 px-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                              placeholder="Số lượng"
-                            />
-                            <input
-                              type="number"
-                              min={0}
-                              value={v.price}
-                              onChange={(e) => updateVariant({ price: e.target.value === "" ? "" : Number(e.target.value) })}
-                              className="h-11 rounded-2xl bg-slate-100 px-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                              placeholder="Giá"
-                            />
-                            <button
-                              type="button"
-                              onClick={removeVariant}
-                              className="h-11 cursor-pointer rounded-2xl bg-rose-600 px-4 text-xs font-semibold text-white hover:bg-rose-500 transition"
-                            >
-                              Xóa
-                            </button>
-                          </div>
-                        );
-                      })}
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (variantsModalMode === "draft") {
-                            setDraftVariants((prev) => [...prev, createEmptyVariantInput()]);
-                            return;
-                          }
-                          const colorKey = variantsModalColorKey;
-                          if (!colorKey) return;
-                          setProductColors((prev) =>
-                            prev.map((c) => (c.key === colorKey ? { ...c, variants: [...c.variants, createEmptyVariantInput()] } : c))
-                          );
-                        }}
-                        className="mt-4 h-10 w-full cursor-pointer rounded-2xl border-2 border-dashed border-slate-300 bg-slate-100 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-                      >
-                        + Thêm loại
-                      </button>
-                    </div>
-                  </div>
+                    + Thêm loại
+                  </button>
                 </div>
-              </div>
-            ) : null}
+              </motion.div>
+            </ModalPortal>
           </div>
 
         </form>
@@ -1859,30 +1833,12 @@ export default function CreateProduct() {
       </div>
 
       {/* Toast notification */}
-      {/* Validation Modal */}
-      {validationModal.open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setValidationModal({ ...validationModal, open: false })} />
-          <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl animate-scale-in dark:border-white/10 dark:bg-slate-900">
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
-                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Bạn chưa điền đầy đủ thông tin sản phẩm</h3>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Vui lòng kiểm tra lại và điền đầy đủ các thông tin bắt buộc.</p>
-              <button
-                type="button"
-                onClick={() => setValidationModal({ ...validationModal, open: false })}
-                className="mt-6 w-full cursor-pointer rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-              >
-                Đã hiểu
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ValidationModal
+        open={validationModal.open}
+        fields={validationModal.fields}
+        onClose={() => setValidationModal({ open: false, fields: [] })}
+        title="Bạn chưa điền đầy đủ thông tin sản phẩm"
+      />
 
     </div>
   );

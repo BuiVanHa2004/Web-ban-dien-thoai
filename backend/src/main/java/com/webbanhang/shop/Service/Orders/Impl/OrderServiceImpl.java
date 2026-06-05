@@ -43,6 +43,7 @@ import java.util.UUID;
 
 @Service
 @Transactional
+@SuppressWarnings("null")
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;

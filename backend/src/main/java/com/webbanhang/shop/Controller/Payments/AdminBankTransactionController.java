@@ -6,11 +6,13 @@ import com.webbanhang.shop.DTO.Payments.MatchResultDto;
 import com.webbanhang.shop.Model.Orders.BankTransaction;
 import com.webbanhang.shop.Service.Payments.BankTransactionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("null")
 @RestController
 @RequestMapping("/api/admin/bank-transactions")
 public class AdminBankTransactionController {
@@ -29,7 +31,8 @@ public class AdminBankTransactionController {
         this.orderRepository = orderRepository;
     }
 
-    private BankTransactionDto mapToDto(BankTransaction tx) {
+    @SuppressWarnings("null")
+    private BankTransactionDto mapToDto(@NonNull BankTransaction tx) {
         String adminName = null;
         if (tx.getMatchedByAdminId() != null) {
             if (tx.getMatchedByAdminId() == 0) {

@@ -68,7 +68,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
   return (
     <div className="customer-portal dark customer-portal-bg-base relative min-h-dvh text-zinc-100 antialiased">
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <div className="pointer-events-none fixed inset-0 z-0">
         <div className="customer-portal-bg-shift absolute inset-0" aria-hidden />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(228,228,231,0.12),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,rgba(24,24,27,0.45),transparent_55%)]" />
@@ -84,7 +84,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
       <div className="relative z-10 flex min-h-dvh flex-col">
         <PremiumHeader />
-        <main className="flex-1 overflow-x-clip pt-3 pb-8 sm:pt-4 sm:pb-12">
+        <main className="flex-1 pt-3 pb-8 sm:pt-4 sm:pb-12">
           <CustomerPageTransition>
             <div
               className={`mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 ${

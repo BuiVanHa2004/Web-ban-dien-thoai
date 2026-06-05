@@ -20,6 +20,17 @@ type Row = {
   createdAt?: string;
 };
 
+const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
+
+function resolveImageUrl(input?: string | null | unknown): string {
+  const raw = typeof input === "string" ? input.trim() : "";
+  if (!raw) return "";
+  if (/^(https?:)?\/\//i.test(raw)) return raw;
+  if (/^(data:|blob:)/i.test(raw)) return raw;
+  if (raw.startsWith("/")) return `${API_URL}${raw}`;
+  return `${API_URL}/${raw}`;
+}
+
 function formatDate(iso?: string | null) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -309,7 +320,6 @@ export default function ContactPage() {
                 <th className="px-5 py-3">Tên khách hàng</th>
                 <th className="px-5 py-3">Chủ đề</th>
                 <th className="px-5 py-3">Nội dung (mới nhất)</th>
-                <th className="px-5 py-3 text-center">Ảnh</th>
                 <th className="px-5 py-3 text-center">Trạng thái</th>
                 <th className="px-5 py-3 text-center">Hành động</th>
               </tr>
@@ -317,19 +327,19 @@ export default function ContactPage() {
             <tbody className="divide-y divide-slate-200 dark:divide-white/10">
               {loading ? (
                 <tr>
-                  <td className="px-5 py-12 text-center text-slate-400 dark:text-slate-300" colSpan={7}>
+                  <td className="px-5 py-12 text-center text-slate-400 dark:text-slate-300" colSpan={6}>
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td className="px-5 py-12 text-center text-rose-600 dark:text-rose-300" colSpan={7}>
+                  <td className="px-5 py-12 text-center text-rose-600 dark:text-rose-300" colSpan={6}>
                     {error}
                   </td>
                 </tr>
               ) : filteredTableRows.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-12 text-center text-slate-400 dark:text-slate-300" colSpan={7}>
+                  <td className="px-5 py-12 text-center text-slate-400 dark:text-slate-300" colSpan={6}>
                     Chưa có dữ liệu.
                   </td>
                 </tr>
@@ -353,36 +363,6 @@ export default function ContactPage() {
                     <td className="px-5 py-4">
                       <div className="line-clamp-2 max-w-[400px] text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line">
                         {tr.latest.message || "-"}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex justify-center">
-                        {tr.latest.imageUrls.length === 0 ? (
-                          <span className="text-xs text-slate-400">-</span>
-                        ) : (
-                          <div className="flex -space-x-4 hover:space-x-1 transition-all duration-500">
-                            {tr.latest.imageUrls.slice(0, 3).map((u, i) => (
-                              <a
-                                key={`${tr.latest.id}-${i}`}
-                                href={u}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-white bg-slate-100 shadow-sm transition-transform duration-300 hover:z-10 hover:scale-110 dark:border-slate-900 dark:bg-slate-800"
-                              >
-                                <img
-                                  src={u}
-                                  alt=""
-                                  className="h-full w-full cursor-pointer object-cover"
-                                />
-                              </a>
-                            ))}
-                            {tr.latest.imageUrls.length > 3 && (
-                              <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-slate-200 text-xs font-bold text-slate-700 dark:border-slate-900 dark:bg-slate-800 dark:text-slate-300">
-                                +{tr.latest.imageUrls.length - 3}
-                              </div>
-                            )}
-                          </div>
-                        )}
                       </div>
                     </td>
                     <td className="px-5 py-4">

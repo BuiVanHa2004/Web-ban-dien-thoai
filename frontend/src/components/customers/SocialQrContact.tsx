@@ -12,6 +12,16 @@ const QR_IMAGES: Record<Platform, { label: string; src: string }> = {
   facebook: { label: "Facebook", src: "/QRCode/QRCodeFacebook.png" },
 };
 
+// Màu chính thức của từng nền tảng
+const PLATFORM_STYLES: Record<Platform, string> = {
+  tiktok:
+    "bg-black text-white hover:bg-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-700",
+  zalo:
+    "bg-[#0068FF] text-white hover:bg-[#005ae0] dark:bg-[#0068FF] dark:hover:bg-[#005ae0]",
+  facebook:
+    "bg-[#1877F2] text-white hover:bg-[#1464d0] dark:bg-[#1877F2] dark:hover:bg-[#1464d0]",
+};
+
 export default function SocialQrContact({
   title = "Liên hệ mạng xã hội",
   className = "",
@@ -29,15 +39,15 @@ export default function SocialQrContact({
   return (
     <div className={className}>
       <div className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-500/15 dark:text-purple-300">
-          <QrCode className="h-4 w-4" />
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-100 text-purple-600 dark:bg-purple-500/15 dark:text-purple-300">
+          <QrCode className="h-5 w-5" />
         </div>
-        <span className="text-sm font-black text-slate-800 dark:text-slate-100">{title}</span>
+        <span className="text-lg font-black text-slate-800 dark:text-slate-100">{title}</span>
       </div>
-      <p className="mt-2 text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+      <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
         Chọn kênh bạn muốn liên hệ, sau đó quét mã QR để chat trực tiếp với Shop.
       </p>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-3">
         <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
           Phản hồi nhanh
         </span>
@@ -45,14 +55,14 @@ export default function SocialQrContact({
           Hỗ trợ 24/7
         </span>
       </div>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-row gap-2">
         {(["tiktok", "zalo", "facebook"] as const).map((platform) => (
           <button
             key={platform}
             onClick={() => setActiveQr(platform)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black text-slate-700 transition hover:bg-purple-100 hover:text-purple-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-purple-500/20 dark:hover:text-purple-300"
+            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition ${PLATFORM_STYLES[platform]}`}
           >
-            <QrCode className="h-3.5 w-3.5" />
+            <QrCode className="h-4 w-4" />
             {QR_IMAGES[platform].label}
           </button>
         ))}

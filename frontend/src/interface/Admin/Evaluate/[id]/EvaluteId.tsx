@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import AdminActionBar from "@/components/admins/AdminActionBar";
 import { usePathname, useSearchParams } from "next/navigation";
 import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 import { evaluateService, type ProductEvaluateCommentDto, type ProductEvaluateDetailDto } from "@/services/evaluateService";
 
@@ -216,24 +219,18 @@ export default function EvaluteId() {
           </p>
         </div>
       </div>
-      <div className="fixed top-[120px] right-[46px] z-50 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={refresh}
-          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-        >
-          Làm mới
-        </button>
-        <Link
-          href="/evaluates"
-          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Quay lại
-        </Link>
-      </div>
+      <AdminActionBar
+        backHref="/evaluates"
+        extra={(
+          <button
+            type="button"
+            onClick={refresh}
+            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+          >
+            Làm mới
+          </button>
+        )}
+      />
 
       <div className="flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur">
         <div className="flex flex-wrap gap-2">
@@ -405,135 +402,221 @@ export default function EvaluteId() {
         </div>
       </div>
 
-      {selectedEvaluate ? (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-4 backdrop-blur-sm animate-[productModalOverlayIn_160ms_ease-out]"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) setSelectedEvaluate(null);
-          }}
-        >
-          <div className="flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-950 animate-[productModalIn_180ms_ease-out] max-h-[calc(100vh-2rem)]">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950/60">
-              <div className="min-w-0">
-                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Chi tiết đánh giá</div>
-              </div>
-              <button
-                type="button"
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {selectedEvaluate && (
+            <div
+              className="fixed inset-0 flex items-center justify-center p-4"
+              style={{ zIndex: 99999 }}
+            >
+              {/* Overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 onClick={() => setSelectedEvaluate(null)}
-                className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-                aria-label="Đóng"
+                className="absolute inset-0"
+                style={{
+                  backgroundColor: "rgba(15, 23, 42, 0.7)",
+                  backdropFilter: "blur(6px)",
+                  WebkitBackdropFilter: "blur(6px)",
+                }}
+              />
+
+              {/* Dialog */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl max-h-[calc(100vh-2rem)]"
+                style={{
+                  background: "rgba(255, 255, 255, 0.08)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
+                }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18" />
-                  <path d="M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+                {/* Header */}
+                <div
+                  className="flex items-start justify-between gap-3 px-5 py-4 flex-shrink-0"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" }}
+                >
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white/90">Chi tiết đánh giá</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEvaluate(null)}
+                    className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl text-white/70 transition hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                    aria-label="Đóng"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
 
-            <div className="flex-1 overflow-y-auto p-5">
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-3 rounded-3xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 sm:grid-cols-3">
-                  <div>
-                    <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Khách hàng</div>
-                    <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">{selectedEvaluate.customerName || "-"}</div>
-                    {selectedEvaluate.customerEmail ? (
-                      <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">{selectedEvaluate.customerEmail}</div>
-                    ) : null}
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Ngày tạo</div>
-                    <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">{formatDate(selectedEvaluate.createdAt) || "-"}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Số sao</div>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span
-                        className={
-                          "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold " +
-                          starBadgeClass(selectedEvaluate.rating)
-                        }
+                {/* Body */}
+                <div className="flex-1 overflow-y-auto p-5">
+                  <div className="space-y-4">
+
+                    {/* Khách hàng + sản phẩm */}
+                    <div
+                      className="flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-start"
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                    >
+                      {/* Avatar */}
+                      <div
+                        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-xl font-bold text-white/80"
+                        style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.15)" }}
                       >
-                        {selectedEvaluate.rating}
-                      </span>
-                      <Stars value={selectedEvaluate.rating} />
-                    </div>
-                  </div>
-                  <div className="sm:col-span-3">
-                    <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Sản phẩm đã mua</div>
-                    <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">{selectedEvaluate.productName || "-"}</div>
-                    {(selectedEvaluate.colorName || selectedEvaluate.ramGb || selectedEvaluate.storageGb || selectedEvaluate.quantity) ? (
-                      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
-                        {selectedEvaluate.colorName && (
-                          <span>
-                            Màu: <span className="text-slate-800 dark:text-slate-200">{selectedEvaluate.colorName}</span>
-                          </span>
-                        )}
-                        {selectedEvaluate.ramGb && (
-                          <span>
-                            RAM: <span className="text-slate-800 dark:text-slate-200">{selectedEvaluate.ramGb}GB</span>
-                          </span>
-                        )}
-                        {selectedEvaluate.storageGb && (
-                          <span>
-                            Bộ nhớ: <span className="text-slate-800 dark:text-slate-200">{selectedEvaluate.storageGb}GB</span>
-                          </span>
-                        )}
-                        {selectedEvaluate.quantity && (
-                          <span>
-                            SL: <span className="text-slate-800 dark:text-slate-200">{selectedEvaluate.quantity}</span>
-                          </span>
-                        )}
+                        {(selectedEvaluate.customerName || "?")[0].toUpperCase()}
                       </div>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="space-y-2 rounded-3xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-950/60 dark:ring-white/10">
-                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Bình luận</div>
-                  <div className="whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-200">{selectedEvaluate.content || "-"}</div>
-                </div>
-
-                {(() => {
-                  const urls = imagesByEvaluateId[selectedEvaluate.id] || [];
-                  if (urls.length === 0) return null;
-                  return (
-                    <div className="space-y-2 rounded-3xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-950/60 dark:ring-white/10">
-                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Ảnh đánh giá</div>
-                      <div className="flex flex-wrap gap-3">
-                        {urls.map((src, idx) => (
-                          <a
-                            key={`${selectedEvaluate.id}-${idx}`}
-                            href={src}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="group relative w-20 aspect-9/16 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 cursor-pointer dark:bg-white/5 dark:ring-white/10 sm:w-24"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <img
-                              src={src}
-                              alt={`evaluate-${selectedEvaluate.id}-${idx}`}
-                              className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                              loading="lazy"
-                            />
-                          </a>
-                        ))}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-base font-semibold text-white/95">
+                          {selectedEvaluate.customerName || "-"}
+                        </div>
+                        {selectedEvaluate.customerEmail ? (
+                          <div className="mt-0.5 text-xs text-white/50">{selectedEvaluate.customerEmail}</div>
+                        ) : null}
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <span className={"inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold " + starBadgeClass(selectedEvaluate.rating)}>
+                            {selectedEvaluate.rating} sao
+                          </span>
+                          <Stars value={selectedEvaluate.rating} />
+                        </div>
+                        {(selectedEvaluate.productName || selectedEvaluate.colorName || selectedEvaluate.ramGb || selectedEvaluate.storageGb) ? (
+                          <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                            <div className="text-xs font-semibold uppercase tracking-wide text-white/50">Sản phẩm đã mua</div>
+                            <div className="mt-1 text-sm text-white/85">{selectedEvaluate.productName || "-"}</div>
+                            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-white/50">
+                              {selectedEvaluate.colorName && <span>Màu: <span className="text-white/75">{selectedEvaluate.colorName}</span></span>}
+                              {selectedEvaluate.ramGb && <span>RAM: <span className="text-white/75">{selectedEvaluate.ramGb}GB</span></span>}
+                              {selectedEvaluate.storageGb && <span>Bộ nhớ: <span className="text-white/75">{selectedEvaluate.storageGb}GB</span></span>}
+                              {selectedEvaluate.quantity && <span>SL: <span className="text-white/75">{selectedEvaluate.quantity}</span></span>}
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
-                  );
-                })()}
 
-                <div className="space-y-2 rounded-3xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-950/60 dark:ring-white/10">
-                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Phản hồi admin</div>
-                  <div className="whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-200">{selectedEvaluate.adminReply || "-"}</div>
-                  {selectedEvaluate.adminRepliedAt ? (
-                    <div className="text-xs text-slate-600 dark:text-slate-300">{formatDate(selectedEvaluate.adminRepliedAt)}</div>
-                  ) : null}
+                    {/* Bình luận */}
+                    <div
+                      className="rounded-3xl p-4 space-y-1"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/50">Bình luận</div>
+                      <div className="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">
+                        {selectedEvaluate.content || "-"}
+                      </div>
+                    </div>
+
+                    {/* Ảnh đánh giá */}
+                    {(() => {
+                      const urls = imagesByEvaluateId[selectedEvaluate.id] || [];
+                      if (urls.length === 0) return null;
+                      return (
+                        <div
+                          className="rounded-3xl p-4 space-y-3"
+                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                        >
+                          <div className="text-xs font-semibold uppercase tracking-wide text-white/50">Ảnh đánh giá</div>
+                          <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                            {urls.map((src, idx) => (
+                              <a
+                                key={`${selectedEvaluate.id}-${idx}`}
+                                href={src}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="group relative overflow-hidden rounded-2xl"
+                                style={{ aspectRatio: "9/16", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <img
+                                  src={src}
+                                  alt={`evaluate-${selectedEvaluate.id}-${idx}`}
+                                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                                  loading="lazy"
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Phản hồi admin */}
+                    <div
+                      className="rounded-3xl p-4 space-y-1"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    >
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/50">Phản hồi admin</div>
+                      <div className="whitespace-pre-wrap text-sm text-white/80 leading-relaxed">
+                        {selectedEvaluate.adminReply || "-"}
+                      </div>
+                      {selectedEvaluate.adminRepliedAt ? (
+                        <div className="text-xs text-white/40">{formatDate(selectedEvaluate.adminRepliedAt)}</div>
+                      ) : null}
+                    </div>
+
+                    {/* Meta */}
+                    <div
+                      className="grid grid-cols-1 gap-3 rounded-3xl p-4 sm:grid-cols-3"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    >
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-wide text-white/50">Ngày tạo</div>
+                        <div className="mt-1 text-sm text-white/85">{formatDate(selectedEvaluate.createdAt) || "-"}</div>
+                      </div>
+                      {selectedEvaluate.adminRepliedAt ? (
+                        <div>
+                          <div className="text-xs font-semibold uppercase tracking-wide text-white/50">Ngày phản hồi</div>
+                          <div className="mt-1 text-sm text-white/85">{formatDate(selectedEvaluate.adminRepliedAt)}</div>
+                        </div>
+                      ) : null}
+                    </div>
+
+                  </div>
                 </div>
-              </div>
+
+                {/* Footer */}
+                <div
+                  className="flex items-center justify-end gap-2 px-5 py-4 flex-shrink-0"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)" }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEvaluate(null)}
+                    className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-white/75 transition-all hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openReply(selectedEvaluate);
+                      setSelectedEvaluate(null);
+                    }}
+                    className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-amber-950 transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
+                    style={{
+                      background: "rgba(245, 158, 11, 0.85)",
+                      border: "1px solid rgba(245,158,11,0.3)",
+                      boxShadow: "0 4px 20px rgba(245,158,11,0.25)",
+                    }}
+                  >
+                    Phản hồi
+                  </button>
+                </div>
+              </motion.div>
             </div>
-          </div>
-        </div>
-      ) : null}
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {replyingId != null ? (
         <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur">

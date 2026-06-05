@@ -21,11 +21,8 @@ import com.webbanhang.shop.Repository.Admins.AdminAccountRepository;
 import com.webbanhang.shop.Repository.Settings.SettingRepository;
 import com.webbanhang.shop.Model.Settings.Setting;
 import com.webbanhang.shop.Model.Roles.RoleName;
-import com.webbanhang.shop.Model.Orders.Payment;
 import com.webbanhang.shop.Model.Orders.OrderStatus;
-import com.webbanhang.shop.Model.Orders.PaymentAttempt;
 import com.webbanhang.shop.Repository.Orders.PaymentAttemptRepository;
-import com.webbanhang.shop.Repository.Orders.PaymentRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Service
+@SuppressWarnings("null")
 public class BankTransactionServiceImpl implements BankTransactionService {
     private static final Logger log = LoggerFactory.getLogger(BankTransactionServiceImpl.class);
 
@@ -43,7 +41,6 @@ public class BankTransactionServiceImpl implements BankTransactionService {
     private final PaymentLogService paymentLogService;
     private final PaymentNotificationService paymentNotificationService;
     private final AdminAccountRepository adminAccountRepository;
-    private final PaymentRepository paymentRepository;
     private final PaymentAttemptRepository paymentAttemptRepository;
     private final SettingRepository settingRepository;
 
@@ -54,7 +51,6 @@ public class BankTransactionServiceImpl implements BankTransactionService {
             PaymentLogService paymentLogService,
             PaymentNotificationService paymentNotificationService,
             AdminAccountRepository adminAccountRepository,
-            PaymentRepository paymentRepository,
             PaymentAttemptRepository paymentAttemptRepository,
             SettingRepository settingRepository
     ) {
@@ -64,7 +60,6 @@ public class BankTransactionServiceImpl implements BankTransactionService {
         this.paymentLogService = paymentLogService;
         this.paymentNotificationService = paymentNotificationService;
         this.adminAccountRepository = adminAccountRepository;
-        this.paymentRepository = paymentRepository;
         this.paymentAttemptRepository = paymentAttemptRepository;
         this.settingRepository = settingRepository;
     }
@@ -466,6 +461,7 @@ public class BankTransactionServiceImpl implements BankTransactionService {
      * Resolve any WAITING_CONFIRM PaymentAttempt for this order.
      * Removes the customer's VietQR proof from the admin queue since the transaction has been handled.
      */
+    @SuppressWarnings("unused")
     private void resolvePaymentAttemptForOrder(Integer orderId, String newStatus) {
         try {
             paymentAttemptRepository

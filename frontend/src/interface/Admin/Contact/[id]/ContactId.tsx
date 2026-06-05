@@ -1,11 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import AdminActionBar from "@/components/admins/AdminActionBar";
 import { usePathname } from "next/navigation";
 import React from "react";
 
 import { contactService, type ContactDto } from "@/services/contactService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
+
+const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
+
+function resolveImageUrl(input?: string | null | unknown): string {
+  const raw = typeof input === "string" ? input.trim() : "";
+  if (!raw) return "";
+  if (/^(https?:)?\/\//i.test(raw)) return raw;
+  if (/^(data:|blob:)/i.test(raw)) return raw;
+  if (raw.startsWith("/")) return `${API_URL}${raw}`;
+  return `${API_URL}/${raw}`;
+}
 
 function parseIdFromPathname(pathname: string) {
   const parts = pathname.split("/").filter(Boolean);
@@ -282,17 +294,7 @@ export default function ContactId() {
           <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">Xem đầy đủ thông tin liên hệ từ khách hàng.</p>
         </div>
       </div>
-      <div className="fixed top-[120px] right-[46px] z-50">
-        <Link
-          href="/contacts"
-          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Quay lại
-        </Link>
-      </div>
+      <AdminActionBar backHref="/contacts" />
 
       <div className="rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 p-5 sm:p-7">
         {loading ? (
@@ -367,23 +369,25 @@ export default function ContactId() {
 
                           {c.imageUrls.length > 0 && (
                             <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
-                              {c.imageUrls.map((u, i) => (
-                                <a
-                                  key={`${c.contactId}-${i}`}
-                                  href={u}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="group overflow-hidden rounded-2xl border border-black/5 bg-white dark:border-white/10 dark:bg-slate-900"
-                                >
-                                  <div className="relative w-full overflow-hidden aspect-[9/16]">
+                              {c.imageUrls.map((u, i) => {
+                                const resolved = resolveImageUrl(u);
+                                return (
+                                  <a
+                                    key={`${c.contactId}-${i}`}
+                                    href={resolved}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="block rounded-2xl border border-black/5 bg-white dark:border-white/10 dark:bg-slate-900 overflow-hidden"
+                                    style={{ aspectRatio: "9/16" }}
+                                  >
                                     <img
-                                      src={u}
+                                      src={resolved}
                                       alt=""
-                                      className="h-full w-full cursor-pointer object-cover transition duration-300 group-hover:scale-110"
+                                      className="w-full h-full object-cover cursor-pointer transition-[filter] duration-300 hover:brightness-110"
                                     />
-                                  </div>
-                                </a>
-                              ))}
+                                  </a>
+                                );
+                              })}
                             </div>
                           )}
 
@@ -432,23 +436,25 @@ export default function ContactId() {
                                     ) : null}
                                     {r.imageUrls.length > 0 && (
                                       <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
-                                        {r.imageUrls.map((u, i) => (
-                                          <a
-                                            key={`${r.replyId}-${i}`}
-                                            href={u}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="group overflow-hidden rounded-2xl border border-black/5 bg-white dark:border-white/10 dark:bg-slate-900"
-                                          >
-                                            <div className="relative w-full overflow-hidden aspect-[9/16]">
+                                        {r.imageUrls.map((u, i) => {
+                                          const resolved = resolveImageUrl(u);
+                                          return (
+                                            <a
+                                              key={`${r.replyId}-${i}`}
+                                              href={resolved}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="block rounded-2xl border border-black/5 bg-white dark:border-white/10 dark:bg-slate-900 overflow-hidden"
+                                              style={{ aspectRatio: "9/16" }}
+                                            >
                                               <img
-                                                src={u}
+                                                src={resolved}
                                                 alt=""
-                                                className="h-full w-full cursor-pointer object-cover transition duration-300 group-hover:scale-110"
+                                                className="w-full h-full object-cover cursor-pointer transition-[filter] duration-300 hover:brightness-110"
                                               />
-                                            </div>
-                                          </a>
-                                        ))}
+                                            </a>
+                                          );
+                                        })}
                                       </div>
                                     )}
                                   </div>
@@ -470,7 +476,7 @@ export default function ContactId() {
 
       {replyModalOpen && (
         <div
-          className="fixed inset-0 z-[100]"
+          className="fixed inset-0 z-[99999]"
           role="dialog"
           aria-modal="true"
           onClick={closeReplyModal}
@@ -571,7 +577,7 @@ export default function ContactId() {
                     {existingUrls.map((u, idx) => (
                       <div
                         key={`existing-${idx}`}
-                        className="group relative overflow-hidden rounded-2xl border border-black/5 bg-white text-left dark:border-white/10 dark:bg-slate-900"
+                        className="relative overflow-hidden rounded-2xl border border-black/5 bg-white text-left dark:border-white/10 dark:bg-slate-900"
                       >
                         <button
                           type="button"
@@ -585,14 +591,13 @@ export default function ContactId() {
                             <path d="M6 6l12 12" />
                           </svg>
                         </button>
-                        <div className="relative w-full overflow-hidden aspect-[9/16]">
+                        <div className="relative w-full overflow-hidden" style={{ paddingBottom: "100%" }}>
                           <img
-                            src={u}
+                            src={resolveImageUrl(u)}
                             alt=""
-                            className="h-full w-full cursor-pointer object-cover transition duration-300 group-hover:scale-110"
+                            className="absolute inset-0 h-full w-full cursor-pointer object-cover transition-transform duration-300 hover:scale-110"
                           />
                         </div>
-                        <div className="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
                       </div>
                     ))}
 
@@ -600,7 +605,7 @@ export default function ContactId() {
                     {replyItems.map((it, idx) => (
                       <div
                         key={`${it.file.name}-${it.file.lastModified}`}
-                        className="group relative overflow-hidden rounded-2xl border border-black/5 bg-white text-left dark:border-white/10 dark:bg-slate-900"
+                        className="relative overflow-hidden rounded-2xl border border-black/5 bg-white text-left dark:border-white/10 dark:bg-slate-900"
                       >
                         <button
                           type="button"
@@ -614,14 +619,13 @@ export default function ContactId() {
                             <path d="M6 6l12 12" />
                           </svg>
                         </button>
-                        <div className="relative w-full overflow-hidden aspect-[9/16]">
+                        <div className="relative w-full overflow-hidden" style={{ paddingBottom: "100%" }}>
                           <img
                             src={it.url}
                             alt={it.file.name}
-                            className="h-full w-full cursor-pointer object-cover transition duration-300 group-hover:scale-110"
+                            className="absolute inset-0 h-full w-full cursor-pointer object-cover transition-transform duration-300 hover:scale-110"
                           />
                         </div>
-                        <div className="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
                       </div>
                     ))}
                   </div>

@@ -62,9 +62,9 @@ export default function CustomerBannerCarousel({
   if (count === 0) return null;
 
   return (
-    <section className="reveal px-0 sm:px-2">
+    <section className="px-0 sm:px-2">
       <div
-        className="relative mx-auto max-w-7xl overflow-hidden rounded-2xl bg-zinc-900 shadow-2xl ring-1 ring-white/10 sm:rounded-[2.5rem]"
+        className="relative mx-auto max-w-7xl overflow-hidden rounded-2xl bg-zinc-900 shadow-none ring-0 sm:rounded-[2.5rem]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocusCapture={() => setPaused(true)}
@@ -103,7 +103,6 @@ export default function CustomerBannerCarousel({
                 ) : (
                   imageEl
                 )}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 text-white sm:p-8 lg:p-12">
                   <h2 className="text-lg font-bold tracking-tight drop-shadow-lg sm:text-3xl lg:text-5xl">
                     {slide.title}

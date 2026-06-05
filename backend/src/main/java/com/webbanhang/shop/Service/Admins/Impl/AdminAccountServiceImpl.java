@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@SuppressWarnings("null")
 public class AdminAccountServiceImpl implements AdminAccountService {
 
     private final AdminAccountRepository adminAccountRepository;

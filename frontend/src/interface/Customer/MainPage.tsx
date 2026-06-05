@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  type TargetAndTransition,
+  type Transition,
+} from "framer-motion";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { compareProductsByCategoryThenName } from "@/common/categoryDisplayOrder";
 import type { User } from "@/common/types/auth";
@@ -67,6 +74,91 @@ function getProductPreviewImage(p: ProductDto): string | null {
   );
 }
 
+/** Easing mượt — chỉ opacity + translate (GPU). */
+const SMOOTH_EASE = [0.22, 1, 0.36, 1] as const;
+const ENTER_DURATION = 0.55;
+const EXIT_DURATION = 0.35;
+
+type MainPageBodyVariant = "hero" | "banner" | "brands" | "categories" | "products" | "news";
+
+/** Mỗi body một kiểu chuyển động riêng; cuộn lên/xuống đều chạy lại. */
+const BODY_MOTION: Record<
+  MainPageBodyVariant,
+  { hidden: TargetAndTransition; visible: TargetAndTransition }
+> = {
+  hero: {
+    hidden: { opacity: 0, y: 16 },
+    visible: { opacity: 1, y: 0 },
+  },
+  banner: {
+    hidden: { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0 },
+  },
+  brands: {
+    hidden: { opacity: 0, x: -16 },
+    visible: { opacity: 1, x: 0 },
+  },
+  categories: {
+    hidden: { opacity: 0, x: 16 },
+    visible: { opacity: 1, x: 0 },
+  },
+  products: {
+    hidden: { opacity: 0, y: 14 },
+    visible: { opacity: 1, y: 0 },
+  },
+  news: {
+    hidden: { opacity: 0, y: -12 },
+    visible: { opacity: 1, y: 0 },
+  },
+};
+
+const REDUCED_MOTION = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+};
+
+function ScrollRevealBody({
+  id,
+  variant,
+  children,
+  className = "",
+}: {
+  id?: string;
+  variant: MainPageBodyVariant;
+  children: ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const isInView = useInView(ref, {
+    once: false,
+    amount: variant === "hero" ? 0.04 : 0.06,
+    margin: "0px 0px -24px 0px",
+  });
+
+  const motionPreset = prefersReducedMotion ? REDUCED_MOTION : BODY_MOTION[variant];
+  const transition: Transition = prefersReducedMotion
+    ? { duration: 0.2, ease: "easeOut" }
+    : {
+        duration: isInView ? ENTER_DURATION : EXIT_DURATION,
+        ease: SMOOTH_EASE,
+      };
+
+  return (
+    <motion.section
+      id={id}
+      ref={ref}
+      initial={false}
+      animate={isInView ? motionPreset.visible : motionPreset.hidden}
+      transition={transition}
+      style={{ willChange: "opacity, transform" }}
+      className={[className, "backface-hidden"].filter(Boolean).join(" ")}
+    >
+      {children}
+    </motion.section>
+  );
+}
+
 const SkeletonCard = () => (
   <div className="mx-auto w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900/50 shadow-sm animate-pulse sm:max-w-[220px] sm:rounded-3xl">
     <div className="aspect-9/16 w-full bg-slate-800" />
@@ -123,6 +215,7 @@ export default function MainPage() {
   const brandViewportRef = useRef<HTMLDivElement | null>(null);
   const brandItemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const brandRafRef = useRef<number | null>(null);
+  const brandSectionVisible = useRef(false);
   /** Cố định seed để SSR và client khớp nhau (tránh hydration mismatch). */
   const BRAND_SHUFFLE_SEED = 0x9e3779b9;
   const [mounted, setMounted] = useState(false);
@@ -190,28 +283,6 @@ export default function MainPage() {
     return () => { mounted = false; };
   }, []);
 
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("active");
-          } else {
-            entry.target.classList.remove("active");
-          }
-        });
-      },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
-    );
-
-    const revealEls = document.querySelectorAll(".reveal");
-    revealEls.forEach((el) => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, [loading, banners, mounted]);
 
   const filters = useMemo(() => {
     const q = (searchParams.get("q") ?? "").trim().toLowerCase();
@@ -319,7 +390,19 @@ export default function MainPage() {
 
     const viewport = brandViewportRef.current;
 
+    // Chỉ chạy RAF khi section brand đang trong viewport
+    const observer = new IntersectionObserver(
+      ([entry]) => { brandSectionVisible.current = entry.isIntersecting; },
+      { threshold: 0 }
+    );
+    observer.observe(viewport);
+
     const tick = () => {
+      brandRafRef.current = window.requestAnimationFrame(tick);
+
+      // Không tính toán nếu section không visible → tiết kiệm CPU khi scroll
+      if (!brandSectionVisible.current) return;
+
       const vpRect = viewport.getBoundingClientRect();
       const centerX = vpRect.left + vpRect.width / 2;
       const maxD = Math.max(1, vpRect.width / 2);
@@ -341,12 +424,11 @@ export default function MainPage() {
         el.style.opacity = hovered ? "1" : String(0.6 + 0.4 * ease);
         el.style.zIndex = hovered ? "50" : "1";
       }
-
-      brandRafRef.current = window.requestAnimationFrame(tick);
     };
 
     brandRafRef.current = window.requestAnimationFrame(tick);
     return () => {
+      observer.disconnect();
       if (brandRafRef.current != null) window.cancelAnimationFrame(brandRafRef.current);
       brandRafRef.current = null;
     };
@@ -365,9 +447,12 @@ export default function MainPage() {
   }
 
   return (
-    <div className="min-h-screen space-y-8 overflow-x-hidden pb-8 sm:space-y-12 sm:pb-12">
-      {/* Hero Section */}
-      <section className="reveal relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-800/80 via-[#1a1a1a] to-neutral-900/90 p-4 shadow-inner ring-1 ring-zinc-700/40 sm:rounded-3xl sm:p-6 lg:p-8">
+    <div className="min-h-screen space-y-8 overflow-x-visible pb-8 sm:space-y-12 sm:pb-12" style={{ contain: "layout" }}>
+      {/* Body 1: Chào mừng / Hero */}
+      <ScrollRevealBody
+        variant="hero"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-800/80 via-[#1a1a1a] to-neutral-900/90 p-4 shadow-inner ring-1 ring-zinc-700/40 sm:rounded-3xl sm:p-6 lg:p-8"
+      >
         <div className="mx-auto max-w-7xl py-4 sm:py-8">
           <div className="grid items-stretch gap-6 lg:grid-cols-12 lg:gap-8">
             <div className="lg:col-span-7">
@@ -433,8 +518,8 @@ export default function MainPage() {
 
             <div className="lg:col-span-5">
               <div className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 p-3 shadow-xl shadow-black/30 backdrop-blur-sm sm:rounded-3xl sm:p-4">
-                <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-zinc-500/15 blur-3xl" />
-                <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-neutral-500/12 blur-3xl" />
+                <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-zinc-500/10 blur-2xl" />
+                <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-neutral-500/8 blur-2xl" />
 
                 <div className="relative">
                   <div className="text-sm font-semibold text-white">Gợi ý nhanh</div>
@@ -490,13 +575,17 @@ export default function MainPage() {
             </div>
           </div>
         </div>
-      </section>
- 
-       {flattenedBannerImages.length > 0 && (
-         <CustomerBannerCarousel slides={flattenedBannerImages} resolveImageUrl={resolveImageUrl} />
-       )}
+      </ScrollRevealBody>
 
-       <section className="reveal">
+      {/* Body 2: Banner */}
+      {flattenedBannerImages.length > 0 && (
+        <ScrollRevealBody variant="banner">
+          <CustomerBannerCarousel slides={flattenedBannerImages} resolveImageUrl={resolveImageUrl} />
+        </ScrollRevealBody>
+      )}
+
+      {/* Body 3: Thương hiệu */}
+      <ScrollRevealBody variant="brands">
          <div className="mb-4 sm:mb-8">
            <h2 className="text-xl font-bold tracking-tight text-white sm:text-3xl">Các thương hiệu nổi bật</h2>
           <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">Khám phá những thương hiệu được yêu thích</p>
@@ -543,7 +632,7 @@ export default function MainPage() {
                 }}
                 data-brand-id={b.brandId}
                 className="group relative h-[84px] w-[84px] shrink-0 cursor-pointer select-none overflow-hidden rounded-full bg-zinc-200 shadow-md ring-1 ring-white/20"
-                style={{ transformOrigin: "center center" }}
+                style={{ transformOrigin: "center center", willChange: "transform, opacity" }}
                 role="button"
                 tabIndex={0}
                 onMouseEnter={() => setHoveredBrandId(b.brandId)}
@@ -574,9 +663,10 @@ export default function MainPage() {
             ))}
           </div>
         </div>
-      </section>
+      </ScrollRevealBody>
 
-       <section className="reveal">
+      {/* Body 4: Danh mục */}
+      <ScrollRevealBody variant="categories">
          <div className="mb-4 sm:mb-8">
            <h2 className="text-xl font-bold tracking-tight text-white sm:text-3xl">Các danh mục</h2>
           <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">Chọn danh mục để lọc sản phẩm nhanh hơn</p>
@@ -621,10 +711,10 @@ export default function MainPage() {
             );
           })}
         </div>
-      </section>
+      </ScrollRevealBody>
 
-      {/* Products Section */}
-      <section id="products" className="reveal scroll-mt-24">
+      {/* Body 5: Sản phẩm */}
+      <ScrollRevealBody id="products" variant="products" className="scroll-mt-24">
         <div className="mb-4 flex flex-col justify-between gap-4 sm:mb-8 sm:flex-row sm:items-end">
           <div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -697,7 +787,7 @@ export default function MainPage() {
                 />
               ))}
         </div>
-      </section>
+      </ScrollRevealBody>
 
       <ProductVariantPickerModal
         open={variantModalOpen}
@@ -729,8 +819,8 @@ export default function MainPage() {
         }}
       />
 
-      {/* News Section */}
-      <section className="reveal">
+      {/* Body 6: Tin tức */}
+      <ScrollRevealBody variant="news">
         <div className="mb-4 sm:mb-8">
           <h2 className="text-xl font-bold tracking-tight text-white sm:text-3xl">Tin tức công nghệ mới nhất</h2>
           <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">Cập nhật {sortedNews.length} bài viết</p>
@@ -776,7 +866,7 @@ export default function MainPage() {
             </Link>
           ))}
         </div>
-      </section>
+      </ScrollRevealBody>
 
     </div>
   );

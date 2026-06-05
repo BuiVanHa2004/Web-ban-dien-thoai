@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@SuppressWarnings("null")
 public class ContactServiceImpl implements ContactService {
 
     private final ContactRepository contactRepository;

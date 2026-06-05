@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@SuppressWarnings("null")
 public class AiProviderService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final String groqApiKey;
@@ -57,7 +58,7 @@ public class AiProviderService {
                     Map.class
             );
         } catch (RestClientResponseException ex) {
-            int status = ex.getRawStatusCode();
+            int status = ex.getStatusCode().value();
             if (status == 401 || status == 403) {
                 throw new BadRequestException("GROQ API key không hợp lệ hoặc không có quyền.");
             }

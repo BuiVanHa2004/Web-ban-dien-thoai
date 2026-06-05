@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import AdminActionBar from "@/components/admins/AdminActionBar";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 
 import { customerAccountService } from "@/services/customerAccountService";
+import ValidationModal from "@/components/admins/ValidationModal";
 
 function UpdateAccount() {
   const router = useRouter();
@@ -117,37 +119,7 @@ function UpdateAccount() {
         </div>
       </div>
 
-      <div className="fixed top-[119px] right-[41px] z-50 flex items-center gap-3">
-        <Link
-          href="/accounts"
-          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Quay lại
-        </Link>
-        <button
-          type="submit"
-          form="account-form"
-          disabled={submitting || formDisabled}
-          className={
-            "inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 " +
-            (submitting || formDisabled ? "opacity-70 pointer-events-none" : "")
-          }
-        >
-          {submitting ? (
-            <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2z" />
-              <path d="M17 21v-8H7v8" />
-              <path d="M7 3v4h8" />
-            </svg>
-          )}
-          Lưu
-        </button>
-      </div>
+      <AdminActionBar backHref="/accounts" formId="account-form" submitting={submitting} disabled={formDisabled} />
 
       <div className="grid gap-6 rounded-3xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 backdrop-blur dark:bg-white/5 dark:ring-white/10 sm:p-6 lg:grid-cols-5">
         <form
@@ -281,35 +253,11 @@ function UpdateAccount() {
         </div>
       </div>
 
-      {/* Validation Modal */}
-      {validationModal.open && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" onClick={() => setValidationModal({ ...validationModal, open: false })} />
-          <div className="relative w-full max-w-sm overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl animate-scale-in dark:border-white/10 dark:bg-slate-900">
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
-                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Bạn điền chưa đủ thông tin</h3>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Vui lòng hoàn thiện các mục sau:</p>
-              <ul className="mt-3 space-y-1">
-                {validationModal.fields.map((f, i) => (
-                  <li key={i} className="text-sm font-medium text-rose-600 dark:text-rose-400">• {f}</li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                onClick={() => setValidationModal({ ...validationModal, open: false })}
-                className="mt-6 w-full cursor-pointer rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-              >
-                Đã hiểu
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ValidationModal
+        open={validationModal.open}
+        fields={validationModal.fields}
+        onClose={() => setValidationModal({ open: false, fields: [] })}
+      />
     </div>
   );
 }

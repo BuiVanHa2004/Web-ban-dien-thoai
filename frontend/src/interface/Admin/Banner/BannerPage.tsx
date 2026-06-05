@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { createPortal } from "react-dom";
 import { bannerService, BannerDto } from "@/services/bannerService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
 
@@ -343,22 +344,35 @@ export default function BannerPage() {
         </div>
       </div>
 
-      {selectedBanner ? (
+      {mounted && selectedBanner ? createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm animate-[fadeIn_160ms_ease-out]"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) setSelectedBanner(null);
-          }}
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{ zIndex: 99999 }}
         >
-          <div className="w-full max-w-3xl overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-950 animate-[scaleIn_180ms_ease-out]">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-6 py-5 dark:border-white/10 dark:bg-slate-950/60">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0"
+            style={{ backgroundColor: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+            onMouseDown={() => setSelectedBanner(null)}
+          />
+          {/* Modal card */}
+          <div
+            className="relative w-full max-w-3xl overflow-hidden rounded-[2.5rem] animate-[scaleIn_180ms_ease-out]"
+            style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" }}
+          >
+            {/* Header */}
+            <div
+              className="flex items-start justify-between gap-3 px-6 py-5"
+              style={{ background: "rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.1)" }}
+            >
               <div className="min-w-0">
-                <div className="text-sm font-medium text-slate-900 dark:text-slate-100">Chi tiết Banner</div>
+                <div className="text-sm font-medium text-white/90">Chi tiết Banner</div>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedBanner(null)}
-                className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl text-white/70 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
               >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 6L6 18" />
@@ -371,29 +385,32 @@ export default function BannerPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-1">Tiêu đề (Ảnh 1)</div>
-                    <div className="text-lg font-semibold text-slate-900 dark:text-white leading-tight">
+                    <div className="text-[10px] uppercase tracking-wider font-semibold text-white/50 mb-1">Tiêu đề (Ảnh 1)</div>
+                    <div className="text-lg font-semibold text-white/90 leading-tight">
                       {selectedBanner.bannerImages.length > 0 ? selectedBanner.bannerImages[0].title : "N/A"}
                     </div>
                   </div>
                   {selectedBanner.bannerImages.length > 0 && selectedBanner.bannerImages[0].subtitle && (
                     <div>
-                      <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-1">Phụ đề (Ảnh 1)</div>
-                      <div className="text-sm text-slate-700 dark:text-slate-300">
+                      <div className="text-[10px] uppercase tracking-wider font-semibold text-white/50 mb-1">Phụ đề (Ảnh 1)</div>
+                      <div className="text-sm text-white/70">
                         {selectedBanner.bannerImages[0].subtitle}
                       </div>
                     </div>
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-1">Vị trí</div>
-                      <div className="inline-flex rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700 dark:bg-white/5 dark:text-slate-200 ring-1 ring-slate-200 dark:ring-white/10">
+                      <div className="text-[10px] uppercase tracking-wider font-semibold text-white/50 mb-1">Vị trí</div>
+                      <div
+                        className="inline-flex rounded-lg px-2 py-1 text-xs font-bold text-white/85"
+                        style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                      >
                         {selectedBanner.position}
                       </div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-1">Trạng thái</div>
-                      <div className={`text-xs font-bold ${selectedBanner.isActive ? 'text-emerald-500' : 'text-slate-400'}`}>
+                      <div className="text-[10px] uppercase tracking-wider font-semibold text-white/50 mb-1">Trạng thái</div>
+                      <div className={`text-xs font-bold ${selectedBanner.isActive ? 'text-emerald-400' : 'text-slate-400'}`}>
                         {selectedBanner.isActive ? 'Đang hoạt động' : 'Đã tạm dừng'}
                       </div>
                     </div>
@@ -401,10 +418,14 @@ export default function BannerPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400 mb-1">Hình ảnh ({selectedBanner.bannerImages.length})</div>
+                  <div className="text-[10px] uppercase tracking-wider font-semibold text-white/50 mb-1">Hình ảnh ({selectedBanner.bannerImages.length})</div>
                   <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto custom-scrollbar pr-2">
                     {selectedBanner.bannerImages.map((img, i) => (
-                      <div key={i} className="group relative aspect-video overflow-hidden rounded-xl border border-slate-200 dark:border-white/10 ring-1 ring-slate-200 dark:ring-white/10">
+                      <div
+                        key={i}
+                        className="group relative aspect-video overflow-hidden rounded-xl"
+                        style={{ border: "1px solid rgba(255,255,255,0.12)" }}
+                      >
                         <Image
                           src={img.imageUrl}
                           alt={`Banner image ${i + 1}`}
@@ -423,27 +444,36 @@ export default function BannerPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6 rounded-3xl bg-slate-50 p-6 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+              {/* Meta grid */}
+              <div
+                className="grid grid-cols-2 gap-6 rounded-3xl p-6"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
                 <div className="space-y-1">
-                  <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Ngày tạo</div>
-                  <div className="text-sm text-slate-900 dark:text-slate-100 font-medium">
+                  <div className="text-[10px] uppercase tracking-wider font-semibold text-white/50">Ngày tạo</div>
+                  <div className="text-sm text-white/85 font-medium">
                     {formatDate(selectedBanner.createdAt) || "-"}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Cập nhật lần cuối</div>
-                  <div className="text-sm text-slate-900 dark:text-slate-100 font-medium">
+                  <div className="text-[10px] uppercase tracking-wider font-semibold text-white/50">Cập nhật lần cuối</div>
+                  <div className="text-sm text-white/85 font-medium">
                     {formatDate(selectedBanner.updatedAt) || "-"}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-slate-200 bg-white px-6 py-5 dark:border-white/10 dark:bg-slate-950/40">
+            {/* Footer */}
+            <div
+              className="flex items-center justify-end gap-3 px-6 py-5"
+              style={{ background: "rgba(255,255,255,0.05)", borderTop: "1px solid rgba(255,255,255,0.1)" }}
+            >
               <button
                 type="button"
                 onClick={() => setSelectedBanner(null)}
-                className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-5 text-sm font-semibold text-white/85 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
               >
                 Đóng
               </button>
@@ -453,13 +483,15 @@ export default function BannerPage() {
                   router.push(`/banners/update?id=${encodeURIComponent(selectedBanner.id)}`);
                   setSelectedBanner(null);
                 }}
-                className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl bg-pink-500 px-5 text-sm font-semibold text-white shadow-sm ring-1 ring-pink-400/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-pink-600 hover:shadow-md active:translate-y-0"
+                className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-5 text-sm font-semibold text-white shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0"
+                style={{ background: "rgba(236,72,153,0.85)", border: "1px solid rgba(236,72,153,0.3)", boxShadow: "0 4px 20px rgba(236,72,153,0.25)" }}
               >
                 Chỉnh sửa
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       ) : null}
 
       <style jsx global>{`

@@ -101,16 +101,23 @@ export default function ProductVariantPickerModal({
   const canSubmit = maxQty > 0 && quantity >= 1 && quantity <= maxQty;
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[260] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+      onClick={onClose}
+      role="presentation"
+    >
       <div
-        className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-black/10 bg-white dark:border-white/10 dark:bg-slate-950"
+        className="customer-card-surface flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-zinc-500/70 bg-zinc-900/90 shadow-2xl shadow-black/40 ring-1 ring-zinc-500/35 backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="variant-picker-title"
       >
         <div className="overflow-y-auto p-5" style={{ scrollbarWidth: "thin" }}>
           <div className="flex gap-4">
             {/* Image (Left) */}
-            <div className="w-24 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-slate-100 p-1.5 dark:border-white/10 dark:bg-slate-900/40">
-              <div className="relative aspect-[9/16] w-full overflow-hidden rounded-xl bg-white dark:bg-slate-800">
+            <div className="w-24 shrink-0 overflow-hidden rounded-2xl border border-zinc-600/50 bg-zinc-800/50 p-1.5">
+              <div className="relative aspect-[9/16] w-full overflow-hidden rounded-xl bg-zinc-950/60">
                 {(() => {
                   const variantDiscount = selectedVariant?.discountValue && selectedVariant.discountValue > 0;
                   const productDiscount = product.discountValue && product.discountValue > 0;
@@ -143,7 +150,7 @@ export default function ProductVariantPickerModal({
                     );
                   }
                   return (
-                    <div className="grid h-full place-items-center text-xs text-slate-500 dark:text-slate-400">
+                    <div className="grid h-full place-items-center text-xs text-zinc-500">
                       No img
                     </div>
                   );
@@ -160,8 +167,10 @@ export default function ProductVariantPickerModal({
 
             {/* Info (Right) */}
             <div className="flex flex-1 flex-col justify-center">
-              <div className="text-lg font-bold text-slate-900 dark:text-white">Chọn phiên bản</div>
-              <div className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-slate-300">{product.productName}</div>
+              <div id="variant-picker-title" className="text-lg font-bold text-zinc-100">
+                Chọn phiên bản
+              </div>
+              <div className="mt-1 line-clamp-2 text-sm text-zinc-400">{product.productName}</div>
               <div className="mt-2 space-y-1">
                 {(() => {
                   const originalPrice = (selectedVariant?.originalPrice ?? product.basePrice ?? 0) * quantity;
@@ -171,13 +180,11 @@ export default function ProductVariantPickerModal({
                   return (
                     <>
                       {hasDiscount && (
-                        <div className="text-sm text-slate-500 line-through decoration-slate-400">
+                        <div className="text-sm text-zinc-500 line-through decoration-zinc-600">
                           {formatVnd(originalPrice)}
                         </div>
                       )}
-                      <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
-                        {formatVnd(finalPrice)}
-                      </div>
+                      <div className="text-2xl font-black text-rose-400">{formatVnd(finalPrice)}</div>
                     </>
                   );
                 })()}
@@ -187,7 +194,7 @@ export default function ProductVariantPickerModal({
 
           <div className="mt-4 space-y-3">
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase text-slate-500">Màu sắc</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Màu sắc</div>
               <div className="flex flex-wrap gap-2">
                 {(product.productColors ?? []).map((c) => (
                   (() => {
@@ -205,8 +212,8 @@ export default function ProductVariantPickerModal({
                         }}
                         disabled={isOutColor}
                         className={`rounded-full border px-3 py-1 text-xs transition-all ${selectedColorId === c.productColorId
-                            ? "border-cyan-400 bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-200"
-                            : "border-black/15 text-slate-700 dark:border-white/15 dark:text-slate-200"
+                            ? "border-purple-500/50 bg-purple-500/15 text-purple-300 ring-1 ring-purple-500/30"
+                            : "border-zinc-500/50 bg-zinc-800/60 text-zinc-300 hover:bg-zinc-700/80"
                           } ${isOutColor ? "cursor-not-allowed opacity-30 blur-[0.5px] line-through decoration-rose-500" : ""}`}
                         title={isOutColor ? "Màu này đã hết hàng" : undefined}
                       >
@@ -220,7 +227,7 @@ export default function ProductVariantPickerModal({
 
             {hasVariants && (
               <div>
-                <div className="mb-2 text-xs font-semibold uppercase text-slate-500">RAM / Bộ nhớ</div>
+                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">RAM / Bộ nhớ</div>
                 <div className="flex flex-wrap gap-2">
                   {variants.length > 0 ? (
                     variants.map((v) => (
@@ -233,8 +240,8 @@ export default function ProductVariantPickerModal({
                             onClick={() => setSelectedVariantId(v.variantId)}
                             disabled={isOutVariant}
                             className={`rounded-full border px-3 py-1 text-xs transition-all ${selectedVariantId === v.variantId
-                                ? "border-cyan-400 bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-200"
-                                : "border-black/15 text-slate-700 dark:border-white/15 dark:text-slate-200"
+                                ? "border-purple-500/50 bg-purple-500/15 text-purple-300 ring-1 ring-purple-500/30"
+                                : "border-zinc-500/50 bg-zinc-800/60 text-zinc-300 hover:bg-zinc-700/80"
                               } ${isOutVariant ? "cursor-not-allowed opacity-30 blur-[0.5px] line-through decoration-rose-500" : ""}`}
                             title={isOutVariant ? "Phiên bản này đã hết hàng" : undefined}
                           >
@@ -244,34 +251,34 @@ export default function ProductVariantPickerModal({
                       })()
                     ))
                   ) : (
-                    <div className="text-sm text-slate-500">Màu này chưa cấu hình RAM/Bộ nhớ.</div>
+                    <div className="text-sm text-zinc-500">Màu này chưa cấu hình RAM/Bộ nhớ.</div>
                   )}
                 </div>
               </div>
             )}
 
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase text-slate-500">Số lượng</div>
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Số lượng</div>
               <input
                 type="number"
                 min={1}
                 max={Math.max(maxQty, 1)}
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
-                className="h-10 w-24 rounded-2xl border border-black/15 bg-white px-3 text-sm dark:border-white/15 dark:bg-white/10"
+                className="h-10 w-24 rounded-2xl border border-zinc-500/50 bg-zinc-800/60 px-3 text-sm text-zinc-100 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30"
               />
-              <div className="mt-1 text-xs text-slate-500">Tồn kho: {maxQty}</div>
+              <div className="mt-1 text-xs text-zinc-500">Tồn kho: {maxQty}</div>
             </div>
           </div>
         </div>
 
         {/* Action Buttons (Sticky Bottom) */}
-        <div className="border-t border-black/5 bg-slate-50 p-5 dark:border-white/5 dark:bg-slate-900/50">
+        <div className="border-t border-zinc-600/50 bg-zinc-800/50 p-5 backdrop-blur-md">
           <div className="flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="h-10 rounded-2xl border border-black/10 px-4 text-sm dark:border-white/10"
+              className="h-10 rounded-2xl border border-zinc-500/50 bg-zinc-800/60 px-4 text-sm font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
             >
               Hủy
             </button>
@@ -291,7 +298,7 @@ export default function ProductVariantPickerModal({
                 });
                 onClose();
               }}
-              className={`h-10 rounded-2xl px-4 text-sm font-semibold text-white transition-all ${canSubmit ? "bg-cyan-600 shadow-lg shadow-cyan-500/20 active:scale-95" : "bg-slate-400 cursor-not-allowed"}`}
+              className={`h-10 rounded-2xl px-4 text-sm font-semibold text-white transition-all ${canSubmit ? "bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg shadow-purple-500/25 active:scale-95" : "cursor-not-allowed bg-zinc-600"}`}
             >
               {maxQty <= 0 ? "Hết hàng" : confirmText}
             </button>

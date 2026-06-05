@@ -1,7 +1,6 @@
 package com.webbanhang.shop.Repository.News;
 
 import com.webbanhang.shop.Model.News.News;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

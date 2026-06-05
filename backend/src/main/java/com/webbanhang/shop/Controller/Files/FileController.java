@@ -43,7 +43,10 @@ public class FileController {
         try (InputStream in = obj.getInputStream()) {
             byte[] bytes = in.readAllBytes();
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(obj.getContentType() != null ? MediaType.parseMediaType(obj.getContentType()) : MediaType.APPLICATION_OCTET_STREAM);
+            String contentType = obj.getContentType();
+            headers.setContentType(contentType != null
+                    ? MediaType.parseMediaType(contentType)
+                    : MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentLength(bytes.length);
             headers.setContentDisposition(ContentDisposition.inline().build());
             headers.setCacheControl("public, max-age=31536000, immutable");

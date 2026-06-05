@@ -1,14 +1,11 @@
 package com.webbanhang.shop.Controller.Payments;
 
 import com.webbanhang.shop.DTO.Payments.BankTransferStatusDto;
-import com.webbanhang.shop.DTO.Payments.PaymentAttemptDto;
 import com.webbanhang.shop.Service.Payments.PaymentService;
 import com.webbanhang.shop.DTO.Orders.PaymentQRResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payments/bank-transfer")

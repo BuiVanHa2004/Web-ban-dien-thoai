@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { productService, ProductDto, ProductType, DiscountType, ProductImageDto } from "@/services/productService";
@@ -510,43 +511,78 @@ export default function ProductPage() {
         </div>
       </div>
 
-      <AnimatePresence>
-        {selectedProduct && (
-          <div className="fixed inset-0 z-50 grid place-items-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedProduct(null)}
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-950 max-h-[calc(100vh-2rem)]"
-            >
-              <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950/60">
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Chi tiết sản phẩm</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedProduct(null)}
-                  className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-                  aria-label="Đóng"
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {selectedProduct && (
+            <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 99999 }}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedProduct(null)}
+                className="absolute inset-0"
+                style={{
+                  backgroundColor: "rgba(15, 23, 42, 0.7)",
+                  backdropFilter: "blur(6px)",
+                  WebkitBackdropFilter: "blur(6px)",
+                }}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl shadow-xl max-h-[calc(100vh-2rem)]"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
+                }}
+              >
+                <div
+                  className="flex items-start justify-between gap-3 px-5 py-4"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    borderBottom: "1px solid rgba(255,255,255,0.1)",
+                  }}
                 >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 6L6 18" />
-                    <path d="M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white/90">Chi tiết sản phẩm</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProduct(null)}
+                    className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl text-white/70 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                    }}
+                    aria-label="Đóng"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18" />
+                      <path d="M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
 
               <div className="flex-1 overflow-y-auto p-5">
                 <div className="space-y-4">
-                  <div className="flex flex-col gap-5 rounded-3xl bg-white p-5 ring-1 ring-slate-200 dark:bg-slate-950/60 dark:ring-white/10 sm:flex-row sm:items-center">
-                    <div className="aspect-[9/16] w-32 shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                  <div
+                    className="flex flex-col gap-5 rounded-3xl p-5 sm:flex-row sm:items-center"
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                  >
+                    <div
+                      className="aspect-[9/16] w-32 shrink-0 overflow-hidden rounded-2xl"
+                      style={{
+                        background: "rgba(255,255,255,0.08)",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                      }}
+                    >
                       <Image
                         src={
                           resolveImageUrl(selectedProduct.imageUrl) ||
@@ -561,77 +597,83 @@ export default function ProductPage() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      <div className="text-lg font-semibold text-white/95">
                         {selectedProduct.name}
                       </div>
-                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-200">
+                      <div className="mt-2 text-sm text-white/80">
                         {selectedProduct.description || "(Không có mô tả)"}
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3 rounded-3xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 sm:grid-cols-3">
+                  <div
+                    className="grid grid-cols-1 gap-3 rounded-3xl p-4 sm:grid-cols-3"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Slug (URL)</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">Slug (URL)</div>
+                      <div className="mt-1 text-sm text-white/90">
                         {selectedProduct.slug || "-"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Thương hiệu</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">Thương hiệu</div>
+                      <div className="mt-1 text-sm text-white/90">
                         {selectedProduct.brandName || "-"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Danh mục</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">Danh mục</div>
+                      <div className="mt-1 text-sm text-white/90">
                         {selectedProduct.categoryName || "-"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Loại sản phẩm</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">Loại sản phẩm</div>
+                      <div className="mt-1 text-sm text-white/90">
                         {formatProductType(selectedProduct.productType)}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Tồn kho</div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">Tồn kho</div>
                       <div className="mt-1 text-sm font-black">
                         {selectedProduct.stockQuantity <= 0 ? (
                           <span className="text-rose-600 dark:text-rose-400">Hết hàng</span>
                         ) : (
-                          <span className="text-slate-900 dark:text-slate-100">{selectedProduct.stockQuantity}</span>
+                          <span className="text-white/90">{selectedProduct.stockQuantity}</span>
                         )}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Màu</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">Màu</div>
+                      <div className="mt-1 text-sm text-white/90">
                         {selectedProduct.colorNames || "-"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">RAM</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">RAM</div>
+                      <div className="mt-1 text-sm text-white/90">
                         {selectedProduct.ramGbValues || "-"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Bộ nhớ</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">Bộ nhớ</div>
+                      <div className="mt-1 text-sm text-white/90">
                         {selectedProduct.storageGbValues || "-"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Tạo lúc</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">Tạo lúc</div>
+                      <div className="mt-1 text-sm text-white/90">
                         {formatDate(selectedProduct.createdAt) || "-"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">Cập nhật</div>
-                      <div className="mt-1 text-sm text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-white/75">Cập nhật</div>
+                      <div className="mt-1 text-sm text-white/90">
                         {formatDate(selectedProduct.updatedAt) || "-"}
                       </div>
                     </div>
@@ -652,11 +694,17 @@ export default function ProductPage() {
                   {selectedProductDetail ? (
                     <>
                       {selectedProductDetail.productSpecs && selectedProductDetail.productSpecs.length > 0 ? (
-                        <div className="space-y-2 rounded-3xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-950/60 dark:ring-white/10">
-                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Thông số kỹ thuật</div>
-                          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950/60">
+                        <div
+                          className="space-y-2 rounded-3xl p-4"
+                          style={{
+                            background: "rgba(255,255,255,0.06)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                          }}
+                        >
+                          <div className="text-sm font-semibold text-white/90">Thông số kỹ thuật</div>
+                          <div className="overflow-hidden rounded-3xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
                             <table className="min-w-full border-collapse text-left text-sm">
-                              <thead className="bg-slate-50 text-xs font-semibold text-slate-600 dark:bg-white/5 dark:text-slate-300">
+                              <thead className="text-xs font-semibold text-white/75" style={{ background: "rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                                 <tr className="border-b border-slate-200 dark:border-white/10">
                                   <th className="px-4 py-3">Thông số</th>
                                   <th className="px-4 py-3">Giá trị</th>
@@ -670,111 +718,111 @@ export default function ProductPage() {
                                     <>
                                       {specs.map((spec, idx) => (
                                         <tr key={String(spec?.specId ?? idx)}>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Phiên bản</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{spec?.version || "-"}</td>
+                                          <td className="px-4 py-3 text-white/75">Phiên bản</td>
+                                          <td className="px-4 py-3 text-white/90">{spec?.version || "-"}</td>
                                         </tr>
                                       ))}
 
                                       {firstSpec?.chip && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Chip</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.chip}</td>
+                                          <td className="px-4 py-3 text-white/75">Chip</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.chip}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.screen && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Màn hình</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.screen}</td>
+                                          <td className="px-4 py-3 text-white/75">Màn hình</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.screen}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.refreshRate && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Tần số quét</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.refreshRate}</td>
+                                          <td className="px-4 py-3 text-white/75">Tần số quét</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.refreshRate}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.battery && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Pin</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.battery}</td>
+                                          <td className="px-4 py-3 text-white/75">Pin</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.battery}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.fastCharge && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Sạc nhanh</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.fastCharge}</td>
+                                          <td className="px-4 py-3 text-white/75">Sạc nhanh</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.fastCharge}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.cameraRear && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Camera sau</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.cameraRear}</td>
+                                          <td className="px-4 py-3 text-white/75">Camera sau</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.cameraRear}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.cameraFront && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Camera trước</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.cameraFront}</td>
+                                          <td className="px-4 py-3 text-white/75">Camera trước</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.cameraFront}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.support5g != null && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Hỗ trợ 5G</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.support5g ? "Có" : "Không"}</td>
+                                          <td className="px-4 py-3 text-white/75">Hỗ trợ 5G</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.support5g ? "Có" : "Không"}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.nfc != null && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">NFC</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.nfc ? "Có" : "Không"}</td>
+                                          <td className="px-4 py-3 text-white/75">NFC</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.nfc ? "Có" : "Không"}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.operatingSystem && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Hệ điều hành</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.operatingSystem}</td>
+                                          <td className="px-4 py-3 text-white/75">Hệ điều hành</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.operatingSystem}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.size && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Kích thước</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.size}</td>
+                                          <td className="px-4 py-3 text-white/75">Kích thước</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.size}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.weight && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Trọng lượng</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.weight}</td>
+                                          <td className="px-4 py-3 text-white/75">Trọng lượng</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.weight}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.material && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Chất liệu</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.material}</td>
+                                          <td className="px-4 py-3 text-white/75">Chất liệu</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.material}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.waterResistance && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Chống nước</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.waterResistance}</td>
+                                          <td className="px-4 py-3 text-white/75">Chống nước</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.waterResistance}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.chargingPort && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Cổng sạc</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.chargingPort}</td>
+                                          <td className="px-4 py-3 text-white/75">Cổng sạc</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.chargingPort}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.sim && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">SIM</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{firstSpec.sim}</td>
+                                          <td className="px-4 py-3 text-white/75">SIM</td>
+                                          <td className="px-4 py-3 text-white/90">{firstSpec.sim}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.warranty && (
                                         <tr>
-                                          <td className="px-4 py-3 text-slate-700 dark:text-slate-200">Bảo hành</td>
-                                          <td className="px-4 py-3 text-slate-900 dark:text-slate-100">
+                                          <td className="px-4 py-3 text-white/75">Bảo hành</td>
+                                          <td className="px-4 py-3 text-white/90">
                                             {firstSpec.warranty.toLowerCase().includes("tháng")
                                               ? firstSpec.warranty
                                               : `${firstSpec.warranty} tháng`}
@@ -791,26 +839,36 @@ export default function ProductPage() {
                       ) : null}
 
                       {(selectedProductDetail.productColors || []).length > 0 ? (
-                        <div className="space-y-2 rounded-3xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-950/60 dark:ring-white/10">
-                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Màu sắc / Biến thể</div>
+                        <div
+                          className="space-y-2 rounded-3xl p-4"
+                          style={{
+                            background: "rgba(255,255,255,0.06)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                          }}
+                        >
+                          <div className="text-sm font-semibold text-white/90">Màu sắc / Biến thể</div>
                           <div className="space-y-2">
                             {selectedProductDetail.productColors?.map((c) => {
                               const variantQuantity = (c.variants || []).reduce((sum, v) => sum + (Number(v.quantity) || 0), 0);
                               return (
                                 <div
                                   key={c.productColorId}
-                                  className="rounded-3xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-950/60"
+                                  className="rounded-3xl p-4"
+                                  style={{
+                                    background: "rgba(255,255,255,0.06)",
+                                    border: "1px solid rgba(255,255,255,0.1)",
+                                  }}
                                 >
                                   <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <div className="font-semibold text-slate-900 dark:text-slate-100">
+                                    <div className="font-semibold text-white/90">
                                       {c.colorName}
                                       {c.colorCode ? (
-                                        <span className="ml-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                        <span className="ml-2 text-xs font-semibold text-white/75">
                                           ({c.colorCode})
                                         </span>
                                       ) : null}
                                     </div>
-                                    <div className="text-sm text-slate-700 dark:text-slate-200">Số lượng: {variantQuantity}</div>
+                                    <div className="text-sm text-white/80">Số lượng: {variantQuantity}</div>
                                   </div>
 
                                   {(c.images || []).length > 0 ? (
@@ -818,7 +876,11 @@ export default function ProductPage() {
                                       {(c.images || []).map((url, i) => (
                                         <div
                                           key={`${c.productColorId}-${url}-${i}`}
-                                          className="group aspect-[9/16] w-14 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10"
+                                          className="group aspect-[9/16] w-14 overflow-hidden rounded-xl"
+                                          style={{
+                                            background: "rgba(255,255,255,0.08)",
+                                            border: "1px solid rgba(255,255,255,0.15)",
+                                          }}
                                         >
                                           <Image
                                             src={url || "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"}
@@ -834,9 +896,9 @@ export default function ProductPage() {
                                   ) : null}
 
                                   {(c.variants || []).length > 0 ? (
-                                    <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10">
+                                    <div className="mt-3 overflow-hidden rounded-2xl" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
                                       <table className="min-w-full border-collapse text-left text-sm">
-                                        <thead className="bg-slate-50 text-xs font-semibold text-slate-600 dark:bg-white/5 dark:text-slate-300">
+                                        <thead className="text-xs font-semibold text-white/75" style={{ background: "rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                                           <tr>
                                             <th className="px-3 py-2">RAM</th>
                                             <th className="px-3 py-2">Bộ nhớ</th>
@@ -863,10 +925,10 @@ export default function ProductPage() {
                                             const hasDiscount = discountType && discountType !== "NONE" && discountValue > 0;
                                             return (
                                               <tr key={v.variantId}>
-                                                <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{v.ramGb ?? "-"}</td>
-                                                <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{v.storageGb ?? "-"}</td>
-                                                <td className="px-3 py-2 text-slate-900 dark:text-slate-100">{Number(v.quantity || 0)}</td>
-                                                <td className="px-3 py-2 text-slate-500 dark:text-slate-400">
+                                                <td className="px-3 py-2 text-white/90">{v.ramGb ?? "-"}</td>
+                                                <td className="px-3 py-2 text-white/90">{v.storageGb ?? "-"}</td>
+                                                <td className="px-3 py-2 text-white/90">{Number(v.quantity || 0)}</td>
+                                                <td className="px-3 py-2 text-white/80">
                                                   {original > 0 ? (
                                                     <span className={hasDiscount ? "line-through" : ""}>
                                                       {original.toLocaleString("vi-VN")}đ
@@ -875,14 +937,14 @@ export default function ProductPage() {
                                                 </td>
                                                 <td className="px-3 py-2">
                                                   {hasDiscount ? (
-                                                    <span className="text-rose-600 font-medium dark:text-rose-400">
+                                                    <span className="font-medium text-rose-300">
                                                       {discountText}
                                                     </span>
                                                   ) : (
-                                                    <span className="text-slate-400 dark:text-slate-500">-</span>
+                                                    <span className="text-white/45">-</span>
                                                   )}
                                                 </td>
-                                                <td className="px-3 py-2 font-semibold text-emerald-600 dark:text-emerald-400">
+                                                <td className="px-3 py-2 font-semibold text-emerald-300">
                                                   {finalPrice > 0 ? `${finalPrice.toLocaleString("vi-VN")}đ` : "-"}
                                                 </td>
                                               </tr>
@@ -903,11 +965,21 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4 dark:border-white/10 dark:bg-slate-950/40">
+              <div
+                className="flex items-center justify-end gap-2 px-5 py-4"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  borderTop: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
                 <button
                   type="button"
                   onClick={() => setSelectedProduct(null)}
-                  className="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                  className="inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-white/75 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
                 >
                   Đóng
                 </button>
@@ -917,7 +989,12 @@ export default function ProductPage() {
                     setSelectedProduct(null);
                     router.push(`/products/update?id=${encodeURIComponent(selectedProduct.id)}`);
                   }}
-                  className="inline-flex h-11 items-center justify-center rounded-2xl bg-amber-500 px-4 text-sm font-semibold text-amber-950 shadow-sm ring-1 ring-amber-500/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-amber-400 hover:shadow-md active:translate-y-0 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-1 dark:ring-amber-400/20 dark:hover:bg-amber-500/20 dark:hover:ring-amber-400/30 dark:hover:shadow-black/30"
+                  className="inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-white shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
+                  style={{
+                    background: "rgba(245,158,11,0.85)",
+                    border: "1px solid rgba(245,158,11,0.3)",
+                    boxShadow: "0 4px 20px rgba(245,158,11,0.25)",
+                  }}
                 >
                   Chỉnh sửa
                 </button>
@@ -925,8 +1002,11 @@ export default function ProductPage() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
     </motion.div>
   );
 }
+
 

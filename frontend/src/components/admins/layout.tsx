@@ -55,7 +55,7 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
   }, [router]);
 
   return (
-    <div className="customer-portal dark customer-portal-bg-base relative min-h-dvh overflow-hidden text-zinc-100 antialiased">
+    <div className="customer-portal dark customer-portal-bg-base relative min-h-dvh text-zinc-100 antialiased" style={{ overflow: "visible" }}>
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="customer-portal-bg-shift absolute inset-0" aria-hidden />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(228,228,231,0.12),transparent_50%)]" />

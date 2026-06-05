@@ -75,16 +75,13 @@ public class UploadController {
         }
 
         // Extract object name from URL
-        // URL format: http://host:port/products/uuid.ext
         String objectName = url;
         int lastSlash = url.lastIndexOf('/');
         if (lastSlash >= 0 && lastSlash < url.length() - 1) {
-            String pathAfterLastSlash = url.substring(lastSlash + 1);
             if (url.contains("/products/")) {
-                // Get the full path after bucket/prefix
                 int productsIndex = url.indexOf("/products/");
                 if (productsIndex >= 0) {
-                    objectName = url.substring(productsIndex + 1); // products/uuid.ext
+                    objectName = url.substring(productsIndex + 1);
                 }
             }
         }

@@ -9,7 +9,9 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
+    @Override
     @EntityGraph(attributePaths = {"items"})
+    @org.springframework.lang.NonNull
     List<Order> findAll();
 
     @EntityGraph(attributePaths = {"items"})

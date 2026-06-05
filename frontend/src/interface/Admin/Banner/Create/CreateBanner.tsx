@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import AdminActionBar from "@/components/admins/AdminActionBar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { bannerService, BannerPosition } from "@/services/bannerService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
+import ValidationModal from "@/components/admins/ValidationModal";
 
 type ImageItem = {
   id: string;
@@ -144,37 +146,7 @@ export default function CreateBanner() {
 
   return (
     <>
-      <div className="fixed top-[99px] right-9 z-[100] flex items-center gap-3">
-        <Link
-          href="/banners"
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Quay lại
-        </Link>
-        <button
-          type="submit"
-          form="banner-form"
-          disabled={submitting}
-          className={
-            "inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 " +
-            (submitting ? "opacity-70 pointer-events-none" : "")
-          }
-        >
-          {submitting ? (
-            <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2z" />
-              <path d="M17 21v-8H7v8" />
-              <path d="M7 3v4h8" />
-            </svg>
-          )}
-          Lưu
-        </button>
-      </div>
+      <AdminActionBar backHref="/banners" formId="banner-form" submitting={submitting} />
 
       <div className="space-y-5">
         <div className="flex flex-col gap-3">
@@ -235,7 +207,7 @@ export default function CreateBanner() {
                     {openDropdown === "position" && (
                       <>
                         <div 
-                          className="fixed inset-0 z-[110] bg-slate-950/20 backdrop-blur-md transition-opacity"
+                          className="fixed inset-0 z-[99999] bg-slate-950/20 backdrop-blur-md transition-opacity"
                           onClick={() => setOpenDropdown(null)}
                         />
                         <div className="absolute left-0 right-0 z-[120] mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl animate-popover dark:border-white/10 dark:bg-slate-950">
@@ -434,34 +406,11 @@ export default function CreateBanner() {
         </div>
       </div>
 
-      {/* Validation Modal */}
-      {validationModal.open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={() => setValidationModal({ ...validationModal, open: false })} />
-          <div className="relative w-full max-sm overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-2xl animate-scale-in dark:border-white/10 dark:bg-slate-900">
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-rose-50 text-rose-500 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
-                <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Thông tin chưa đầy đủ</h3>
-              <ul className="mt-4 space-y-2">
-                {validationModal.fields.map((f, i) => (
-                  <li key={i} className="text-sm font-semibold text-rose-600 dark:text-rose-400">• {f}</li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                onClick={() => setValidationModal({ ...validationModal, open: false })}
-                className="mt-8 w-full cursor-pointer rounded-2xl bg-slate-900 py-4 text-sm font-bold text-white shadow-lg transition-all hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-950"
-              >
-                Đã hiểu
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ValidationModal
+        open={validationModal.open}
+        fields={validationModal.fields}
+        onClose={() => setValidationModal({ open: false, fields: [] })}
+      />
 
       <style jsx global>{`
         @keyframes scaleIn {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { createPortal } from "react-dom";
 import { newsService, NewsDto } from "@/services/newsService";
 
 type News = {
@@ -323,106 +324,174 @@ export default function NewPage() {
         </div>
       </div>
 
-      {selectedNews ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm animate-[fadeIn_160ms_ease-out]"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) setSelectedNews(null);
-          }}
-        >
-          <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-950 animate-[scaleIn_180ms_ease-out]">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950/60">
-              <div className="min-w-0">
-                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Chi tiết tin tức</div>
-              </div>
-              <button
-                type="button"
+      {typeof document !== "undefined" && selectedNews
+        ? createPortal(
+            <div
+              className="fixed inset-0 flex items-center justify-center p-4 animate-[fadeIn_160ms_ease-out]"
+              style={{ zIndex: 99999 }}
+            >
+              {/* Overlay */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundColor: "rgba(15, 23, 42, 0.7)",
+                  backdropFilter: "blur(6px)",
+                  WebkitBackdropFilter: "blur(6px)",
+                }}
                 onClick={() => setSelectedNews(null)}
-                className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-                aria-label="Đóng"
-              >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18" />
-                  <path d="M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+              />
 
-            <div className="p-5 space-y-6">
-              <div className="flex flex-col gap-6 sm:flex-row">
-                <div className="group relative h-32 w-32 shrink-0 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
-                  <Image
-                    src={(selectedNews.newsImages && selectedNews.newsImages.length > 0) ? selectedNews.newsImages[0] : "https://dummyimage.com/200x200/e2e8f0/64748b&text=News"}
-                    alt={selectedNews.title}
-                    width={128}
-                    height={128}
-                    unoptimized
-                    className="h-full w-full object-cover cursor-pointer transition duration-500 group-hover:scale-110"
-                  />
+              {/* Modal card */}
+              <div
+                className="relative w-full max-w-2xl overflow-hidden rounded-3xl max-h-[calc(100vh-2rem)] flex flex-col animate-[scaleIn_180ms_ease-out]"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  boxShadow:
+                    "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
+                }}
+              >
+                {/* Header */}
+                <div
+                  className="flex items-start justify-between gap-3 px-5 py-4"
+                  style={{
+                    background: "rgba(255,255,255,0.05)",
+                    borderBottom: "1px solid rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-white/90">Chi tiết tin tức</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedNews(null)}
+                    className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl text-white/85 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                    }}
+                    aria-label="Đóng"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18" />
+                      <path d="M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
 
-                <div className="min-w-0 flex-1 flex flex-col">
-                  <div className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-tight">
-                    {selectedNews.title}
+                {/* Body */}
+                <div className="p-5 space-y-6 overflow-y-auto">
+                  <div className="flex flex-col gap-6 sm:flex-row">
+                    <div className="group relative h-32 w-32 shrink-0 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/15">
+                      <Image
+                        src={
+                          selectedNews.newsImages && selectedNews.newsImages.length > 0
+                            ? selectedNews.newsImages[0]
+                            : "https://dummyimage.com/200x200/e2e8f0/64748b&text=News"
+                        }
+                        alt={selectedNews.title}
+                        width={128}
+                        height={128}
+                        unoptimized
+                        className="h-full w-full object-cover cursor-pointer transition duration-500 group-hover:scale-110"
+                      />
+                    </div>
+
+                    <div className="min-w-0 flex-1 flex flex-col">
+                      <div className="text-lg font-bold text-white/90 leading-tight">
+                        {selectedNews.title}
+                      </div>
+
+                      <div className="mt-4 flex-1">
+                        <div className="text-[10px] uppercase tracking-wider font-bold text-white/50 mb-2">
+                          Thông tin chi tiết
+                        </div>
+                        <div className="prose prose-sm max-w-none text-white/80 overflow-y-auto max-h-[300px] custom-scrollbar rounded-2xl p-4 ring-1 ring-white/10"
+                          style={{ background: "rgba(255,255,255,0.05)" }}
+                        >
+                          <div className="whitespace-pre-wrap leading-relaxed">
+                            {selectedNews.description || "(Không có mô tả)"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="mt-4 flex-1">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-2">Thông tin chi tiết</div>
-                    <div className="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-200 overflow-y-auto max-h-[300px] custom-scrollbar bg-slate-50/50 dark:bg-white/5 rounded-2xl p-4 ring-1 ring-slate-200/50 dark:ring-white/5">
-                      <div className="whitespace-pre-wrap leading-relaxed">
-                        {selectedNews.description || "(Không có mô tả)"}
+                  {/* Info grid */}
+                  <div
+                    className="grid grid-cols-1 gap-4 rounded-3xl p-5 sm:grid-cols-2"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <div className="space-y-1">
+                      <div className="text-[10px] uppercase tracking-wider font-bold text-white/50">Slug (URL)</div>
+                      <div className="text-sm font-mono p-2 rounded-lg text-white/90 break-all ring-1 ring-white/10"
+                        style={{ background: "rgba(0,0,0,0.2)" }}
+                      >
+                        {selectedNews.slug || "-"}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 sm:col-span-1">
+                      <div className="space-y-1">
+                        <div className="text-[10px] uppercase tracking-wider font-bold text-white/50">Tạo lúc</div>
+                        <div className="text-sm text-white/90">
+                          {formatDate(selectedNews.createdAt) || "-"}
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="text-[10px] uppercase tracking-wider font-bold text-white/50">Cập nhật</div>
+                        <div className="text-sm text-white/90">
+                          {formatDate(selectedNews.updatedAt) || "-"}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 gap-4 rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">Slug (URL)</div>
-                  <div className="text-sm font-mono bg-white/50 dark:bg-black/20 p-2 rounded-lg text-slate-900 dark:text-slate-100 break-all ring-1 ring-slate-200/50 dark:ring-white/5">
-                    {selectedNews.slug || "-"}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 sm:col-span-1">
-                  <div className="space-y-1">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">Tạo lúc</div>
-                    <div className="text-sm text-slate-900 dark:text-slate-100">
-                      {formatDate(selectedNews.createdAt) || "-"}
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">Cập nhật</div>
-                    <div className="text-sm text-slate-900 dark:text-slate-100">
-                      {formatDate(selectedNews.updatedAt) || "-"}
-                    </div>
-                  </div>
+                {/* Footer */}
+                <div
+                  className="flex items-center justify-end gap-2 px-5 py-4"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    borderTop: "1px solid rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSelectedNews(null)}
+                    className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-white/85 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                    }}
+                  >
+                    Đóng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      router.push(`/news/update?id=${encodeURIComponent(selectedNews.id)}`);
+                      setSelectedNews(null);
+                    }}
+                    className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-white shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 active:translate-y-0"
+                    style={{
+                      background: "rgba(245,158,11,0.85)",
+                      border: "1px solid rgba(245,158,11,0.3)",
+                      boxShadow: "0 4px 20px rgba(245,158,11,0.25)",
+                    }}
+                  >
+                    Chỉnh sửa
+                  </button>
                 </div>
               </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4 dark:border-white/10 dark:bg-slate-950/40">
-              <button
-                type="button"
-                onClick={() => setSelectedNews(null)}
-                className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-              >
-                Đóng
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  router.push(`/news/update?id=${encodeURIComponent(selectedNews.id)}`);
-                  setSelectedNews(null);
-                }}
-                className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl bg-amber-500 px-4 text-sm font-semibold text-amber-950 shadow-sm ring-1 ring-amber-500/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-amber-400 hover:shadow-md active:translate-y-0 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-1 dark:ring-amber-400/20 dark:hover:bg-amber-500/20 dark:hover:ring-amber-400/30 dark:hover:shadow-black/30"
-              >
-                Chỉnh sửa
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+            </div>,
+            document.body
+          )
+        : null}
 
       <style jsx global>{`
         @keyframes fadeIn {

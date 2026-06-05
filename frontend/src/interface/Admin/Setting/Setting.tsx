@@ -2,6 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 import { settingService, type MaintenanceSettingDto } from "@/services/settingService";
 
@@ -266,43 +268,62 @@ export default function Setting() {
       </div>
 
       {/* Confirmation Modal */}
-      {confirmModal.open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md animate-fade-in" onClick={() => setConfirmModal({ open: false, nextState: null })} />
-          <div className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-2xl animate-scale-in dark:border-white/10 dark:bg-slate-900">
-            <div className="flex flex-col items-center text-center">
-              <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-3xl shadow-xl transition-colors ${confirmModal.nextState ? "bg-rose-50 text-rose-500 ring-4 ring-rose-500/10 dark:bg-rose-500/20 dark:text-rose-400" : "bg-emerald-50 text-emerald-500 ring-4 ring-emerald-500/10 dark:bg-emerald-500/20 dark:text-emerald-400"}`}>
-                <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <path d="M12 9v4" />
-                  <path d="M12 17h.01" />
-                </svg>
-              </div>
-
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Xác nhận thay đổi?</h3>
-              <p className="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-400">
-                Bạn có chắc chắn muốn <span className={`font-semibold ${confirmModal.nextState ? "text-rose-600" : "text-emerald-600"}`}>{confirmModal.nextState ? "BẬT" : "TẮT"}</span> chế độ bảo trì hệ thống không?
-              </p>
-
-              <div className="mt-10 flex w-full flex-col gap-3">
-                <button
-                  type="button"
-                  onClick={() => toggleMaintenance(confirmModal.nextState!)}
-                  className={`w-full cursor-pointer rounded-2xl py-4 text-sm font-semibold text-white shadow-lg transition-all duration-300 active:scale-95 ${confirmModal.nextState ? "bg-rose-600 hover:bg-rose-500 hover:shadow-rose-500/30" : "bg-emerald-600 hover:bg-emerald-500 hover:shadow-emerald-500/30"}`}
-                >
-                  Xác nhận ngay
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmModal({ open: false, nextState: null })}
-                  className="w-full cursor-pointer rounded-2xl bg-slate-100 py-4 text-sm font-semibold text-slate-700 transition-all duration-300 hover:bg-slate-200 active:scale-95 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-                >
-                  Hủy bỏ
-                </button>
-              </div>
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {confirmModal.open && (
+            <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 99999 }}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setConfirmModal({ open: false, nextState: null })}
+                className="absolute inset-0"
+                style={{ backgroundColor: "rgba(15,23,42,0.7)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white p-8 text-center shadow-2xl dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800"
+              >
+                <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${confirmModal.nextState ? "bg-rose-50 dark:bg-rose-900/20" : "bg-emerald-50 dark:bg-emerald-900/20"}`}>
+                  <svg viewBox="0 0 24 24" className={`h-10 w-10 ${confirmModal.nextState ? "text-rose-500" : "text-emerald-500"}`} fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <path d="M12 9v4" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                </div>
+                <h3 className="mb-2 text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                  Xác nhận thay đổi?
+                </h3>
+                <p className="mb-8 text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Bạn có chắc chắn muốn{" "}
+                  <span className={`font-black ${confirmModal.nextState ? "text-rose-500" : "text-emerald-500"}`}>
+                    {confirmModal.nextState ? "BẬT" : "TẮT"}
+                  </span>{" "}
+                  chế độ bảo trì hệ thống không?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmModal({ open: false, nextState: null })}
+                    className="flex-1 rounded-2xl bg-slate-100 py-4 text-xs font-black text-slate-600 transition-all hover:bg-slate-200 active:scale-[0.98] dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+                  >
+                    HỦY BỎ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleMaintenance(confirmModal.nextState!)}
+                    className={`flex-1 rounded-2xl py-4 text-xs font-black text-white transition-all active:scale-[0.98] shadow-xl ${confirmModal.nextState ? "bg-rose-600 hover:bg-rose-700 shadow-rose-500/20" : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20"}`}
+                  >
+                    XÁC NHẬN NGAY
+                  </button>
+                </div>
+              </motion.div>
             </div>
-          </div>
-        </div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
     </div>
   );
