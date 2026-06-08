@@ -41,6 +41,6 @@ USER spring
 EXPOSE 8080
 
 # JVM tuning cho container nhỏ (512MB RAM của Render free tier)
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom"
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=30.0 -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:G1HeapRegionSize=4m -Djava.security.egd=file:/dev/./urandom -Dspring.backgroundpreinitializer.ignore=true"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
