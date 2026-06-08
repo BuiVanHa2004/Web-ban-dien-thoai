@@ -517,9 +517,9 @@ export default function MainPage() {
             </div>
 
             <div className="lg:col-span-5">
-              <div className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 p-3 shadow-xl shadow-black/30 backdrop-blur-sm sm:rounded-3xl sm:p-4">
-                <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-zinc-500/10 blur-2xl" />
-                <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-neutral-500/8 blur-2xl" />
+              <div className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 p-3 shadow-xl shadow-black/30 backdrop-blur-sm sm:rounded-3xl sm:p-4" style={{maxWidth: '100%'}}>
+                <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-zinc-500/10 blur-2xl" />
+                <div className="absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-neutral-500/8 blur-2xl" />
 
                 <div className="relative">
                   <div className="text-sm font-semibold text-white">Gợi ý nhanh</div>
