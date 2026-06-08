@@ -447,7 +447,7 @@ export default function MainPage() {
   }
 
   return (
-    <div className="min-h-screen space-y-8 overflow-x-visible pb-8 sm:space-y-12 sm:pb-12" style={{ contain: "layout" }}>
+    <div className="min-h-screen space-y-8 overflow-x-hidden pb-8 sm:space-y-12 sm:pb-12" style={{ contain: "layout" }}>
       {/* Body 1: Chào mừng / Hero */}
       <ScrollRevealBody
         variant="hero"
