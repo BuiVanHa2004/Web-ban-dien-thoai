@@ -38,13 +38,13 @@ export default function SocialQrContact({
 
   return (
     <div className={className}>
-      <div className="flex items-center gap-2">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-100 text-purple-600 dark:bg-purple-500/15 dark:text-purple-300">
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-purple-100 text-purple-600 dark:bg-purple-500/15 dark:text-purple-300">
           <QrCode className="h-5 w-5" />
         </div>
-        <span className="text-lg font-black text-slate-800 dark:text-slate-100">{title}</span>
+        <span className="truncate text-base font-black text-slate-800 dark:text-slate-100">{title}</span>
       </div>
-      <p className="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+      <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
         Chọn kênh bạn muốn liên hệ, sau đó quét mã QR để chat trực tiếp với Shop.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
@@ -55,14 +55,14 @@ export default function SocialQrContact({
           Hỗ trợ 24/7
         </span>
       </div>
-      <div className="mt-4 flex flex-row gap-2">
+      <div className="mt-4 flex flex-row flex-wrap gap-2">
         {(["tiktok", "zalo", "facebook"] as const).map((platform) => (
           <button
             key={platform}
             onClick={() => setActiveQr(platform)}
-            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition ${PLATFORM_STYLES[platform]}`}
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-black transition ${PLATFORM_STYLES[platform]}`}
           >
-            <QrCode className="h-4 w-4" />
+            <QrCode className="h-3.5 w-3.5 shrink-0" />
             {QR_IMAGES[platform].label}
           </button>
         ))}
