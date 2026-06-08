@@ -123,6 +123,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Actuator - health check endpoint cho Render/UptimeRobot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- TEST (CHUẨN – 1 dependency là đủ) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
