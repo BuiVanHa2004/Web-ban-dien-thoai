@@ -3,9 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
   // output: "standalone", // Bật khi deploy bằng Docker, comment khi deploy Vercel
-  turbopack: {
-    root: __dirname,
-  },
   images: {
     unoptimized: true,
     // Thêm domain ảnh từ MinIO/backend khi deploy
