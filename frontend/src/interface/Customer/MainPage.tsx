@@ -516,7 +516,7 @@ export default function MainPage() {
               </div>
             </div>
 
-            <div className="w-full lg:col-span-5">
+            <div className="hidden lg:block lg:col-span-5">
               <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 p-3 shadow-xl shadow-black/30 backdrop-blur-sm sm:rounded-3xl sm:p-4">
 
                 <div className="relative">
