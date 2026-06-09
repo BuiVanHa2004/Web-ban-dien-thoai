@@ -116,7 +116,11 @@ export function useDraggableEdge(config: DraggableConfig = {}) {
         x: e.clientX - (rect?.left ?? 0),
         y: e.clientY - (rect?.top ?? 0),
       };
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      try {
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      } catch {
+        // Safari iOS may not support setPointerCapture — ignore
+      }
       e.preventDefault();
     },
     []
@@ -135,6 +139,41 @@ export function useDraggableEdge(config: DraggableConfig = {}) {
 
   const onPointerUp = useCallback(
     (e: React.PointerEvent) => {
+      if (!dragging.current) return;
+      dragging.current = false;
+      if (hasMoved.current) {
+        const rect = elRef.current?.getBoundingClientRect();
+        snapToEdge(rect?.left ?? pos.x, rect?.top ?? pos.y);
+      }
+    },
+    [snapToEdge, pos]
+  );
+
+  // Touch event fallback for Safari iOS which may not fire Pointer events reliably
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+    dragging.current = true;
+    hasMoved.current = false;
+    const rect = elRef.current?.getBoundingClientRect();
+    offset.current = {
+      x: touch.clientX - (rect?.left ?? 0),
+      y: touch.clientY - (rect?.top ?? 0),
+    };
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!dragging.current) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    hasMoved.current = true;
+    const nx = touch.clientX - offset.current.x;
+    const ny = touch.clientY - offset.current.y;
+    setPos({ x: nx, y: ny });
+  }, []);
+
+  const onTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
       if (!dragging.current) return;
       dragging.current = false;
       if (hasMoved.current) {
@@ -178,6 +217,9 @@ export function useDraggableEdge(config: DraggableConfig = {}) {
       onPointerDown,
       onPointerMove,
       onPointerUp,
+      onTouchStart,
+      onTouchMove,
+      onTouchEnd,
     },
     /** true if the pointer actually moved (vs just a click) */
     wasDragged: () => hasMoved.current,

@@ -468,9 +468,16 @@ export default function AiAssistantWidget({ onOpenChange }: { onOpenChange?: (op
         >
           <button
             onClick={() => { if (!drag.wasDragged()) setOpen(true); }}
+            onTouchEnd={(e) => {
+              if (!drag.wasDragged()) {
+                e.preventDefault();
+                setOpen(true);
+              }
+            }}
             className="group relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 sm:h-14 sm:w-auto sm:gap-3 sm:px-5 sm:shadow-2xl sm:hover:pr-6 dark:bg-slate-900"
             style={{
               boxShadow: "0 8px 24px -8px rgba(139,92,246,0.45)",
+              WebkitTapHighlightColor: "transparent",
             }}
             aria-label="AI MyPhone - Trợ lý thông minh"
           >
@@ -491,13 +498,14 @@ export default function AiAssistantWidget({ onOpenChange }: { onOpenChange?: (op
       {/* ---- Chat panel ---- */}
       {open && (
         <div
-          className="fixed bottom-6 right-6 z-[1000] flex flex-col overflow-hidden rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-500 animate-in fade-in slide-in-from-bottom-10"
+          className="fixed bottom-6 right-6 z-[1000] flex flex-col overflow-hidden rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-300"
           style={{
             width: "min(420px, calc(100vw - 2rem))",
-            height: "min(650px, calc(100dvh - 3rem))",
+            height: "min(650px, calc(100vh - 3rem))",
             border: "1px solid rgba(255,255,255,0.1)",
             background: "linear-gradient(165deg, #0f172a 0%, #1e1b4b 100%)",
             boxShadow: "0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.5)",
+            WebkitTransform: "translateZ(0)",
           }}
         >
           {/* Subtle glow effect */}
