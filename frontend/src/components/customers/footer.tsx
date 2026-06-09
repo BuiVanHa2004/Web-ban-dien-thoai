@@ -10,6 +10,39 @@ import {
 import { Logo } from "./Logo";
 import SocialQrContact from "./SocialQrContact";
 
+/** 
+ * Trên Safari iOS, iframe Google Maps ăn mất touch events của các element đè lên nó
+ * (như AI widget, Compare widget). Fix: block pointer-events trên iframe mặc định,
+ * chỉ bật sau khi user tap vào map. Overlay transparent bắt touch đầu tiên.
+ */
+function MapEmbed({ address }: { address: string }) {
+  const [active, setActive] = React.useState(false);
+  const src = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&hl=vi&z=14&output=embed`;
+
+  return (
+    <div className="relative h-48 w-full overflow-hidden rounded-[1.5rem] border border-slate-100 bg-slate-50 shadow-sm dark:border-white/5 dark:bg-slate-900">
+      <iframe
+        title="Bản đồ"
+        src={src}
+        className="h-full w-full border-0"
+        style={{ pointerEvents: active ? "auto" : "none" }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
+      {/* Overlay: bắt tap đầu tiên để kích hoạt map, sau đó tự ẩn */}
+      {!active && (
+        <div
+          className="absolute inset-0 z-10 cursor-pointer"
+          onClick={() => setActive(true)}
+          onTouchStart={() => setActive(true)}
+          aria-label="Nhấn để tương tác với bản đồ"
+        />
+      )}
+    </div>
+  );
+}
+
 export default function CustomerFooter() {
   const address = "Số 10, Phượng Trì, Đan Phượng, Hà Nội";
   const phone = "0978 603 382";
@@ -51,18 +84,7 @@ export default function CustomerFooter() {
           {/* Map Section - Middle */}
           <div className="flex flex-col space-y-4 lg:col-span-4">
             <h4 className="text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-white">Vị trí cửa hàng</h4>
-            <div className="relative h-48 w-full overflow-hidden rounded-[1.5rem] border border-slate-100 bg-slate-50 shadow-sm dark:border-white/5 dark:bg-slate-900">
-              <iframe
-                title="Bản đồ"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(address)}&hl=vi&z=14&output=embed`}
-                className="h-full w-full border-0"
-                style={{ pointerEvents: 'auto', userSelect: 'auto' }}
-                allowFullScreen
-                loading="lazy"
-                tabIndex={0}
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
+            <MapEmbed address={address} />
             <a
               href={mapOpenHref}
               target="_blank"
