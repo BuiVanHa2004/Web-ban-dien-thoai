@@ -364,61 +364,61 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 overflow-x-hidden py-2 sm:space-y-10 sm:py-4" style={{ contain: "paint" }}>
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-purple-700 to-fuchsia-700 px-4 py-6 shadow-2xl sm:rounded-[2.5rem] sm:px-8 sm:py-12">
-        <div className="relative z-10 flex flex-col gap-4">
-          <div>
-            <h1 className="text-2xl font-extrabold leading-tight text-white sm:text-4xl">
+    <div className="mx-auto w-full max-w-6xl space-y-4 py-2 sm:space-y-6 sm:py-4 lg:space-y-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-purple-700 to-fuchsia-700 px-3 py-4 shadow-2xl sm:rounded-[2rem] sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <div className="relative z-10 flex min-w-0 flex-col gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <h1 className="text-xl font-extrabold leading-tight text-white sm:text-3xl lg:text-4xl">
               Hỗ trợ khách hàng
             </h1>
-            <p className="mt-2 text-sm leading-relaxed text-indigo-100 opacity-90 sm:text-lg">
+            <p className="mt-2 text-xs leading-relaxed text-indigo-100 opacity-90 sm:text-sm lg:text-base">
               Chúng tôi luôn sẵn sàng lắng nghe và giải quyết mọi thắc mắc của bạn.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="flex min-w-0 items-center gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur-md border border-white/10">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-400 text-cyan-900">
-                <Phone className="h-4 w-4" />
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-xl bg-white/10 p-2.5 backdrop-blur-md border border-white/10 sm:gap-3 sm:rounded-2xl sm:p-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-400 text-cyan-900 sm:h-9 sm:w-9 sm:rounded-xl">
+                <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-bold text-indigo-200">Hotline tư vấn</div>
-                <div className="text-sm font-black text-white">0978 603 382</div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[9px] font-bold text-indigo-200 sm:text-[10px]">Hotline tư vấn</div>
+                <div className="text-xs font-black text-white sm:text-sm">0978 603 382</div>
               </div>
             </div>
-            <div className="flex min-w-0 items-center gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur-md border border-white/10">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-400 text-purple-900">
-                <Mail className="h-4 w-4" />
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden rounded-xl bg-white/10 p-2.5 backdrop-blur-md border border-white/10 sm:gap-3 sm:rounded-2xl sm:p-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-400 text-purple-900 sm:h-9 sm:w-9 sm:rounded-xl">
+                <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </div>
-              <div className="min-w-0 overflow-hidden">
-                <div className="text-[10px] font-bold text-indigo-200">Email hỗ trợ</div>
-                <div className="truncate text-sm font-black text-white">buivanha22032004@gmail.com</div>
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <div className="text-[9px] font-bold text-indigo-200 sm:text-[10px]">Email hỗ trợ</div>
+                <div className="truncate text-xs font-black text-white sm:text-sm">buivanha22032004@gmail.com</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:gap-8 lg:grid-cols-12">
+      <div className="grid min-w-0 gap-3 overflow-hidden sm:gap-4 lg:grid-cols-12 lg:gap-6">
         {/* CONTACT FORM */}
-        <div className="lg:col-span-7">
+        <div className="min-w-0 lg:col-span-7">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6"
+            className="overflow-hidden rounded-xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-3 sm:rounded-2xl sm:p-4 lg:p-6"
           >
-            <div className="mb-5 flex items-center gap-3 sm:mb-8">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-500/10 sm:h-12 sm:w-12">
-                <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
+            <div className="mb-4 flex min-w-0 items-center gap-2 sm:mb-6 sm:gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/10 sm:h-10 sm:w-10">
+                <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <div className="min-w-0">
-                <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-black text-slate-900 dark:text-white sm:text-lg">
                   {editingId ? "Cập nhật yêu cầu" : "Gửi yêu cầu hỗ trợ"}
                 </h2>
-                <p className="text-xs font-medium text-slate-400">Thời gian phản hồi dự kiến: 2-4h</p>
+                <p className="truncate text-[10px] font-medium text-slate-400 sm:text-xs">Thời gian phản hồi dự kiến: 2-4h</p>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">Họ và tên</label>
@@ -571,37 +571,37 @@ export default function ContactPage() {
         </div>
 
         {/* SIDEBAR: INFO & TIPS */}
-        <div className="space-y-4 lg:col-span-5 lg:flex lg:flex-col">
+        <div className="min-w-0 space-y-3 sm:space-y-4 lg:col-span-5 lg:flex lg:flex-col">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6"
+            className="overflow-hidden rounded-xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-3 sm:rounded-2xl sm:p-4 lg:p-6"
           >
-            <h3 className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
-              <Clock className="h-5 w-5 text-indigo-600" />
-              Thời gian hoạt động
+            <h3 className="flex min-w-0 items-center gap-2 text-base font-black text-slate-900 dark:text-white sm:text-lg">
+              <Clock className="h-4 w-4 shrink-0 text-indigo-600 sm:h-5 sm:w-5" />
+              <span className="truncate">Thời gian hoạt động</span>
             </h3>
-            <div className="mt-5 space-y-4">
-              <div className="flex items-center justify-between gap-2 text-sm">
-                <span className="font-bold text-slate-500 shrink-0">Thứ 2 - Thứ 6</span>
-                <span className="font-black text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-lg text-xs sm:text-sm">08:00 - 18:00</span>
+            <div className="mt-3 space-y-2 sm:mt-4 sm:space-y-3">
+              <div className="flex min-w-0 items-center justify-between gap-2 text-xs sm:text-sm">
+                <span className="shrink-0 font-bold text-slate-500">Thứ 2 - Thứ 6</span>
+                <span className="whitespace-nowrap rounded-lg bg-slate-50 px-2 py-1 text-[10px] font-black text-slate-900 dark:bg-slate-800 dark:text-white sm:px-3 sm:text-xs">08:00 - 18:00</span>
               </div>
-              <div className="flex items-center justify-between gap-2 text-sm">
-                <span className="font-bold text-slate-500 shrink-0">Thứ 7</span>
-                <span className="font-black text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-lg text-xs sm:text-sm">08:00 - 12:00</span>
+              <div className="flex min-w-0 items-center justify-between gap-2 text-xs sm:text-sm">
+                <span className="shrink-0 font-bold text-slate-500">Thứ 7</span>
+                <span className="whitespace-nowrap rounded-lg bg-slate-50 px-2 py-1 text-[10px] font-black text-slate-900 dark:bg-slate-800 dark:text-white sm:px-3 sm:text-xs">08:00 - 12:00</span>
               </div>
-              <div className="flex items-center justify-between gap-2 text-sm">
-                <span className="font-bold text-slate-500 shrink-0">Chủ nhật</span>
-                <span className="font-black text-rose-500 bg-rose-50 dark:bg-rose-950/30 px-3 py-1 rounded-lg text-xs sm:text-sm">Nghỉ lễ</span>
+              <div className="flex min-w-0 items-center justify-between gap-2 text-xs sm:text-sm">
+                <span className="shrink-0 font-bold text-slate-500">Chủ nhật</span>
+                <span className="whitespace-nowrap rounded-lg bg-rose-50 px-2 py-1 text-[10px] font-black text-rose-500 dark:bg-rose-950/30 sm:px-3 sm:text-xs">Nghỉ lễ</span>
               </div>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-2xl bg-purple-50/50 p-4 dark:bg-purple-900/20 border border-purple-100/50 sm:mt-8 sm:rounded-3xl sm:p-5">
-              <div className="flex items-center gap-2 text-sm font-black text-purple-700 dark:text-purple-300">
-                <HelpCircle className="h-4 w-4 shrink-0" />
-                Gợi ý gửi tin
+            <div className="mt-4 overflow-hidden rounded-xl bg-purple-50/50 p-3 dark:bg-purple-900/20 border border-purple-100/50 sm:mt-5 sm:rounded-2xl sm:p-4">
+              <div className="flex min-w-0 items-center gap-2 text-xs font-black text-purple-700 dark:text-purple-300 sm:text-sm">
+                <HelpCircle className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+                <span>Gợi ý gửi tin</span>
               </div>
-              <ul className="mt-3 space-y-2 text-xs font-bold leading-relaxed text-slate-600 dark:text-slate-400">
+              <ul className="mt-2 space-y-1.5 text-[10px] font-bold leading-relaxed text-slate-600 dark:text-slate-400 sm:mt-3 sm:space-y-2 sm:text-xs">
                 <li className="flex gap-2">
                   <span className="mt-0.5 shrink-0 text-purple-500">•</span>
                   <span className="break-words">Cung cấp mã đơn hàng nếu cần tra cứu bảo hành.</span>
@@ -621,80 +621,80 @@ export default function ContactPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6 lg:flex-1"
+            transition={{ delay: 0.1 }}
+            className="overflow-hidden rounded-xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-3 sm:rounded-2xl sm:p-4 lg:flex-1 lg:p-6"
           >
             <SocialQrContact title="Liên hệ qua Zalo / TikTok / Facebook" />
           </motion.div>
         </div>
 
         {/* HISTORY SECTION */}
-        <div className="lg:col-span-12">
+        <div className="min-w-0 lg:col-span-12">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6"
+            className="overflow-hidden rounded-xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-3 sm:rounded-2xl sm:p-4 lg:p-6"
           >
-            <div className="mb-6 flex items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800 sm:mb-8 sm:pb-6">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 sm:h-14 sm:w-14">
-                  <RefreshCcw className={`h-5 w-5 sm:h-7 sm:w-7 ${historyLoading ? "animate-spin" : ""}`} />
+            <div className="mb-4 flex min-w-0 items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800 sm:mb-6 sm:gap-3 sm:pb-4">
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 sm:h-12 sm:w-12">
+                  <RefreshCcw className={`h-4 w-4 sm:h-6 sm:w-6 ${historyLoading ? "animate-spin" : ""}`} />
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-base font-black text-slate-900 dark:text-white sm:text-2xl">Lịch sử liên hệ</h3>
-                  <p className="text-xs font-bold text-slate-400">Xem lại các yêu cầu bạn đã gửi</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-black text-slate-900 dark:text-white sm:text-lg lg:text-xl">Lịch sử liên hệ</h3>
+                  <p className="truncate text-[10px] font-bold text-slate-400 sm:text-xs">Xem lại các yêu cầu bạn đã gửi</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => void loadHistoryByEmail(email)}
-                className="flex h-9 shrink-0 items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 sm:h-11 sm:gap-2 sm:px-6"
+                className="flex h-8 shrink-0 items-center gap-1 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-2 text-[10px] font-black text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 sm:h-10 sm:gap-1.5 sm:rounded-2xl sm:px-4 sm:text-xs"
               >
                 Làm mới
               </button>
             </div>
 
             {historyLoading && history.length === 0 ? (
-              <div className="grid gap-6">
+              <div className="grid gap-4 sm:gap-6">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-40 animate-pulse rounded-[2rem] bg-slate-50 dark:bg-slate-800/50" />
+                  <div key={i} className="h-32 animate-pulse rounded-xl bg-slate-50 dark:bg-slate-800/50 sm:h-40 sm:rounded-2xl" />
                 ))}
               </div>
             ) : history.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-slate-50 text-5xl dark:bg-slate-800 shadow-inner">✉️</div>
-                <h4 className="mt-6 text-lg font-black text-slate-900 dark:text-white">Chưa có liên hệ nào</h4>
-                <p className="mt-2 text-sm font-bold text-slate-400">Mọi yêu cầu hỗ trợ của bạn sẽ xuất hiện tại đây.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center sm:py-24">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-4xl shadow-inner dark:bg-slate-800 sm:h-24 sm:w-24 sm:text-5xl">✉️</div>
+                <h4 className="mt-4 text-base font-black text-slate-900 dark:text-white sm:mt-6 sm:text-lg">Chưa có liên hệ nào</h4>
+                <p className="mt-1 text-xs font-bold text-slate-400 sm:mt-2 sm:text-sm">Mọi yêu cầu hỗ trợ của bạn sẽ xuất hiện tại đây.</p>
               </div>
             ) : (
-              <div className="grid gap-6 sm:grid-cols-1">
+              <div className="grid gap-3 sm:grid-cols-1 sm:gap-4 lg:gap-6">
                 {history.map((h, idx) => (
                   <motion.div
                     key={h.contactId}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="group relative overflow-hidden rounded-[2rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 transition-all hover:border-zinc-500/40 sm:rounded-[2.5rem] sm:p-6"
+                    transition={{ delay: idx * 0.03 }}
+                    className="group relative min-w-0 overflow-hidden rounded-xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-3 transition-all hover:border-zinc-500/40 sm:rounded-2xl sm:p-4 lg:p-5"
                   >
-                    <div className="flex flex-col gap-4">
-                      <div className="flex-1 space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-lg bg-purple-100 px-3 py-1 text-[10px] font-black text-purple-700 dark:bg-purple-900/40">ID: #{h.contactId}</span>
-                          <span className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
-                            <Clock className="h-3.5 w-3.5" />
-                            {formatDate(h.createdAt)}
+                    <div className="flex min-w-0 flex-col gap-3">
+                      <div className="min-w-0 flex-1 space-y-2 sm:space-y-3">
+                        <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
+                          <span className="whitespace-nowrap rounded-lg bg-purple-100 px-2 py-0.5 text-[9px] font-black text-purple-700 dark:bg-purple-900/40 sm:px-3 sm:py-1 sm:text-[10px]">ID: #{h.contactId}</span>
+                          <span className="flex min-w-0 items-center gap-1 text-[10px] font-bold text-slate-400 sm:gap-1.5 sm:text-xs">
+                            <Clock className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
+                            <span className="truncate">{formatDate(h.createdAt)}</span>
                           </span>
                         </div>
-                        <h4 className="text-base font-black text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors sm:text-xl">
+                        <h4 className="text-sm font-black text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors sm:text-base lg:text-lg">
                           {h.subject || "(Không có chủ đề)"}
                         </h4>
-                        <p className="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300 whitespace-pre-line">{h.message}</p>
+                        <p className="text-xs font-medium leading-relaxed text-slate-600 dark:text-slate-300 whitespace-pre-line sm:text-sm">{h.message}</p>
 
                         {h.imageUrls.length > 0 && (
-                          <div className="flex flex-wrap gap-3 pt-3">
+                          <div className="flex flex-wrap gap-2 pt-2 sm:gap-3">
                             {h.imageUrls.map((u, i) => (
-                              <div key={i} className="relative aspect-[9/16] w-16 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 sm:w-20">
+                              <div key={i} className="relative aspect-[9/16] w-14 overflow-hidden rounded-lg border border-slate-100 bg-slate-50 sm:w-16 sm:rounded-xl">
                                 <img src={resolveImageUrl(u)} className="h-full w-full object-contain transition group-hover:scale-110" alt="" />
                               </div>
                             ))}
@@ -702,40 +702,40 @@ export default function ContactPage() {
                         )}
                       </div>
 
-                      <div className="flex shrink-0 items-center gap-3">
+                      <div className="flex min-w-0 shrink-0 items-center gap-2">
                         <button
                           type="button"
                           onClick={() => handleEdit(h)}
-                          className="flex h-9 flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-50 px-4 text-xs font-black text-amber-600 transition hover:bg-amber-100 dark:bg-amber-900/20 shadow-sm sm:flex-none sm:h-10 sm:px-5"
+                          className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-50 px-3 text-[10px] font-black text-amber-600 transition hover:bg-amber-100 dark:bg-amber-900/20 shadow-sm sm:h-9 sm:flex-none sm:gap-2 sm:px-4 sm:text-xs"
                         >
-                          <Edit3 className="h-4 w-4" /> Sửa
+                          <Edit3 className="h-3.5 w-3.5" /> Sửa
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDelete(h.contactId)}
-                          className="flex h-9 flex-1 items-center justify-center gap-2 rounded-2xl bg-rose-50 px-4 text-xs font-black text-rose-600 transition hover:bg-rose-100 dark:bg-rose-900/20 shadow-sm sm:flex-none sm:h-10 sm:px-5"
+                          className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-xl bg-rose-50 px-3 text-[10px] font-black text-rose-600 transition hover:bg-rose-100 dark:bg-rose-900/20 shadow-sm sm:h-9 sm:flex-none sm:gap-2 sm:px-4 sm:text-xs"
                         >
-                          <Trash2 className="h-4 w-4" /> Xóa
+                          <Trash2 className="h-3.5 w-3.5" /> Xóa
                         </button>
                       </div>
                     </div>
 
                     {/* REPLIES TIMELINE */}
                     {h.replies.length > 0 && (
-                      <div className="mt-6 space-y-4 overflow-hidden rounded-2xl bg-indigo-50/50 p-4 dark:bg-indigo-900/10 border border-indigo-100/50 sm:mt-8 sm:rounded-[2rem] sm:p-6">
-                        <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-indigo-600">
-                          <div className="h-2 w-2 rounded-full bg-indigo-600 animate-pulse" />
-                          Phản hồi từ Shop
+                      <div className="mt-4 space-y-3 overflow-hidden rounded-xl bg-indigo-50/50 p-3 dark:bg-indigo-900/10 border border-indigo-100/50 sm:mt-5 sm:space-y-4 sm:rounded-2xl sm:p-4">
+                        <div className="flex min-w-0 items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-600 sm:gap-3 sm:text-[11px]">
+                          <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600 animate-pulse sm:h-2 sm:w-2" />
+                          <span>Phản hồi từ Shop</span>
                         </div>
                         {h.replies.map((r) => (
-                          <div key={r.replyId} className="space-y-4">
-                            <p className="text-sm font-bold leading-relaxed text-slate-800 dark:text-slate-100 whitespace-pre-line bg-white/50 dark:bg-slate-900/50 p-4 rounded-2xl">
+                          <div key={r.replyId} className="space-y-3">
+                            <p className="text-xs font-bold leading-relaxed text-slate-800 dark:text-slate-100 whitespace-pre-line bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl sm:text-sm sm:p-4">
                               {r.replyContent}
                             </p>
                             {r.imageUrls.length > 0 && (
-                              <div className="flex flex-wrap gap-3">
+                              <div className="flex flex-wrap gap-2">
                                 {r.imageUrls.map((u, i) => (
-                                  <div key={i} className="relative aspect-[9/16] w-16 overflow-hidden rounded-xl border border-white bg-white/50 shadow-sm sm:w-24">
+                                  <div key={i} className="relative aspect-[9/16] w-14 overflow-hidden rounded-lg border border-white bg-white/50 shadow-sm sm:w-20 sm:rounded-xl">
                                     <img src={resolveImageUrl(u)} className="h-full w-full object-contain transition group-hover:scale-110" alt="" />
                                   </div>
                                 ))}
