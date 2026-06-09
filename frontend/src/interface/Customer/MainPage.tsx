@@ -131,7 +131,7 @@ function ScrollRevealBody({
   const ref = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
   const isInView = useInView(ref, {
-    once: false,
+    once: true, // Changed from false to true — animation chỉ chạy 1 lần khi scroll vào
     amount: variant === "hero" ? 0.04 : 0.06,
     margin: "0px 0px -24px 0px",
   });
@@ -140,7 +140,7 @@ function ScrollRevealBody({
   const transition: Transition = prefersReducedMotion
     ? { duration: 0.2, ease: "easeOut" }
     : {
-        duration: isInView ? ENTER_DURATION : EXIT_DURATION,
+        duration: ENTER_DURATION,
         ease: SMOOTH_EASE,
       };
 
@@ -148,11 +148,11 @@ function ScrollRevealBody({
     <motion.section
       id={id}
       ref={ref}
-      initial={false}
-      animate={isInView ? motionPreset.visible : motionPreset.hidden}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      variants={motionPreset}
       transition={transition}
-      style={{ willChange: "opacity, transform" }}
-      className={[className, "backface-hidden"].filter(Boolean).join(" ")}
+      className={className}
     >
       {children}
     </motion.section>
@@ -397,11 +397,16 @@ export default function MainPage() {
     );
     observer.observe(viewport);
 
+    let frameCount = 0;
     const tick = () => {
       brandRafRef.current = window.requestAnimationFrame(tick);
 
       // Không tính toán nếu section không visible → tiết kiệm CPU khi scroll
       if (!brandSectionVisible.current) return;
+
+      // Throttle: chỉ tính mỗi 3 frames (~20fps thay vì 60fps)
+      frameCount++;
+      if (frameCount % 3 !== 0) return;
 
       const vpRect = viewport.getBoundingClientRect();
       const centerX = vpRect.left + vpRect.width / 2;
@@ -447,7 +452,7 @@ export default function MainPage() {
   }
 
   return (
-    <div className="min-h-screen space-y-8 overflow-x-hidden pb-8 sm:space-y-12 sm:pb-12" style={{ contain: "layout" }}>
+    <div className="min-h-screen space-y-8 overflow-x-hidden pb-8 sm:space-y-12 sm:pb-12" style={{ contain: "layout style" }}>
       {/* Body 1: Chào mừng / Hero */}
       <ScrollRevealBody
         variant="hero"
@@ -630,7 +635,7 @@ export default function MainPage() {
                 }}
                 data-brand-id={b.brandId}
                 className="group relative h-[84px] w-[84px] shrink-0 cursor-pointer select-none overflow-hidden rounded-full bg-zinc-200 shadow-md ring-1 ring-white/20"
-                style={{ transformOrigin: "center center", willChange: "transform, opacity" }}
+                style={{ transformOrigin: "center center", willChange: "transform, opacity, z-index" }}
                 role="button"
                 tabIndex={0}
                 onMouseEnter={() => setHoveredBrandId(b.brandId)}
