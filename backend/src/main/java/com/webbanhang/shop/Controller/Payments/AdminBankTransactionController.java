@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("null")
 @RestController
 @RequestMapping("/api/admin/bank-transactions")
 public class AdminBankTransactionController {
@@ -31,7 +30,6 @@ public class AdminBankTransactionController {
         this.orderRepository = orderRepository;
     }
 
-    @SuppressWarnings("null")
     private BankTransactionDto mapToDto(@NonNull BankTransaction tx) {
         String adminName = null;
         if (tx.getMatchedByAdminId() != null) {

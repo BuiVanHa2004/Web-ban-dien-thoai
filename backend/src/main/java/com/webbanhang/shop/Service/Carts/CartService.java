@@ -207,7 +207,8 @@ public class CartService {
 
         if (ci.getProductColorId() != null) {
             try {
-                ProductColor color = productColorRepository.findById(ci.getProductColorId()).orElse(null);
+                Integer colorId = ci.getProductColorId();
+                ProductColor color = productColorRepository.findById(colorId).orElse(null);
                 if (color != null) {
                     colorName = color.getColorName();
                     // ưu tiên ảnh màu đầu tiên nếu có
@@ -222,7 +223,8 @@ public class CartService {
 
         if (ci.getProductVariantId() != null) {
             try {
-                ProductVariant v = productVariantRepository.findById(ci.getProductVariantId()).orElse(null);
+                Integer variantId = ci.getProductVariantId();
+                ProductVariant v = productVariantRepository.findById(variantId).orElse(null);
                 if (v != null) {
                     ramGb = v.getRamGb();
                     storageGb = v.getStorageGb();

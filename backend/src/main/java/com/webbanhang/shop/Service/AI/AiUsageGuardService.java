@@ -30,6 +30,7 @@ public class AiUsageGuardService {
     private static final int USER_RATE_PER_MIN = 60;
     private static final int IP_RATE_PER_MIN = 100;
 
+    @SuppressWarnings("null")
     public AiUsageDecision checkAndConsume(Integer userId, String guestSessionId, String ip, String latestUserMessage) {
         boolean isGuest = userId == null;
         int messageLimit = isGuest ? GUEST_DAILY_MESSAGES : USER_DAILY_MESSAGES;
@@ -47,19 +48,21 @@ public class AiUsageGuardService {
         String ipMinKey = "ai:min:ip:" + hash(ip);
 
         try {
+            Duration oneMinute = Duration.ofMinutes(1);
+            Duration twoDays = Duration.ofDays(2);
             Long idPerMin = redis.opsForValue().increment(perMinKey);
-            if (idPerMin != null && idPerMin == 1L) redis.expire(perMinKey, Duration.ofMinutes(1));
+            if (idPerMin != null && idPerMin == 1L) redis.expire(perMinKey, oneMinute);
             Long ipPerMin = redis.opsForValue().increment(ipMinKey);
-            if (ipPerMin != null && ipPerMin == 1L) redis.expire(ipMinKey, Duration.ofMinutes(1));
+            if (ipPerMin != null && ipPerMin == 1L) redis.expire(ipMinKey, oneMinute);
             if ((idPerMin != null && idPerMin > perMinLimit) || (ipPerMin != null && ipPerMin > IP_RATE_PER_MIN)) {
                 AiQuotaDto q = currentQuota(messageLimit, msgCountKey, isGuest);
                 return AiUsageDecision.blocked(429, "RATE_LIMITED", "Bạn thao tác quá nhanh. Vui lòng thử lại sau vài giây.", q, estimatedTokens);
             }
 
             Long msgCount = redis.opsForValue().increment(msgCountKey);
-            if (msgCount != null && msgCount == 1L) redis.expire(msgCountKey, Duration.ofDays(2));
+            if (msgCount != null && msgCount == 1L) redis.expire(msgCountKey, twoDays);
             Long tokCount = redis.opsForValue().increment(tokenCountKey, estimatedTokens);
-            if (tokCount != null && tokCount == estimatedTokens) redis.expire(tokenCountKey, Duration.ofDays(2));
+            if (tokCount != null && tokCount == estimatedTokens) redis.expire(tokenCountKey, twoDays);
 
             if ((msgCount != null && msgCount > messageLimit) || (tokCount != null && tokCount > tokenLimit)) {
                 AiQuotaDto q = currentQuota(messageLimit, msgCountKey, isGuest);
@@ -90,6 +93,7 @@ public class AiUsageGuardService {
         }
     }
 
+    @SuppressWarnings("null")
     private AiQuotaDto currentQuota(int messageLimit, String msgCountKey, boolean isGuest) {
         String raw = redis.opsForValue().get(msgCountKey);
         int used = 0;

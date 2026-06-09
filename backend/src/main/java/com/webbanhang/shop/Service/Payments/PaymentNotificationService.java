@@ -14,10 +14,12 @@ public class PaymentNotificationService {
         this.messagingTemplate = messagingTemplate;
     }
 
+    @SuppressWarnings("null")
     public void notifyNewBill(Object bill) {
         messagingTemplate.convertAndSend("/topic/payments/new-bill", bill);
     }
 
+    @SuppressWarnings("null")
     public void notifyPaymentUpdate(Integer attemptId, String status, Integer adminId) {
         messagingTemplate.convertAndSend("/topic/payments/update", Map.of(
                 "attemptId", attemptId,
@@ -26,6 +28,7 @@ public class PaymentNotificationService {
         ));
     }
 
+    @SuppressWarnings("null")
     public void notifyLockStatus(Integer attemptId, Integer adminId, boolean locked) {
         messagingTemplate.convertAndSend("/topic/payments/lock", Map.of(
                 "attemptId", attemptId,
@@ -34,6 +37,7 @@ public class PaymentNotificationService {
         ));
     }
 
+    @SuppressWarnings("null")
     public void notifyTransactionMatched(Integer transactionId, Integer orderId) {
         messagingTemplate.convertAndSend("/topic/transactions/matched", Map.of(
                 "transactionId", transactionId,

@@ -13,8 +13,13 @@ frontend/.next/
 
 # Secrets — không đưa lên GitHub
 .env
-.env.*
+.env.local
+.env.production
+.env.development
+frontend/.env
+frontend/.env.local
 !.env.example
+!frontend/.env.example
 
 # OS & logs
 .DS_Store

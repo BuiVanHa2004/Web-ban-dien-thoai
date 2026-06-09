@@ -1,0 +1,45 @@
+=============================================
+ENVIRONMENT VARIABLES CHO RENDER.COM (Backend)
+Vào: Service → Environment → Add Environment Variable
+=============================================
+
+KEY                     | VALUE (thay bằng giá trị thật)
+------------------------|--------------------------------------------------
+DB_URL                  | jdbc:mysql://mysql-datn-xxx.aivencloud.com:PORT/defaultdb?useSSL=true&requireSSL=true&serverTimezone=UTC&nullCatalogMeansCurrent=true
+DB_USERNAME             | avnadmin
+DB_PASSWORD             | [password từ Aiven dashboard]
+
+REDIS_HOST              | [hostname từ Upstash dashboard]
+REDIS_PORT              | 6379
+REDIS_PASSWORD          | [password từ Upstash dashboard]
+
+MINIO_ENDPOINT          | http://localhost:9000
+MINIO_ACCESS_KEY        | root
+MINIO_SECRET_KEY        | 12345678
+MINIO_BUCKET_NAME       | myphone
+MINIO_URL_PREFIX        | https://datn-backend.onrender.com/api/files
+
+CORS_ALLOWED_ORIGINS    | https://datn-frontend.vercel.app
+
+JWT_SECRET              | [tạo bằng: openssl rand -base64 32]
+JWT_EXPIRATION_MS       | 86400000
+
+MAIL_USERNAME           | your_gmail@gmail.com
+MAIL_PASSWORD           | [Google App Password - 16 ký tự]
+MAIL_FROM               | your_gmail@gmail.com
+MAIL_HOST               | smtp.gmail.com
+MAIL_PORT               | 587
+
+GOOGLE_CLIENT_ID        | 1091375226649-tipibo3vdvk3n2hb0ptepksv0tcmqecs.apps.googleusercontent.com
+GROQ_API_KEY            | gsk_your_key_here
+GROQ_MODEL              | llama-3.3-70b-versatile
+
+JPA_DDL_AUTO            | none
+JPA_SHOW_SQL            | false
+
+=============================================
+LƯU Ý QUAN TRỌNG:
+- Sau khi deploy xong, URL backend sẽ là: https://datn-backend.onrender.com
+- Cập nhật CORS_ALLOWED_ORIGINS với URL Vercel thật
+- Render free tier sẽ sleep sau 15 phút không dùng → lần đầu load sẽ mất 30-60 giây
+=============================================

@@ -3,7 +3,6 @@ package com.webbanhang.shop.Service.Payments;
 import com.webbanhang.shop.Model.Orders.PaymentLog;
 import com.webbanhang.shop.Repository.Orders.PaymentLogRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
