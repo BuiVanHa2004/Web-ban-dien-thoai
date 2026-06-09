@@ -364,7 +364,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-4 py-2 sm:space-y-6 sm:py-4 lg:space-y-8">
+    <div className="w-full space-y-4 py-2 sm:space-y-6 sm:py-4 lg:space-y-8">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-purple-700 to-fuchsia-700 px-3 py-4 shadow-2xl sm:rounded-[2rem] sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="relative z-10 flex min-w-0 flex-col gap-3 sm:gap-4">
           <div className="min-w-0">
