@@ -97,6 +97,13 @@ export default function AiAssistantWidget({ onOpenChange }: { onOpenChange?: (op
     storageKey: "bvh-assistant-pos",
   });
 
+  // Safari iOS fix: force hardware acceleration to prevent iframe stacking issues
+  const safariFixStyle = {
+    transform: "translateZ(0)",
+    WebkitTransform: "translateZ(0)",
+    willChange: "transform",
+  };
+
   // Get current user ID for storage key
   const userId = React.useMemo(() => {
     if (typeof window === "undefined") return "guest";
@@ -462,6 +469,7 @@ export default function AiAssistantWidget({ onOpenChange }: { onOpenChange?: (op
           className="rounded-full z-[999]"
           style={{
             ...drag.style,
+            ...safariFixStyle,
             animation: "fabPulse 2s infinite",
           }}
           {...drag.handlers}

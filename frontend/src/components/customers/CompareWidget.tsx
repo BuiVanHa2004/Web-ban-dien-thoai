@@ -145,6 +145,13 @@ export default function CompareWidget({ chatOpen }: { chatOpen?: boolean }) {
     storageKey: "compare-widget-pos",
   });
 
+  // Safari iOS fix: force hardware acceleration to prevent iframe stacking issues
+  const safariFixStyle = {
+    transform: "translateZ(0)",
+    WebkitTransform: "translateZ(0)",
+    willChange: "transform",
+  };
+
   // Get current user ID for storage key
   const userId = useMemo(() => {
     if (typeof window === "undefined") return "guest";
@@ -273,8 +280,12 @@ export default function CompareWidget({ chatOpen }: { chatOpen?: boolean }) {
           cursor: "grab",
           opacity: 1,
           animation: "fabPulse 2s infinite",
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)",
+          willChange: "transform",
         } : {
           ...drag.style,
+          ...safariFixStyle,
           animation: "fabPulse 2s infinite",
         }}
         {...(chatOpen ? {} : drag.handlers)}
