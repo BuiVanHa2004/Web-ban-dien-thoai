@@ -364,7 +364,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 overflow-x-hidden py-2 sm:space-y-10 sm:py-4">
+    <div className="mx-auto w-full max-w-6xl space-y-6 overflow-x-hidden py-2 sm:space-y-10 sm:py-4" style={{ contain: "paint" }}>
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-purple-700 to-fuchsia-700 px-4 py-6 shadow-2xl sm:rounded-[2.5rem] sm:px-8 sm:py-12">
         <div className="relative z-10 flex flex-col gap-4">
           <div>
@@ -398,12 +398,12 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-12">
+      <div className="grid gap-4 lg:gap-8 lg:grid-cols-12">
         {/* CONTACT FORM */}
         <div className="lg:col-span-7">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6"
           >
             <div className="mb-5 flex items-center gap-3 sm:mb-8">
@@ -573,8 +573,8 @@ export default function ContactPage() {
         {/* SIDEBAR: INFO & TIPS */}
         <div className="space-y-4 lg:col-span-5 lg:flex lg:flex-col">
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6"
           >
             <h3 className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
@@ -596,32 +596,32 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="mt-8 rounded-3xl bg-purple-50/50 p-5 dark:bg-purple-900/20 border border-purple-100/50">
+            <div className="mt-6 overflow-hidden rounded-2xl bg-purple-50/50 p-4 dark:bg-purple-900/20 border border-purple-100/50 sm:mt-8 sm:rounded-3xl sm:p-5">
               <div className="flex items-center gap-2 text-sm font-black text-purple-700 dark:text-purple-300">
-                <HelpCircle className="h-4 w-4" />
+                <HelpCircle className="h-4 w-4 shrink-0" />
                 Gợi ý gửi tin
               </div>
               <ul className="mt-3 space-y-2 text-xs font-bold leading-relaxed text-slate-600 dark:text-slate-400">
                 <li className="flex gap-2">
-                  <span className="text-purple-500">•</span>
-                  Cung cấp mã đơn hàng nếu cần tra cứu bảo hành.
+                  <span className="mt-0.5 shrink-0 text-purple-500">•</span>
+                  <span className="break-words">Cung cấp mã đơn hàng nếu cần tra cứu bảo hành.</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-purple-500">•</span>
-                  Mô tả rõ ràng lỗi phát sinh để được hỗ trợ nhanh nhất.
+                  <span className="mt-0.5 shrink-0 text-purple-500">•</span>
+                  <span className="break-words">Mô tả rõ ràng lỗi phát sinh để được hỗ trợ nhanh nhất.</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-purple-500">•</span>
-                  Đính kèm hình ảnh thực tế của sản phẩm gặp vấn đề.
+                  <span className="mt-0.5 shrink-0 text-purple-500">•</span>
+                  <span className="break-words">Đính kèm hình ảnh thực tế của sản phẩm gặp vấn đề.</span>
                 </li>
               </ul>
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.15 }}
             className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6 lg:flex-1"
           >
             <SocialQrContact title="Liên hệ qua Zalo / TikTok / Facebook" />
@@ -722,7 +722,7 @@ export default function ContactPage() {
 
                     {/* REPLIES TIMELINE */}
                     {h.replies.length > 0 && (
-                      <div className="mt-8 space-y-4 rounded-[2rem] bg-indigo-50/50 p-6 dark:bg-indigo-900/10 border border-indigo-100/50">
+                      <div className="mt-6 space-y-4 overflow-hidden rounded-2xl bg-indigo-50/50 p-4 dark:bg-indigo-900/10 border border-indigo-100/50 sm:mt-8 sm:rounded-[2rem] sm:p-6">
                         <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-widest text-indigo-600">
                           <div className="h-2 w-2 rounded-full bg-indigo-600 animate-pulse" />
                           Phản hồi từ Shop
