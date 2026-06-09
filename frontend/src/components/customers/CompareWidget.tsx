@@ -321,7 +321,13 @@ export default function CompareWidget({ chatOpen }: { chatOpen?: boolean }) {
       {/* Modal / Widget */}
       {isOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm sm:p-6">
-          <div className="flex h-full max-h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-slate-50 shadow-2xl dark:bg-slate-950">
+          <div 
+            className="flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-slate-50 shadow-2xl dark:bg-slate-950"
+            style={{
+              height: "-webkit-fill-available",
+              maxHeight: "min(85dvh, calc(100dvh - 2rem))",
+            }}
+          >
 
             {/* Header */}
             <div className="flex items-center justify-between border-b border-black/5 bg-white px-6 py-4 dark:border-white/10 dark:bg-slate-900">
