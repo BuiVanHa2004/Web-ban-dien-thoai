@@ -134,13 +134,13 @@ export default function BannerPage() {
           <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">Quản lý các banner quảng cáo, vị trí hiển thị và trạng thái.</p>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-wrap gap-2 sm:flex-row sm:items-center">
           <Link
             href="/banners/create"
-            className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900/90 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-slate-900/10 backdrop-blur-xl transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-slate-900 hover:shadow-md active:translate-y-0 dark:bg-linear-to-br dark:from-pink-400/20 dark:to-purple-500/15 dark:text-slate-100 dark:ring-1 dark:ring-pink-400/20 dark:shadow-lg dark:shadow-pink-500/5 dark:hover:ring-pink-400/30"
+            className="group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl bg-slate-900/90 px-3 py-2 text-xs font-semibold text-white shadow-sm ring-1 ring-slate-900/10 backdrop-blur-xl transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-slate-900 hover:shadow-md active:translate-y-0 sm:px-4 sm:text-sm dark:bg-linear-to-br dark:from-pink-400/20 dark:to-purple-500/15 dark:text-slate-100 dark:ring-1 dark:ring-pink-400/20 dark:shadow-lg dark:shadow-pink-500/5 dark:hover:ring-pink-400/30"
           >
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20 transition-all duration-500 ease-out dark:bg-white/5 dark:ring-white/10 dark:group-hover:ring-pink-400/25">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 transition-all duration-500 ease-out sm:h-9 sm:w-9 sm:rounded-2xl dark:bg-white/5 dark:ring-white/10 dark:group-hover:ring-pink-400/25">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 5v14" />
                 <path d="M5 12h14" />
               </svg>
@@ -150,10 +150,10 @@ export default function BannerPage() {
 
           <Link
             href="/banners/trash"
-            className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-emerald-600/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-md active:translate-y-0 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-1 dark:ring-emerald-400/20 dark:hover:bg-emerald-500/20 dark:hover:ring-emerald-400/30 dark:hover:shadow-black/30"
+            className="group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm ring-1 ring-emerald-600/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-md active:translate-y-0 sm:px-4 sm:text-sm dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-1 dark:ring-emerald-400/20 dark:hover:bg-emerald-500/20 dark:hover:ring-emerald-400/30 dark:hover:shadow-black/30"
           >
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/15 transition-all duration-500 ease-out dark:bg-emerald-500/20 dark:ring-emerald-400/20">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/15 transition-all duration-500 ease-out sm:h-9 sm:w-9 sm:rounded-2xl dark:bg-emerald-500/20 dark:ring-emerald-400/20">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 6h18" />
                 <path d="M8 6V4h8v2" />
                 <path d="M6 6l1 16h10l1-16" />
@@ -169,7 +169,7 @@ export default function BannerPage() {
 
       <div className="flex flex-col gap-3 rounded-3xl border border-slate-200/70 bg-white/60 p-4 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out md:flex-row md:items-center md:justify-between dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="flex items-center gap-3">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/60 text-slate-800 ring-1 ring-slate-200/70 backdrop-blur-xl dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">
+          <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-800 ring-1 ring-slate-200/70 backdrop-blur-xl dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5z" />
               <path d="M4 10h16" />
@@ -220,7 +220,7 @@ export default function BannerPage() {
 
       <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-full text-left text-sm" style={{ minWidth: "600px" }}>
             <thead className="bg-white/55 text-xs uppercase tracking-wide text-slate-700 backdrop-blur-xl dark:bg-slate-950/35 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
                 <th className="px-5 py-3">STT</th>

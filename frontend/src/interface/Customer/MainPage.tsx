@@ -459,12 +459,12 @@ export default function MainPage() {
               <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-50 sm:mt-4 sm:text-3xl lg:text-4xl">
                 {mounted && user ? (
                   <>
-                    MyPhone Store - Xin chào,
+                    MyPhone <span className="text-cyan-400">Store</span> - Xin chào,
                     <br />
                     <span className="text-zinc-300">{user.name}</span>
                   </>
                 ) : (
-                  "MyPhone Store - Chào mừng bạn"
+                  <>MyPhone <span className="text-cyan-400">Store</span> - Chào mừng bạn</>
                 )}
               </h1>
 

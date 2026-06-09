@@ -80,14 +80,9 @@ export default function NewPage() {
   const rest = featured ? filtered.slice(1) : filtered;
 
   return (
-    <div className="min-h-screen overflow-hidden rounded-2xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/40 shadow-xl shadow-black/20 transition-colors duration-500 sm:rounded-[2.5rem]">
+    <div className="min-h-screen transition-colors duration-500">
       {/* Header / Hero Section */}
-      <section className="relative overflow-hidden pt-6 pb-8">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/4 w-72 h-72 bg-cyan-500/10 blur-[80px] rounded-full animate-pulse-slow" />
-          <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-fuchsia-500/10 blur-[80px] rounded-full animate-pulse-slow delay-1000" />
-        </div>
-
+      <section className="relative pt-6 pb-8 px-4 sm:px-6">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col items-center text-center space-y-4">
             <motion.div 
@@ -112,17 +107,17 @@ export default function NewPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="w-full max-w-lg relative group"
+              className="w-full max-w-lg relative group px-1"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/15 to-fuchsia-500/15 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700" />
               <div className="relative flex items-center rounded-full border border-zinc-600/40 bg-zinc-800/70 shadow-lg shadow-black/15 overflow-hidden transition-all duration-500 focus-within:ring-2 focus-within:ring-zinc-500/25 focus-within:border-zinc-500/50">
-                <Search className="ml-5 h-5 w-5 text-zinc-400" />
+                <Search className="ml-4 h-4 w-4 shrink-0 text-zinc-400" />
                 <input
                   type="text"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Tìm kiếm bài viết..."
-                  className="w-full h-12 border-none bg-transparent px-4 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+                  className="w-full h-11 border-none bg-transparent px-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
                 />
               </div>
             </motion.div>
@@ -130,7 +125,7 @@ export default function NewPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl pb-12 sm:pb-16">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 pb-12 sm:pb-16">
         {error && (
           <div className="mb-6 rounded-full border border-rose-200 bg-rose-50 px-6 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200 text-center">
             {error}
@@ -161,7 +156,7 @@ export default function NewPage() {
                 transition={{ duration: 0.8 }}
               >
                 <Link href={`/new/${featured.newsId}`}>
-                  <div className="group relative grid gap-0 overflow-hidden rounded-[2.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 shadow-xl transition-all duration-500 hover:shadow-black/30 lg:grid-cols-2 lg:rounded-[3.5rem]">
+                  <div className="group relative grid gap-0 overflow-hidden rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 shadow-xl transition-all duration-500 hover:shadow-black/30 lg:grid-cols-2 sm:rounded-[2.5rem] lg:rounded-[3.5rem]">
                     <div className="relative aspect-[16/10] lg:h-full lg:aspect-auto overflow-hidden">
                       {getCover(featured) ? (
                         <img
@@ -212,7 +207,7 @@ export default function NewPage() {
             <section className="space-y-6">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                 <h2 className="text-xl font-black text-slate-900 dark:text-white">Gần đây</h2>
-                <div className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-black text-slate-900 dark:text-slate-900">
+                <div className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-black text-slate-900 dark:text-slate-400">
                   {rest.length} BÀI VIẾT
                 </div>
               </div>

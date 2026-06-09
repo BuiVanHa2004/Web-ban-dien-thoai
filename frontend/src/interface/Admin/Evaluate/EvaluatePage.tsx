@@ -91,7 +91,7 @@ export default function EvaluatePage() {
 
       <div className="flex flex-col gap-3 rounded-3xl border border-slate-200/70 bg-white/60 p-4 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out md:flex-row md:items-center md:justify-between dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="flex items-center gap-3">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/60 text-slate-800 ring-1 ring-slate-200/70 backdrop-blur-xl dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">
+          <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-800 ring-1 ring-slate-200/70 backdrop-blur-xl dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 17.3l-3.7 2.2 1-4.2-3.3-2.9 4.3-.4L12 8l1.7 4 4.3.4-3.3 2.9 1 4.2z" />
               <path d="M4 4h16v16H4z" />
@@ -186,13 +186,13 @@ export default function EvaluatePage() {
                       <button
                         type="button"
                         onClick={() => router.push(`/evaluates/${encodeURIComponent(r.productId)}`)}
-                        className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md active:translate-y-0 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:ring-cyan-400/15 dark:hover:shadow-black/30"
+                        aria-label="Xem chi tiết"
+                        className="inline-flex cursor-pointer items-center justify-center rounded-full bg-white p-2 text-slate-600 ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-indigo-600 hover:shadow-md active:translate-y-0 dark:bg-white/5 dark:text-slate-300 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:text-indigo-400"
                       >
                         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
                           <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
                         </svg>
-                        Xem chi tiết
                       </button>
                     </td>
                   </tr>

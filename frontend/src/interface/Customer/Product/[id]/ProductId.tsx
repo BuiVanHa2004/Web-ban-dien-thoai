@@ -445,45 +445,43 @@ export default function ProductId() {
   }
 
   return (
-    <div className="relative space-y-4 overflow-x-hidden pb-12">
-      {portalReady
-        ? createPortal(
-          <div className="fixed top-[4.25rem] left-2 z-[80] sm:top-24 sm:left-4">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
+    <div className="relative space-y-4 pb-12">
+      {/* Fixed back button via portal */}
+      {typeof window !== "undefined" && createPortal(
+        <div className="fixed left-3 top-[3.5rem] z-[190] sm:left-4 sm:top-[4.25rem]">
+          {returnHref ? (
+            <Link
+              href={returnHref}
+              className="group flex items-center gap-2 rounded-full border border-zinc-600 bg-zinc-900/90 py-1.5 pl-2 pr-4 text-sm font-bold text-slate-400 backdrop-blur-md transition-colors hover:border-purple-600 hover:text-purple-400"
             >
-              {returnHref ? (
-                <Link
-                  href={returnHref}
-                  className="inline-flex h-11 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/80 px-5 text-sm font-semibold text-slate-800 shadow-lg backdrop-blur-xl transition hover:bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-200 dark:hover:bg-slate-900"
-                >
-                  <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Quay lại
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (typeof window !== "undefined" && window.history.length > 1) router.back();
-                    else router.push("/product");
-                  }}
-                  className="inline-flex h-11 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/80 px-5 text-sm font-semibold text-slate-800 shadow-lg backdrop-blur-xl transition hover:bg-white dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-200 dark:hover:bg-slate-900"
-                >
-                  <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Quay lại
-                </button>
-              )}
-            </motion.div>
-          </div>,
-          document.body
-        )
-        : null}
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 transition-all group-hover:bg-purple-600 group-hover:text-white">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </div>
+              Quay lại
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined" && window.history.length > 1) router.back();
+                else router.push("/product");
+              }}
+              className="group flex items-center gap-2 rounded-full border border-zinc-600 bg-zinc-900/90 py-1.5 pl-2 pr-4 text-sm font-bold text-slate-400 backdrop-blur-md transition-colors hover:border-purple-600 hover:text-purple-400"
+            >
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 transition-all group-hover:bg-purple-600 group-hover:text-white">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </div>
+              Quay lại
+            </button>
+          )}
+        </div>,
+        document.body
+      )}
+
       <div className="pointer-events-none absolute inset-x-0 -top-10 -z-10 h-64 bg-gradient-to-r from-cyan-500/10 via-transparent to-fuchsia-500/10 blur-3xl" />
 
       <div className="grid items-start gap-8 lg:grid-cols-2">
@@ -579,7 +577,7 @@ export default function ProductId() {
               </span>
               {product.categoryName && (
                 <span className="text-sm font-medium text-zinc-400">
-                  in {product.categoryName}
+                  trong {product.categoryName}
                 </span>
               )}
             </div>

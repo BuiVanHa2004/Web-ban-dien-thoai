@@ -206,10 +206,13 @@ export default function PremiumHeader() {
         <div className="mx-auto flex h-[3.25rem] max-w-7xl items-center justify-between gap-1 overflow-visible sm:h-16 sm:gap-3 sm:px-2 lg:px-4">
           <Link
             href="/home"
-            className="flex h-full shrink-0 items-center transition-transform active:scale-95"
+            className="flex h-full shrink-0 items-center gap-2 transition-transform active:scale-95"
             aria-label="MyPhone Store - Trang chủ"
           >
             <Logo variant="header" />
+            <span className="text-sm font-black text-zinc-100 lg:hidden">
+              MyPhone <span className="text-cyan-400">Store</span>
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-1 rounded-2xl border border-zinc-500/50 bg-zinc-900/70 p-1 shadow-sm backdrop-blur-md lg:flex">

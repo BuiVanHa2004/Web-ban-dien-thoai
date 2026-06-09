@@ -138,15 +138,17 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={`group relative flex items-center rounded-2xl p-2 transition-all duration-300 ${
-                    collapsed ? "justify-center" : "gap-3"
+                  className={`group relative flex items-center transition-all duration-300 ${
+                    collapsed ? "h-14 w-14 justify-center rounded-full p-0" : "gap-3 rounded-2xl p-2"
                   } ${
                     active 
-                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-300 dark:shadow-none ring-1 ring-indigo-500/50" 
+                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-300 dark:shadow-none ring-1 ring-indigo-500/50" 
                       : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
                   }`}
                 >
-                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ring-1 ring-inset transition-all duration-300 group-hover:scale-110 ${
+                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center transition-all duration-300 group-hover:scale-110 ${
+                    collapsed ? "rounded-full" : "rounded-xl ring-1 ring-inset"
+                  } ${
                     active ? "bg-white/20 ring-white/30 dark:bg-indigo-500/20 dark:ring-indigo-500/40" : colorScheme
                   }`}>
                     <IconComp className="h-5 w-5" />

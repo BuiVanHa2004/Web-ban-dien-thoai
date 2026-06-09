@@ -17,16 +17,18 @@ interface Props {
 
 export default function AdminActionBar({ backHref, formId, submitting, disabled, backLabel = "Quay lại", saveLabel = "Lưu", fixed = true, extra }: Props) {
   const showSave = typeof formId === "string" && formId.length > 0;
-  const rootClass = fixed ? "fixed top-[119px] right-[41px] z-50 flex items-center gap-3" : "flex items-center gap-3";
+  const rootClass = fixed
+    ? "fixed top-[5.25rem] right-3 z-50 flex items-center gap-2 sm:top-[119px] sm:right-[41px] sm:gap-3"
+    : "flex items-center gap-2 sm:gap-3";
 
   const node = (
     <div className={rootClass}>
       {extra ? <div className="mr-2">{extra}</div> : null}
       <Link
         href={backHref}
-        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+        className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10 sm:rounded-2xl sm:px-4 sm:py-2 sm:text-sm"
       >
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M15 18l-6-6 6-6" />
         </svg>
         {backLabel}
@@ -38,7 +40,7 @@ export default function AdminActionBar({ backHref, formId, submitting, disabled,
           form={formId}
           disabled={!!submitting || !!disabled}
           className={
-            "inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 " +
+            "inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-700 active:translate-y-0 sm:rounded-2xl sm:px-6 sm:py-2 sm:text-sm " +
             ((submitting || disabled) ? "opacity-70 pointer-events-none" : "")
           }
         >

@@ -134,23 +134,55 @@ export default function AppNotificationProvider({
 
       <AnimatePresence>
         {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 40, x: "-50%" }}
-            animate={{ opacity: 1, y: 0, x: "-50%" }}
-            exit={{ opacity: 0, y: 20, x: "-50%" }}
-            className={`fixed bottom-8 left-1/2 z-[300] flex max-w-[min(90vw,28rem)] items-center gap-3 rounded-2xl px-5 py-4 shadow-2xl backdrop-blur-xl ring-1 ${
-              toast.type === "success"
-                ? "bg-emerald-500/95 text-white ring-emerald-400/30"
-                : toast.type === "error"
-                  ? "bg-rose-500/95 text-white ring-rose-400/30"
-                  : "bg-slate-900/95 text-white ring-slate-700/30"
-            }`}
-          >
-            {toast.type === "success" && <CheckCircle2 className="h-5 w-5 shrink-0" />}
-            {toast.type === "error" && <AlertCircle className="h-5 w-5 shrink-0" />}
-            {toast.type === "info" && <Info className="h-5 w-5 shrink-0" />}
-            <span className="text-sm font-bold leading-snug">{toast.message}</span>
-          </motion.div>
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm"
+              onClick={() => setToast(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
+              animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
+              exit={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
+              className="fixed left-1/2 top-1/2 z-[9999] w-[min(90vw,22rem)] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/10 dark:bg-slate-900 dark:ring-white/10"
+            >
+              {/* Icon + message */}
+              <div className="flex flex-col items-center gap-3 px-6 pt-6 pb-4 text-center">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
+                  toast.type === "success"
+                    ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10"
+                    : toast.type === "error"
+                      ? "bg-rose-50 text-rose-500 dark:bg-rose-500/10"
+                      : "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                }`}>
+                  {toast.type === "success" && <CheckCircle2 className="h-7 w-7" />}
+                  {toast.type === "error" && <AlertCircle className="h-7 w-7" />}
+                  {toast.type === "info" && <Info className="h-7 w-7" />}
+                </div>
+                <p className="text-sm font-semibold leading-snug text-slate-700 dark:text-slate-200">
+                  {toast.message}
+                </p>
+              </div>
+              {/* Button */}
+              <div className="border-t border-slate-100 px-6 py-3 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setToast(null)}
+                  className={`w-full rounded-xl py-2.5 text-sm font-bold text-white transition active:scale-95 ${
+                    toast.type === "success"
+                      ? "bg-emerald-500 hover:bg-emerald-600"
+                      : toast.type === "error"
+                        ? "bg-rose-500 hover:bg-rose-600"
+                        : "bg-slate-800 hover:bg-slate-700"
+                  }`}
+                >
+                  Đã hiểu
+                </button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

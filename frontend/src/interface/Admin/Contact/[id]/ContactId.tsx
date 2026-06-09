@@ -4,6 +4,7 @@ import Link from "next/link";
 import AdminActionBar from "@/components/admins/AdminActionBar";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { createPortal } from "react-dom";
 
 import { contactService, type ContactDto } from "@/services/contactService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
@@ -284,7 +285,8 @@ export default function ContactId() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <AdminActionBar backHref="/contacts" />
+      <div className="flex flex-col gap-4 pt-10 sm:pt-0 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-white/60 px-3 py-1 text-xs font-semibold text-slate-800 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
             <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_18px_rgba(34,211,238,0.55)]" />
@@ -294,7 +296,6 @@ export default function ContactId() {
           <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">Xem đầy đủ thông tin liên hệ từ khách hàng.</p>
         </div>
       </div>
-      <AdminActionBar backHref="/contacts" />
 
       <div className="rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 p-5 sm:p-7">
         {loading ? (
@@ -306,19 +307,19 @@ export default function ContactId() {
         ) : (
           <div className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-black/5 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+              <div className="rounded-2xl border border-black/5 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5 overflow-hidden">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Họ và tên</div>
-                <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">{data.currentFullName || String(data.fullName || "-")}</div>
+                <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white truncate">{data.currentFullName || String(data.fullName || "-")}</div>
               </div>
-              <div className="rounded-2xl border border-black/5 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+              <div className="rounded-2xl border border-black/5 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5 overflow-hidden">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Email</div>
-                <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">{data.currentEmail || String(data.email || "-")}</div>
+                <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white break-all">{data.currentEmail || String(data.email || "-")}</div>
               </div>
-              <div className="rounded-2xl border border-black/5 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+              <div className="rounded-2xl border border-black/5 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5 overflow-hidden">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Số điện thoại</div>
                 <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">{data.currentPhone || String(data.phone || "-")}</div>
               </div>
-              <div className="rounded-2xl border border-black/5 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+              <div className="rounded-2xl border border-black/5 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/5 overflow-hidden">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Thời gian gửi</div>
                 <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">{formatDate(data.createdAt)}</div>
               </div>
@@ -329,311 +330,176 @@ export default function ContactId() {
 
 
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Nội dung</div>
-              <div className="mt-2 rounded-2xl border border-black/5 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Toàn bộ liên hệ</div>
-                {thread.length === 0 ? (
-                  <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">Chưa có liên hệ.</div>
-                ) : (
-                  <div className="mt-3 max-h-[520px] overflow-y-auto rounded-2xl border border-black/5 bg-white/40 p-3 dark:border-white/10 dark:bg-slate-950/20">
-                    <div className="space-y-3">
-                      {thread.map((c) => (
-                        <div
-                          key={c.contactId}
-                          className={
-                            "rounded-2xl border border-black/5 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5 " +
-                            (c.contactId === id ? "ring-2 ring-cyan-500/20" : "")
-                          }
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <div className="text-[13px] font-bold text-blue-600 dark:text-blue-400">{c.currentFullName || c.fullName}</div>
-                              <div className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{c.subject}</div>
-                              <div className="mt-1 text-sm text-slate-700 dark:text-slate-200 whitespace-pre-line">{c.message}</div>
-                            </div>
-                            <div className="flex shrink-0 items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => openCreateModal(c.contactId)}
-                                  className="inline-flex h-9 cursor-pointer items-center justify-center rounded-xl bg-emerald-600 px-3 text-xs font-semibold text-white shadow-sm ring-1 ring-emerald-600/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-md active:translate-y-0 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/20 dark:hover:bg-emerald-500/20"
-                                >
-                                  Phản hồi
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-3">Nội dung liên hệ</div>
+              {thread.length === 0 ? (
+                <div className="text-sm text-slate-500 dark:text-slate-400">Chưa có liên hệ.</div>
+              ) : (
+                <div className="space-y-4">
+                  {thread.map((c) => (
+                    <div
+                      key={c.contactId}
+                      className={`rounded-2xl border bg-slate-50 p-4 dark:bg-white/5 ${c.contactId === id ? "border-cyan-500/30 dark:border-cyan-500/30" : "border-slate-200 dark:border-white/10"}`}
+                    >
+                      {/* Header */}
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="text-xs font-bold text-blue-600 dark:text-blue-400 truncate">{c.currentFullName || c.fullName}</span>
+                        {c.createdAt && <span className="text-[11px] text-slate-400 shrink-0">{formatDate(c.createdAt)}</span>}
+                      </div>
+                      <div className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-1">{c.subject}</div>
+                      <div className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">{c.message}</div>
+
+                      {c.imageUrls.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {c.imageUrls.map((u, i) => {
+                            const resolved = resolveImageUrl(u);
+                            return (
+                              <a key={`${c.contactId}-${i}`} href={resolved} target="_blank" rel="noreferrer"
+                                className="block w-16 overflow-hidden rounded-xl border border-black/5 dark:border-white/10"
+                                style={{ aspectRatio: "9/16" }}>
+                                <img src={resolved} alt="" className="w-full h-full object-cover" />
+                              </a>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => openCreateModal(c.contactId)}
+                        className="mt-3 inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl bg-emerald-600 px-3 text-xs font-semibold text-white transition hover:bg-emerald-500 dark:bg-emerald-500/20 dark:text-emerald-300 dark:hover:bg-emerald-500/30"
+                      >
+                        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Phản hồi
+                      </button>
+
+                      {c.replies.length > 0 && (
+                        <div className="mt-3 space-y-3 border-t border-slate-200 pt-3 dark:border-white/10">
+                          <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Phản hồi từ Shop</div>
+                          {c.replies.map((r) => (
+                            <div key={r.replyId} className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3 dark:border-emerald-500/10 dark:bg-emerald-500/5">
+                              <div className="text-sm text-slate-800 dark:text-slate-100 whitespace-pre-line mb-2">{r.replyContent}</div>
+                              {r.createdAt && <div className="text-[11px] text-slate-400 mb-2">{formatDate(r.createdAt)}</div>}
+                              {r.imageUrls.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                  {r.imageUrls.map((u, i) => {
+                                    const resolved = resolveImageUrl(u);
+                                    return (
+                                      <a key={`${r.replyId}-${i}`} href={resolved} target="_blank" rel="noreferrer"
+                                        className="block w-14 overflow-hidden rounded-xl border border-black/5 dark:border-white/10"
+                                        style={{ aspectRatio: "9/16" }}>
+                                        <img src={resolved} alt="" className="w-full h-full object-cover" />
+                                      </a>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                              <div className="flex gap-2">
+                                <button type="button" onClick={() => openEditModal(r)}
+                                  className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-semibold text-amber-950 transition hover:bg-amber-400 dark:bg-amber-500/15 dark:text-amber-200">
+                                  <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16.5 3.5l4 4L7 21H3v-4z"/></svg>
+                                  Sửa
                                 </button>
-
-                            </div>
-                          </div>
-
-                          {c.createdAt ? (
-                            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">{formatDate(c.createdAt)}</div>
-                          ) : null}
-
-                          {c.imageUrls.length > 0 && (
-                            <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
-                              {c.imageUrls.map((u, i) => {
-                                const resolved = resolveImageUrl(u);
-                                return (
-                                  <a
-                                    key={`${c.contactId}-${i}`}
-                                    href={resolved}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="block rounded-2xl border border-black/5 bg-white dark:border-white/10 dark:bg-slate-900 overflow-hidden"
-                                    style={{ aspectRatio: "9/16" }}
-                                  >
-                                    <img
-                                      src={resolved}
-                                      alt=""
-                                      className="w-full h-full object-cover cursor-pointer transition-[filter] duration-300 hover:brightness-110"
-                                    />
-                                  </a>
-                                );
-                              })}
-                            </div>
-                          )}
-
-                          {c.replies.length > 0 && (
-                            <div className="mt-4 rounded-2xl border border-black/5 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-                              <div className="text-sm font-bold text-blue-700 dark:text-blue-400">Phản hồi từ Shop</div>
-                              <div className="mt-3 space-y-3">
-                                {c.replies.map((r) => (
-                                  <div
-                                    key={r.replyId}
-                                    className="rounded-2xl border border-black/5 bg-white/70 p-4 dark:border-white/10 dark:bg-white/5"
-                                  >
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div className="text-sm text-slate-800 dark:text-slate-100 whitespace-pre-line">
-                                        {r.replyContent}
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                          <button
-                                            type="button"
-                                            onClick={() => openEditModal(r)}
-                                            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-amber-500 px-3 py-2 text-xs font-semibold text-amber-950 shadow-sm ring-1 ring-amber-500/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-amber-400 hover:shadow-md active:translate-y-0 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-1 dark:ring-amber-400/20 dark:hover:bg-amber-500/20 dark:hover:ring-amber-400/30 dark:hover:shadow-black/30"
-                                            title="Sửa phản hồi"
-                                          >
-                                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                                              <path d="M16.5 3.5l4 4L7 21H3v-4z" />
-                                            </svg>
-                                            Sửa
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => void deleteReply(r.replyId)}
-                                            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white shadow-sm ring-1 ring-rose-600/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-rose-500 hover:shadow-md active:translate-y-0 dark:bg-rose-500/15 dark:text-rose-200 dark:ring-1 dark:ring-rose-400/20 dark:hover:bg-rose-500/20 dark:hover:ring-rose-400/30 dark:hover:shadow-black/30"
-                                            title="Xóa phản hồi"
-                                          >
-                                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                                              <path d="M3 6h18" />
-                                              <path d="M8 6V4h8v2" />
-                                              <path d="M6 6l1 16h10l1-16" />
-                                            </svg>
-                                            Xóa
-                                          </button>
-                                      </div>
-                                    </div>
-                                    {r.createdAt ? (
-                                      <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">{formatDate(r.createdAt)}</div>
-                                    ) : null}
-                                    {r.imageUrls.length > 0 && (
-                                      <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
-                                        {r.imageUrls.map((u, i) => {
-                                          const resolved = resolveImageUrl(u);
-                                          return (
-                                            <a
-                                              key={`${r.replyId}-${i}`}
-                                              href={resolved}
-                                              target="_blank"
-                                              rel="noreferrer"
-                                              className="block rounded-2xl border border-black/5 bg-white dark:border-white/10 dark:bg-slate-900 overflow-hidden"
-                                              style={{ aspectRatio: "9/16" }}
-                                            >
-                                              <img
-                                                src={resolved}
-                                                alt=""
-                                                className="w-full h-full object-cover cursor-pointer transition-[filter] duration-300 hover:brightness-110"
-                                              />
-                                            </a>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
+                                <button type="button" onClick={() => void deleteReply(r.replyId)}
+                                  className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-rose-500 dark:bg-rose-500/15 dark:text-rose-200">
+                                  <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 16h10l1-16"/></svg>
+                                  Xóa
+                                </button>
                               </div>
                             </div>
-                          )}
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
           </div>
         )}
       </div>
 
-      {replyModalOpen && (
-        <div
-          className="fixed inset-0 z-[99999]"
-          role="dialog"
-          aria-modal="true"
-          onClick={closeReplyModal}
-        >
-          <div className="absolute inset-0 bg-black/55 backdrop-blur-sm animate-fade-in-up" />
-
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div
-              className="flex w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-slate-950 animate-auth-page max-h-[92vh]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/50 px-6 py-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/60">
-                <div>
-                  <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    {editingReplyId ? "Chỉnh sửa phản hồi" : "Phản hồi khách hàng"}
-                  </div>
-                  <div className="mt-0.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                    {editingReplyId ? "Cập nhật nội dung và quản lý ảnh đính kèm." : "Nhập nội dung phản hồi và đính kèm ảnh minh họa."}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={closeReplyModal}
-                  className="inline-flex cursor-pointer h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
-                >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M18 6L6 18" />
-                    <path d="M6 6l12 12" />
-                  </svg>
-                </button>
+      {replyModalOpen && typeof window !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" onClick={closeReplyModal}>
+          <div className="absolute inset-0" style={{ backgroundColor: "rgba(15,23,42,0.75)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }} />
+          <div
+            className="relative w-full max-w-2xl overflow-hidden rounded-3xl"
+            style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" }}>
+              <div>
+                <div className="text-sm font-semibold text-white/90">{editingReplyId ? "Chỉnh sửa phản hồi" : "Phản hồi khách hàng"}</div>
+                <div className="mt-0.5 text-xs text-white/55">{editingReplyId ? "Cập nhật nội dung và quản lý ảnh đính kèm." : "Nhập nội dung phản hồi và đính kèm ảnh minh họa."}</div>
               </div>
+              <button type="button" onClick={closeReplyModal}
+                className="inline-flex cursor-pointer h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/70 transition hover:-translate-y-0.5 hover:text-white active:translate-y-0"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+              </button>
+            </div>
 
-              <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-                <textarea
-                  ref={replyModalRef}
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  className="min-h-[220px] w-full resize-none rounded-2xl bg-slate-50 px-5 py-4 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition-all focus:bg-white focus:ring-cyan-500/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:bg-white/[0.07]"
-                  placeholder="Nhập nội dung phản hồi chi tiết tại đây..."
-                />
+            {/* Body */}
+            <div className="p-5">
+              <textarea
+                ref={replyModalRef}
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                className="min-h-[200px] w-full resize-none rounded-2xl px-4 py-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                placeholder="Nhập nội dung phản hồi..."
+              />
 
-                <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-4">
-                    <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10">
-                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                        <path d="M17 8l-5-5-5 5" />
-                        <path d="M12 3v12" />
-                      </svg>
-                      Thêm ảnh
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={(e) => onPickReplyFiles(e.target.files)}
-                      />
-                    </label>
-                    <div className="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 text-[11px] font-bold text-slate-600 dark:bg-white/5 dark:text-slate-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-500" />
-                      {replyItems.length + existingUrls.length > 0 ? `Đã chọn ${replyItems.length + existingUrls.length} ảnh` : "Chưa chọn ảnh"}
+              {/* Image preview */}
+              {(existingUrls.length > 0 || replyItems.length > 0) && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {existingUrls.map((u, idx) => (
+                    <div key={`ex-${idx}`} className="relative h-16 w-16 overflow-hidden rounded-xl" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+                      <img src={resolveImageUrl(u)} alt="" className="h-full w-full object-cover" />
+                      <button type="button" onClick={() => setExistingUrls(prev => prev.filter((_, i) => i !== idx))}
+                        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white">
+                        <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={closeReplyModal}
-                      className="inline-flex cursor-pointer h-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-xs font-bold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
-                    >
-                      Hủy
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void submitReply()}
-                      disabled={submitting}
-                      className={
-                        "inline-flex cursor-pointer h-10 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-7 text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-lg active:translate-y-0 " +
-                        (submitting ? "opacity-70 pointer-events-none" : "")
-                      }
-                    >
-                      {submitting ? (
-                        <span className="inline-flex h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                      ) : (
-                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                      Lưu phản hồi
-                    </button>
-                  </div>
+                  ))}
+                  {replyItems.map((it, idx) => (
+                    <div key={`new-${idx}`} className="relative h-16 w-16 overflow-hidden rounded-xl" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+                      <img src={it.url} alt="" className="h-full w-full object-cover" />
+                      <button type="button" onClick={() => removeReplyFile(idx)}
+                        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white">
+                        <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
+              )}
+            </div>
 
-                {(replyItems.length > 0 || existingUrls.length > 0) && (
-                  <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-6">
-                    {/* Render existing images */}
-                    {existingUrls.map((u, idx) => (
-                      <div
-                        key={`existing-${idx}`}
-                        className="relative overflow-hidden rounded-2xl border border-black/5 bg-white text-left dark:border-white/10 dark:bg-slate-900"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setExistingUrls((prev) => prev.filter((_, i) => i !== idx))}
-                          aria-label="Bỏ ảnh"
-                          className="absolute right-2 top-2 z-10 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition-all duration-300 hover:bg-black/70 hover:scale-110 active:scale-95"
-                          title="Bỏ ảnh"
-                        >
-                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M18 6L6 18" />
-                            <path d="M6 6l12 12" />
-                          </svg>
-                        </button>
-                        <div className="relative w-full overflow-hidden" style={{ paddingBottom: "100%" }}>
-                          <img
-                            src={resolveImageUrl(u)}
-                            alt=""
-                            className="absolute inset-0 h-full w-full cursor-pointer object-cover transition-transform duration-300 hover:scale-110"
-                          />
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Render new images */}
-                    {replyItems.map((it, idx) => (
-                      <div
-                        key={`${it.file.name}-${it.file.lastModified}`}
-                        className="relative overflow-hidden rounded-2xl border border-black/5 bg-white text-left dark:border-white/10 dark:bg-slate-900"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => removeReplyFile(idx)}
-                          aria-label="Bỏ ảnh"
-                          className="absolute right-2 top-2 z-10 inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition-all duration-300 hover:bg-black/70 hover:scale-110 active:scale-95"
-                          title="Bỏ ảnh"
-                        >
-                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M18 6L6 18" />
-                            <path d="M6 6l12 12" />
-                          </svg>
-                        </button>
-                        <div className="relative w-full overflow-hidden" style={{ paddingBottom: "100%" }}>
-                          <img
-                            src={it.url}
-                            alt={it.file.name}
-                            className="absolute inset-0 h-full w-full cursor-pointer object-cover transition-transform duration-300 hover:scale-110"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {/* Footer */}
+            <div className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between" style={{ borderTop: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)" }}>
+              <label className="inline-flex cursor-pointer h-9 w-full items-center justify-center gap-2 rounded-2xl px-3 text-xs font-semibold text-white/75 transition hover:text-white sm:w-auto"
+                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                Thêm ảnh {(replyItems.length + existingUrls.length) > 0 && <span className="ml-1 opacity-60">({replyItems.length + existingUrls.length})</span>}
+                <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => onPickReplyFiles(e.target.files)} />
+              </label>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={closeReplyModal}
+                  className="inline-flex cursor-pointer h-11 flex-1 items-center justify-center rounded-2xl px-4 text-sm font-semibold text-white/75 transition hover:-translate-y-0.5 hover:text-white active:translate-y-0 sm:flex-none"
+                  style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                  Hủy
+                </button>
+                <button type="button" onClick={() => void submitReply()} disabled={submitting}
+                  className="inline-flex cursor-pointer h-11 flex-1 items-center justify-center whitespace-nowrap rounded-2xl px-5 text-sm font-semibold text-emerald-950 transition hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 disabled:opacity-60 sm:flex-none"
+                  style={{ background: "rgba(52,211,153,0.85)", border: "1px solid rgba(52,211,153,0.3)", boxShadow: "0 4px 20px rgba(52,211,153,0.25)" }}>
+                  {submitting ? <span className="inline-flex h-4 w-4 animate-spin rounded-full border-2 border-emerald-950/30 border-t-emerald-950" /> : "Lưu phản hồi"}
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

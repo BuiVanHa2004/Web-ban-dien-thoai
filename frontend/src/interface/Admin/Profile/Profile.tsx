@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { RefreshCcw } from "lucide-react";
+import { useAppNotification } from "@/providers/AppNotificationProvider";
 
 type AdminAccountDto = {
   accountId: number;
@@ -73,12 +75,12 @@ function getCurrentUserId(): number | null {
 type TabKey = "info" | "password";
 
 export default function Profile() {
+  const { showToast } = useAppNotification();
   const [tab, setTab] = React.useState<TabKey>("info");
   const [loading, setLoading] = React.useState(true);
   const [savingInfo, setSavingInfo] = React.useState(false);
   const [savingPassword, setSavingPassword] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [success, setSuccess] = React.useState<string | null>(null);
 
   const [account, setAccount] = React.useState<AdminAccountDto | null>(null);
 
@@ -94,7 +96,6 @@ export default function Profile() {
   const loadProfile = React.useCallback(async () => {
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     const userId = getCurrentUserId();
     if (!userId) {
@@ -125,7 +126,6 @@ export default function Profile() {
   async function onSaveInfo(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
     if (!account) return;
 
     if (!fullName.trim()) {
@@ -157,7 +157,7 @@ export default function Profile() {
         }
       );
       setAccount(updated);
-      setSuccess("Cập nhật thông tin thành công.");
+      showToast("Cập nhật thông tin thành công.", "success");
 
       try {
         const raw = localStorage.getItem("user");
@@ -182,7 +182,6 @@ export default function Profile() {
   async function onChangePassword(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
     if (!account) return;
 
     if (!oldPassword.trim()) {
@@ -218,7 +217,7 @@ export default function Profile() {
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setSuccess("Đổi mật khẩu thành công.");
+      showToast("Đổi mật khẩu thành công.", "success");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Đổi mật khẩu thất bại.");
     } finally {
@@ -228,7 +227,7 @@ export default function Profile() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-6">
-      <div className="mb-6 flex items-start justify-between gap-3">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">Thông tin cá nhân</div>
           <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">
@@ -239,9 +238,10 @@ export default function Profile() {
         <button
           type="button"
           onClick={() => void loadProfile()}
-          className="inline-flex h-10 items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
           disabled={loading}
+          className="flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 sm:w-auto"
         >
+          <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           Tải lại
         </button>
       </div>
@@ -252,12 +252,6 @@ export default function Profile() {
         </div>
       ) : null}
 
-      {success ? (
-        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-          {success}
-        </div>
-      ) : null}
-
       <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-slate-950/70">
         <div className="flex flex-wrap gap-2">
           <button
@@ -265,7 +259,6 @@ export default function Profile() {
             onClick={() => {
               setTab("info");
               setError(null);
-              setSuccess(null);
             }}
             className={
               "h-10 rounded-xl px-4 text-sm font-semibold ring-1 transition " +
@@ -281,7 +274,6 @@ export default function Profile() {
             onClick={() => {
               setTab("password");
               setError(null);
-              setSuccess(null);
             }}
             className={
               "h-10 rounded-xl px-4 text-sm font-semibold ring-1 transition " +

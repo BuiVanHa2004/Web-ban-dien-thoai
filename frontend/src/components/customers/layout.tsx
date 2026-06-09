@@ -22,6 +22,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
   const isProfilePage = pathname === "/profile";
 
+
   const isProtectedRoute = React.useMemo(() => {
     if (!pathname) return false;
     if (pathname === "/profile") return true;

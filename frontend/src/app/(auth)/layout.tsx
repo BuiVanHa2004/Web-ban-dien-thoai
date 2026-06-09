@@ -3,6 +3,8 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Link from "next/link";
+import { Logo } from "@/components/customers/Logo";
 
 export default function AuthLayout({
   children,
@@ -84,27 +86,16 @@ export default function AuthLayout({
         }
       `}</style>
 
-      <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-5xl items-start justify-center px-3 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-4 sm:py-8 md:min-h-screen md:items-center md:py-12">
+      <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-5xl items-center justify-center px-3 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-4 sm:py-10 md:min-h-screen md:py-12">
         <div className="grid w-full grid-cols-1 overflow-hidden rounded-2xl border border-white/20 bg-white/80 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.6)] backdrop-blur-xl sm:rounded-[2rem] md:grid-cols-2 dark:border-white/10 dark:bg-slate-900/80">
 
           {/* Left Section - Content/Branding */}
           <div className="relative hidden w-full flex-col items-center justify-center border-r border-slate-200/20 bg-purple-50/50 p-10 md:flex dark:bg-purple-900/10">
             <div className="relative z-10 w-full max-w-md">
-              <div className="mb-10 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-                  <svg
-                    className="h-6 w-6 text-blue-500 dark:text-blue-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                  </svg>
-                </div>
-                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  MyPhone <span className="text-blue-600 dark:text-blue-400">Store</span>
-                </h1>
+              <div className="mb-10">
+                <Link href="/home">
+                  <Logo variant="default" />
+                </Link>
               </div>
 
               <div className="space-y-6">
@@ -173,26 +164,14 @@ export default function AuthLayout({
           </div>
 
           {/* Right Section - Form Area */}
-          <div className="relative flex w-full flex-col bg-white p-4 pt-5 sm:p-6 md:items-center md:justify-center md:p-10 dark:bg-slate-900">
-            <div className="mb-5 flex items-center gap-3 md:hidden">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-                <svg
-                  className="h-5 w-5 text-blue-500 dark:text-blue-400"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  aria-hidden
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
-                  MyPhone <span className="text-blue-600 dark:text-blue-400">Store</span>
-                </p>
-                <p className="text-xs text-slate-500 dark:text-white/60">Mua điện thoại dễ dàng hơn</p>
-              </div>
+          <div className="relative flex w-full flex-col items-center justify-center bg-white/85 p-6 backdrop-blur-sm dark:bg-slate-900/85 md:p-10">
+            <div className="mb-5 md:hidden">
+              <Link href="/home" className="flex items-center gap-2">
+                <Logo variant="header" />
+                <span className="text-sm font-black text-slate-800 dark:text-slate-100">
+                  MyPhone <span className="text-blue-500">Store</span>
+                </span>
+              </Link>
             </div>
             <div className="w-full max-w-md animate-auth-page">
               {children}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Package,
@@ -388,56 +389,62 @@ export default function OrderId() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 overflow-x-hidden py-4 animate-page sm:space-y-8 sm:py-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Link href="/order" className="group flex items-center gap-2 text-sm font-bold text-slate-500 transition-colors hover:text-purple-600">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 transition-all group-hover:bg-purple-600 group-hover:text-white group-hover:ring-purple-600">
-            <ChevronLeft className="h-4 w-4" />
-          </div>
-          Quay lại danh sách
-        </Link>
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>
-          <span className="rounded-lg bg-purple-50 px-3 py-1 text-sm font-black text-purple-600 dark:bg-purple-500/10">
-            #{order.orderCode || order.orderId}
-          </span>
-        </div>
+    <div className="mx-auto w-full max-w-6xl space-y-6 py-4 animate-page sm:space-y-8 sm:py-6">
+      {/* Fixed back button via portal */}
+      {typeof window !== "undefined" && createPortal(
+        <div className="fixed left-3 top-[3.5rem] z-[190] sm:left-4 sm:top-[4.25rem]">
+          <Link href="/order" className="group flex items-center gap-2 rounded-full border border-zinc-600 bg-zinc-900/90 py-1.5 pl-2 pr-4 text-sm font-bold text-slate-400 backdrop-blur-md transition-colors hover:border-purple-600 hover:text-purple-400">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 transition-all group-hover:bg-purple-600 group-hover:text-white">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </div>
+            Quay lại
+          </Link>
+        </div>,
+        document.body
+      )}
+
+      {/* Order code row */}
+      <div className="flex items-center gap-3 pt-8 sm:pt-2">
+        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>
+        <span className="rounded-lg bg-purple-50 px-3 py-1 text-sm font-black text-purple-600 dark:bg-purple-500/10">
+          #{order.orderCode || order.orderId}
+        </span>
       </div>
 
-      {/* PROGRESS STEPPER - Updated to Purple */}
+      {/* PROGRESS STEPPER */}
       {!isCancelled && (
-        <div className="rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/55 p-4 ring-1 ring-zinc-500/35 shadow-2xl shadow-black/20 backdrop-blur-md sm:rounded-[2.5rem] sm:p-6 lg:p-8">
-          <div className="overflow-x-auto pb-2 -mx-1 px-1">
-          <div className="flex min-w-[520px] items-center justify-between sm:min-w-0">
-            {steps.map((step, idx) => {
-              const isPast = idx < currentStatusIdx;
-              const isCurrent = idx === currentStatusIdx;
+        <div className="rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/55 p-4 backdrop-blur-md sm:rounded-[2.5rem] sm:p-6 lg:p-8">
+          <div className="overflow-x-auto pb-3">
+            <div className="flex min-w-[440px] items-start pb-1 sm:min-w-0">
+              {steps.map((step, idx) => {
+                const isPast = idx < currentStatusIdx;
+                const isCurrent = idx === currentStatusIdx;
 
-              return (
-                <React.Fragment key={step.id}>
-                  <div className="flex flex-col items-center gap-3">
-                    <div className={`
-                      flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-all duration-500
-                      ${isPast ? "bg-emerald-500 text-white" : isCurrent ? "bg-purple-600 text-white scale-110 shadow-purple-500/30" : "bg-slate-100 text-slate-400 dark:bg-slate-800"}
-                    `}>
-                      {isPast ? <CheckCircle2 className="h-6 w-6" /> : <step.icon className="h-6 w-6" />}
+                return (
+                  <React.Fragment key={step.id}>
+                    <div className="flex flex-1 flex-col items-center gap-2 min-w-0">
+                      <div className={`
+                        flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-all duration-500
+                        ${isPast ? "bg-emerald-500 text-white" : isCurrent ? "bg-purple-600 text-white" : "bg-zinc-700 text-zinc-400"}
+                      `}>
+                        {isPast ? <CheckCircle2 className="h-5 w-5" /> : <step.icon className="h-5 w-5" />}
+                      </div>
+                      <span className={`w-full text-center text-[11px] font-bold leading-tight px-1 ${isCurrent ? "text-purple-400" : "text-slate-500"}`}>
+                        {step.label}
+                      </span>
                     </div>
-                    <span className={`text-xs font-bold ${isCurrent ? "text-purple-700 dark:text-purple-400" : "text-slate-400"}`}>
-                      {step.label}
-                    </span>
-                  </div>
-                  {idx < steps.length - 1 && (
-                    <div className="relative h-[2px] flex-1 bg-slate-100 dark:bg-slate-800 mx-4">
-                      <div
-                        className="absolute inset-0 bg-emerald-500 transition-all duration-1000"
-                        style={{ width: idx < currentStatusIdx ? "100%" : "0%" }}
-                      />
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
+                    {idx < steps.length - 1 && (
+                      <div className="relative mt-5 h-[2px] w-6 shrink-0 bg-zinc-700 mx-1">
+                        <div
+                          className="absolute inset-0 bg-emerald-500 transition-all duration-1000"
+                          style={{ width: idx < currentStatusIdx ? "100%" : "0%" }}
+                        />
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

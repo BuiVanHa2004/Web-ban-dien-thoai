@@ -246,7 +246,7 @@ export default function OrderPage() {
               className={`
                 group relative flex h-10 items-center gap-2.5 whitespace-nowrap rounded-2xl border px-5 text-sm font-bold transition-all
                 ${isActive
-                  ? "border-purple-600 bg-purple-600 text-white shadow-lg shadow-purple-500/25"
+                  ? "border-purple-600 bg-purple-600 text-white"
                   : "border-slate-200 bg-white text-slate-600 hover:border-purple-300 hover:bg-purple-50 dark:border-slate-800 dark:bg-slate-900/50"
                 }
               `}
@@ -395,7 +395,7 @@ export default function OrderPage() {
 
                       <Link
                         href={`/order/${order.orderId}`}
-                        className="flex h-11 items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 text-xs font-bold text-white transition-all hover:shadow-lg hover:shadow-purple-500/30 active:scale-95"
+                        className="flex h-11 items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 text-xs font-bold text-white transition-all active:scale-95"
                       >
                         Xem chi tiết
                         <ChevronRight className="h-4 w-4" />

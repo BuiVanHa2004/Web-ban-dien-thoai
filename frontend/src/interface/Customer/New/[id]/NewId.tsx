@@ -1,6 +1,7 @@
 "use client";
 
 import { newsService, type NewsDto } from "@/services/newsService";
+import { createPortal } from "react-dom";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { ArrowLeft, Calendar, Clock, Share2, Tag, ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -140,14 +141,28 @@ export default function NewId() {
   const readingTime = Math.max(1, Math.ceil((item.newsDescribe || "").length / 600));
 
   return (
-    <div className="min-h-screen overflow-hidden rounded-[3rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/40 shadow-xl shadow-black/20 transition-colors duration-500 sm:rounded-[2.5rem]">
+    <div className="min-h-screen">
+      {/* Fixed back button via portal */}
+      {typeof window !== "undefined" && createPortal(
+        <div className="fixed left-3 top-[3.5rem] z-[190] sm:left-4 sm:top-[4.25rem]">
+          <Link href="/new" className="group flex items-center gap-2 rounded-full border border-zinc-600 bg-zinc-900/90 py-1.5 pl-2 pr-4 text-sm font-bold text-slate-400 backdrop-blur-md transition-colors hover:border-cyan-600 hover:text-cyan-400">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 transition-all group-hover:bg-cyan-600 group-hover:text-white">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </div>
+            Quay lại
+          </Link>
+        </div>,
+        document.body
+      )}
+
+      <div className="overflow-hidden rounded-[2rem] customer-card-surface border border-zinc-500/70 bg-zinc-800/40 transition-colors duration-500 sm:rounded-[2.5rem]">
       {/* Reading Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-fuchsia-500 z-[100] origin-left"
         style={{ scaleX }}
       />
 
-      {/* Floating Action Buttons */}
+      {/* Floating Action Buttons - desktop only, redundant on mobile */}
       <div className="fixed top-6 left-6 z-[80] hidden lg:block">
         <button
           onClick={() => router.back()}
@@ -239,27 +254,21 @@ export default function NewId() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="mt-16 pt-10 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-6"
+              className="mt-16 pt-10 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
             >
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Tag className="h-5 w-5 text-cyan-500" />
-                  <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Chủ đề:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {["Công nghệ", "Đời sống", "Tương lai"].map(tag => (
-                    <span key={tag} className="px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-900 text-[11px] font-bold transition-colors hover:bg-cyan-500 hover:text-white cursor-pointer">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Tag className="h-4 w-4 shrink-0 text-cyan-500" />
+                <span className="text-xs font-black text-zinc-400 uppercase tracking-widest shrink-0">Chủ đề:</span>
+                {["Công nghệ", "Đời sống", "Tương lai"].map(tag => (
+                  <span key={tag} className="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-300 text-[11px] font-semibold transition-colors hover:bg-cyan-500/20 hover:border-cyan-500/50 hover:text-cyan-300 cursor-pointer">
+                    {tag}
+                  </span>
+                ))}
               </div>
 
-              <div className="flex items-center gap-4">
-                <button className="flex items-center gap-2 text-xs font-black text-slate-900 dark:text-slate-900 hover:text-cyan-500 transition-colors uppercase tracking-widest">
-                  <Share2 className="h-4 w-4" /> Chia sẻ bài viết
-                </button>
-              </div>
+              <button className="flex items-center gap-2 text-xs font-black text-zinc-400 hover:text-cyan-400 transition-colors uppercase tracking-widest">
+                <Share2 className="h-4 w-4" /> Chia sẻ bài viết
+              </button>
             </motion.div>
           </article>
         </div>
@@ -356,6 +365,7 @@ export default function NewId() {
           VỀ TRANG CHỦ
         </Link>
       </motion.div>
+      </div>
     </div>
   );
 }

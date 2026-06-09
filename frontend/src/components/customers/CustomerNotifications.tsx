@@ -202,24 +202,36 @@ export default function CustomerNotifications({ variant = "default" }: CustomerN
             className="
               z-[220] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl
               dark:border-white/10 dark:bg-slate-950/95 dark:shadow-2xl dark:shadow-black/40
-              max-sm:fixed max-sm:left-3 max-sm:right-3 max-sm:top-[calc(env(safe-area-inset-top,0px)+3.5rem)]
-              max-sm:mt-0 max-sm:max-h-[min(70dvh,calc(100dvh-env(safe-area-inset-top)-4.5rem))]
+              max-sm:fixed max-sm:right-3 max-sm:top-[calc(env(safe-area-inset-top,0px)+3.5rem)]
+              max-sm:w-80 max-sm:mt-0 max-sm:max-h-[min(55dvh,22rem)]
               sm:absolute sm:right-0 sm:mt-2 sm:w-96 sm:max-h-[min(70vh,32rem)]
             "
           >
-          <div className="flex items-start justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-white/10">
+          <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-white/10">
             <h3 className="shrink-0 font-semibold text-slate-900 dark:text-slate-100">Thông báo của bạn</h3>
-            {unreadCount > 0 && (
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={markAllAsRead}
+                  className="shrink-0 text-right text-xs font-medium leading-snug text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                >
+                  Đánh dấu tất cả đã đọc
+                </button>
+              )}
               <button
                 type="button"
-                onClick={markAllAsRead}
-                className="shrink-0 text-right text-xs font-medium leading-snug text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                onClick={() => setOpen(false)}
+                className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-slate-300 transition-colors"
+                aria-label="Đóng thông báo"
               >
-                Đánh dấu tất cả đã đọc
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
-            )}
+            </div>
           </div>
-          <div className="max-h-[min(60vh,calc(70dvh-3.5rem))] overflow-y-auto sm:max-h-[min(60vh,28rem)]">
+          <div className="max-h-[min(45dvh,18rem)] overflow-y-auto sm:max-h-[min(60vh,28rem)]">
             {notifications.length === 0 ? (
               <div className="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
                 Không có thông báo nào.

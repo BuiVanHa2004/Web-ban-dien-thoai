@@ -231,7 +231,7 @@ export default function CreateAccountRole() {
 
       <AdminActionBar backHref="/accounts-roles" formId="account-form" submitting={submitting} disabled={loadingRoles || roles.length === 0} />
 
-      <div className="grid gap-6 rounded-3xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 backdrop-blur dark:bg-white/5 dark:ring-white/10 sm:p-6 lg:grid-cols-5">
+      <div className="grid gap-6 rounded-3xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 backdrop-blur dark:bg-white/5 dark:ring-white/10 sm:p-6 lg:grid-cols-5 pt-14 sm:pt-4">
         <form
           id="account-form"
           onSubmit={onSubmit}

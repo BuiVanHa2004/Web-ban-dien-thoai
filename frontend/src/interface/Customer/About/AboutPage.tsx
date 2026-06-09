@@ -95,12 +95,8 @@ export default function AboutPage() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-        className="relative mb-12 rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 shadow-2xl sm:mb-20 sm:p-16 overflow-visible"
+        className="relative mb-12 rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 shadow-2xl sm:mb-20 sm:p-16 overflow-hidden"
       >
-        {/* Animated background blobs */}
-        <div className="absolute -right-32 -top-32 h-96 w-96 animate-pulse rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 h-96 w-96 animate-pulse rounded-full bg-pink-500/20 blur-3xl" style={{ animationDelay: "1s" }} />
-        
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -284,11 +280,8 @@ export default function AboutPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ margin: "-100px" }}
         transition={{ duration: 0.8 }}
-        className="relative rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-8 shadow-2xl sm:p-16 overflow-visible"
+        className="relative rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-8 shadow-2xl sm:p-16 overflow-hidden"
       >
-        <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-purple-500/20 blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-pink-500/20 blur-3xl" />
-
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <h2 className="mb-6 text-3xl font-black text-white sm:text-5xl">
             Sẵn sàng trải nghiệm?

@@ -366,10 +366,8 @@ export default function ContactPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 overflow-x-hidden py-2 animate-page sm:space-y-10 sm:py-4">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-purple-700 to-fuchsia-700 px-4 py-8 shadow-2xl sm:rounded-[2.5rem] sm:px-8 sm:py-12">
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-[100px]" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-pink-500/20 blur-[100px]" />
 
-        <div className="relative z-10 flex flex-col items-center justify-between gap-6 md:flex-row">
+        <div className="relative z-10 flex flex-col items-center gap-6 md:flex-row md:justify-between">
           <div className="text-center md:text-left">
             <h1 className="text-2xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
               Hỗ trợ khách hàng
@@ -379,9 +377,9 @@ export default function ContactPage() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 shrink-0">
+          <div className="flex w-full flex-col gap-3 sm:w-auto md:shrink-0">
             <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-4 backdrop-blur-md border border-white/10">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400 text-cyan-900 shadow-lg shadow-cyan-500/20">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400 text-cyan-900 shadow-lg shadow-cyan-500/20">
                 <Phone className="h-5 w-5" />
               </div>
               <div>
@@ -390,12 +388,12 @@ export default function ContactPage() {
               </div>
             </div>
             <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-4 backdrop-blur-md border border-white/10">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-400 text-purple-900 shadow-lg shadow-purple-500/20">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-400 text-purple-900 shadow-lg shadow-purple-500/20">
                 <Mail className="h-5 w-5" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-[10px] font-bold tracking-wide text-indigo-200">Email hỗ trợ</div>
-                <div className="text-sm font-black text-white">buivanha22032004@gmail.com</div>
+                <div className="truncate text-sm font-black text-white">buivanha22032004@gmail.com</div>
               </div>
             </div>
           </div>
@@ -408,7 +406,7 @@ export default function ContactPage() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-6 shadow-lg shadow-black/15"
+            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6"
           >
             <div className="mb-8 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-500/10">
@@ -579,7 +577,7 @@ export default function ContactPage() {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-6 shadow-lg shadow-black/15"
+            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6"
           >
             <h3 className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
               <Clock className="h-5 w-5 text-indigo-600" />
@@ -626,7 +624,7 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-6 shadow-lg shadow-black/15 lg:flex-1"
+            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6 lg:flex-1"
           >
             <SocialQrContact title="Liên hệ qua Zalo / TikTok / Facebook" />
           </motion.div>
@@ -638,7 +636,7 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-6 shadow-lg shadow-black/15"
+            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6"
           >
             <div className="mb-8 flex items-center justify-between border-b border-slate-100 pb-6 dark:border-slate-800">
               <div className="flex items-center gap-4">
@@ -679,7 +677,7 @@ export default function ContactPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="group relative overflow-hidden rounded-[2.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-6 shadow-sm transition-all hover:border-zinc-500/40 hover:shadow-xl"
+                    className="group relative overflow-hidden rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6 transition-all hover:border-zinc-500/40"
                   >
                     <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                       <div className="flex-1 space-y-3">

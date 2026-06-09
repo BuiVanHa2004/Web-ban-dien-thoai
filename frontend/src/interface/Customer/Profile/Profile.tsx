@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   User, 
@@ -475,84 +476,90 @@ export default function ProfileInterface() {
       </AnimatePresence>
 
       {/* Validation/Error Modal */}
-      <AnimatePresence>
-        {errorModal.open && (
-          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" 
-              onClick={() => setErrorModal({ ...errorModal, open: false })} 
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-slate-900"
-            >
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
-                  <AlertCircle size={32} />
+      {typeof window !== "undefined" && createPortal(
+        <AnimatePresence>
+          {errorModal.open && (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" 
+                onClick={() => setErrorModal({ ...errorModal, open: false })} 
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-slate-900"
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+                    <AlertCircle size={32} />
+                  </div>
+                  <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
+                    {errorModal.title}
+                  </h3>
+                  <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                    {errorModal.message}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setErrorModal({ ...errorModal, open: false })}
+                    className="mt-8 w-full rounded-2xl bg-slate-900 py-4 text-sm font-black text-white shadow-xl transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900"
+                  >
+                    Đã hiểu
+                  </button>
                 </div>
-                <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
-                  {errorModal.title}
-                </h3>
-                <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-                  {errorModal.message}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setErrorModal({ ...errorModal, open: false })}
-                  className="mt-8 w-full rounded-2xl bg-slate-900 py-4 text-sm font-black text-white shadow-xl transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900"
-                >
-                  Đã hiểu
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* Success Modal */}
-      <AnimatePresence>
-        {successModal.open && (
-          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" 
-              onClick={() => setSuccessModal({ ...successModal, open: false })} 
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-slate-900"
-            >
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 ring-1 ring-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
-                  <CheckCircle2 size={32} />
+      {typeof window !== "undefined" && createPortal(
+        <AnimatePresence>
+          {successModal.open && (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" 
+                onClick={() => setSuccessModal({ ...successModal, open: false })} 
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-slate-900"
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 ring-1 ring-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
+                    <CheckCircle2 size={32} />
+                  </div>
+                  <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
+                    {successModal.title}
+                  </h3>
+                  <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                    {successModal.message}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setSuccessModal({ ...successModal, open: false })}
+                    className="mt-8 w-full rounded-2xl bg-emerald-600 py-4 text-sm font-black text-white shadow-xl transition hover:bg-emerald-700 active:scale-95"
+                  >
+                    Tuyệt vời
+                  </button>
                 </div>
-                <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
-                  {successModal.title}
-                </h3>
-                <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-                  {successModal.message}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setSuccessModal({ ...successModal, open: false })}
-                  className="mt-8 w-full rounded-2xl bg-emerald-600 py-4 text-sm font-black text-white shadow-xl transition hover:bg-emerald-700 active:scale-95"
-                >
-                  Tuyệt vời
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

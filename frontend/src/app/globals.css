@@ -160,6 +160,8 @@ body {
 }
 
 .brandSearchSparkle {
+  overflow: hidden;
+  border-radius: 1rem;
   background: linear-gradient(
     110deg,
     rgba(34, 211, 238, 0.35),
@@ -336,9 +338,7 @@ img:hover {
 
 .customer-portal .customer-card-surface {
   border-color: rgba(161, 161, 170, 0.68) !important;
-  box-shadow:
-    0 0 0 1px rgba(82, 82, 91, 0.35),
-    0 10px 15px -3px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 0 1px rgba(82, 82, 91, 0.35);
 }
 
 .customer-portal .text-slate-900:not(.keep-light),

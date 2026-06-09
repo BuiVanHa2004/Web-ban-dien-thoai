@@ -207,7 +207,7 @@ export default function UpdateBanner() {
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-5">
+        <div className="grid gap-4 lg:grid-cols-5 pt-14 sm:pt-0">
           <form
             id="banner-form"
             onSubmit={onSubmit}
