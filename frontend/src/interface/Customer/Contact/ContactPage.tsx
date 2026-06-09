@@ -364,35 +364,33 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 overflow-x-hidden py-2 animate-page sm:space-y-10 sm:py-4">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-purple-700 to-fuchsia-700 px-4 py-8 shadow-2xl sm:rounded-[2.5rem] sm:px-8 sm:py-12">
-
-        <div className="relative z-10 flex flex-col items-center gap-6 md:flex-row md:justify-between">
-          <div className="text-center md:text-left">
-            <h1 className="text-2xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
+    <div className="mx-auto w-full max-w-6xl space-y-6 overflow-x-hidden py-2 sm:space-y-10 sm:py-4">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-purple-700 to-fuchsia-700 px-4 py-6 shadow-2xl sm:rounded-[2.5rem] sm:px-8 sm:py-12">
+        <div className="relative z-10 flex flex-col gap-4">
+          <div>
+            <h1 className="text-2xl font-extrabold leading-tight text-white sm:text-4xl">
               Hỗ trợ khách hàng
             </h1>
-            <p className="mt-3 max-w-xl text-lg leading-relaxed text-indigo-100 opacity-90">
-              Chúng tôi luôn sẵn sàng lắng nghe và giải quyết mọi thắc mắc của bạn. Hãy gửi tin nhắn kèm hình ảnh để được hỗ trợ tối ưu nhất.
+            <p className="mt-2 text-sm leading-relaxed text-indigo-100 opacity-90 sm:text-lg">
+              Chúng tôi luôn sẵn sàng lắng nghe và giải quyết mọi thắc mắc của bạn.
             </p>
           </div>
-
-          <div className="flex w-full flex-col gap-3 sm:w-auto md:shrink-0">
-            <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-4 backdrop-blur-md border border-white/10">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400 text-cyan-900 shadow-lg shadow-cyan-500/20">
-                <Phone className="h-5 w-5" />
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="flex min-w-0 items-center gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur-md border border-white/10">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-400 text-cyan-900">
+                <Phone className="h-4 w-4" />
               </div>
-              <div>
-                <div className="text-[10px] font-bold tracking-wide text-indigo-200">Hotline tư vấn</div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold text-indigo-200">Hotline tư vấn</div>
                 <div className="text-sm font-black text-white">0978 603 382</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-4 backdrop-blur-md border border-white/10">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-400 text-purple-900 shadow-lg shadow-purple-500/20">
-                <Mail className="h-5 w-5" />
+            <div className="flex min-w-0 items-center gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur-md border border-white/10">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-400 text-purple-900">
+                <Mail className="h-4 w-4" />
               </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-bold tracking-wide text-indigo-200">Email hỗ trợ</div>
+              <div className="min-w-0 overflow-hidden">
+                <div className="text-[10px] font-bold text-indigo-200">Email hỗ trợ</div>
                 <div className="truncate text-sm font-black text-white">buivanha22032004@gmail.com</div>
               </div>
             </div>
@@ -406,21 +404,21 @@ export default function ContactPage() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6"
+            className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6"
           >
-            <div className="mb-8 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-500/10">
-                <MessageSquare className="h-6 w-6" />
+            <div className="mb-5 flex items-center gap-3 sm:mb-8">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-500/10 sm:h-12 sm:w-12">
+                <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <div>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white">
+              <div className="min-w-0">
+                <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">
                   {editingId ? "Cập nhật yêu cầu" : "Gửi yêu cầu hỗ trợ"}
                 </h2>
-                <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">Thời gian phản hồi dự kiến: 2-4h</p>
+                <p className="text-xs font-medium text-slate-400">Thời gian phản hồi dự kiến: 2-4h</p>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">Họ và tên</label>
@@ -573,28 +571,28 @@ export default function ContactPage() {
         </div>
 
         {/* SIDEBAR: INFO & TIPS */}
-        <div className="space-y-6 lg:col-span-5 lg:flex lg:flex-col">
+        <div className="space-y-4 lg:col-span-5 lg:flex lg:flex-col">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6"
+            className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6"
           >
             <h3 className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
               <Clock className="h-5 w-5 text-indigo-600" />
               Thời gian hoạt động
             </h3>
             <div className="mt-5 space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-bold text-slate-500">Thứ 2 - Thứ 6</span>
-                <span className="font-black text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-lg">08:00 - 18:00</span>
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="font-bold text-slate-500 shrink-0">Thứ 2 - Thứ 6</span>
+                <span className="font-black text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-lg text-xs sm:text-sm">08:00 - 18:00</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-bold text-slate-500">Thứ 7</span>
-                <span className="font-black text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-lg">08:00 - 12:00</span>
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="font-bold text-slate-500 shrink-0">Thứ 7</span>
+                <span className="font-black text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-lg text-xs sm:text-sm">08:00 - 12:00</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-bold text-slate-500">Chủ nhật</span>
-                <span className="font-black text-rose-500 bg-rose-50 dark:bg-rose-950/30 px-3 py-1 rounded-lg">Nghỉ lễ</span>
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="font-bold text-slate-500 shrink-0">Chủ nhật</span>
+                <span className="font-black text-rose-500 bg-rose-50 dark:bg-rose-950/30 px-3 py-1 rounded-lg text-xs sm:text-sm">Nghỉ lễ</span>
               </div>
             </div>
 
@@ -624,7 +622,7 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6 lg:flex-1"
+            className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6 lg:flex-1"
           >
             <SocialQrContact title="Liên hệ qua Zalo / TikTok / Facebook" />
           </motion.div>
@@ -636,22 +634,22 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6"
+            className="rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 sm:rounded-[2.5rem] sm:p-6"
           >
-            <div className="mb-8 flex items-center justify-between border-b border-slate-100 pb-6 dark:border-slate-800">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 shadow-sm dark:bg-cyan-500/10">
-                  <RefreshCcw className={`h-7 w-7 ${historyLoading ? "animate-spin" : ""}`} />
+            <div className="mb-6 flex items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800 sm:mb-8 sm:pb-6">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 sm:h-14 sm:w-14">
+                  <RefreshCcw className={`h-5 w-5 sm:h-7 sm:w-7 ${historyLoading ? "animate-spin" : ""}`} />
                 </div>
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white">Lịch sử liên hệ</h3>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Xem lại các yêu cầu bạn đã gửi</p>
+                <div className="min-w-0">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white sm:text-2xl">Lịch sử liên hệ</h3>
+                  <p className="text-xs font-bold text-slate-400">Xem lại các yêu cầu bạn đã gửi</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => void loadHistoryByEmail(email)}
-                className="flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 text-xs font-black text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 text-xs font-black text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 sm:h-11 sm:gap-2 sm:px-6"
               >
                 Làm mới
               </button>
@@ -677,18 +675,18 @@ export default function ContactPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="group relative overflow-hidden rounded-[2.5rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-6 transition-all hover:border-zinc-500/40"
+                    className="group relative overflow-hidden rounded-[2rem] customer-card-surface border border-zinc-500/50 bg-zinc-800/55 p-4 transition-all hover:border-zinc-500/40 sm:rounded-[2.5rem] sm:p-6"
                   >
-                    <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+                    <div className="flex flex-col gap-4">
                       <div className="flex-1 space-y-3">
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="rounded-lg bg-purple-100 px-3 py-1 text-[10px] font-black text-purple-700 dark:bg-purple-900/40">ID: #{h.contactId}</span>
                           <span className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
                             <Clock className="h-3.5 w-3.5" />
                             {formatDate(h.createdAt)}
                           </span>
                         </div>
-                        <h4 className="text-xl font-black text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors">
+                        <h4 className="text-base font-black text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors sm:text-xl">
                           {h.subject || "(Không có chủ đề)"}
                         </h4>
                         <p className="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300 whitespace-pre-line">{h.message}</p>
@@ -696,7 +694,7 @@ export default function ContactPage() {
                         {h.imageUrls.length > 0 && (
                           <div className="flex flex-wrap gap-3 pt-3">
                             {h.imageUrls.map((u, i) => (
-                              <div key={i} className="relative aspect-[9/16] w-20 overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
+                              <div key={i} className="relative aspect-[9/16] w-16 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 sm:w-20">
                                 <img src={resolveImageUrl(u)} className="h-full w-full object-contain transition group-hover:scale-110" alt="" />
                               </div>
                             ))}
@@ -704,18 +702,18 @@ export default function ContactPage() {
                         )}
                       </div>
 
-                      <div className="flex shrink-0 items-center gap-3 opacity-0 transition-opacity group-hover:opacity-100 md:flex-col md:items-end">
+                      <div className="flex shrink-0 items-center gap-3">
                         <button
                           type="button"
                           onClick={() => handleEdit(h)}
-                          className="flex h-10 items-center gap-2 rounded-2xl bg-amber-50 px-5 text-xs font-black text-amber-600 transition hover:bg-amber-100 dark:bg-amber-900/20 shadow-sm"
+                          className="flex h-9 flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-50 px-4 text-xs font-black text-amber-600 transition hover:bg-amber-100 dark:bg-amber-900/20 shadow-sm sm:flex-none sm:h-10 sm:px-5"
                         >
                           <Edit3 className="h-4 w-4" /> Sửa
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDelete(h.contactId)}
-                          className="flex h-10 items-center gap-2 rounded-2xl bg-rose-50 px-5 text-xs font-black text-rose-600 transition hover:bg-rose-100 dark:bg-rose-900/20 shadow-sm"
+                          className="flex h-9 flex-1 items-center justify-center gap-2 rounded-2xl bg-rose-50 px-4 text-xs font-black text-rose-600 transition hover:bg-rose-100 dark:bg-rose-900/20 shadow-sm sm:flex-none sm:h-10 sm:px-5"
                         >
                           <Trash2 className="h-4 w-4" /> Xóa
                         </button>
@@ -737,7 +735,7 @@ export default function ContactPage() {
                             {r.imageUrls.length > 0 && (
                               <div className="flex flex-wrap gap-3">
                                 {r.imageUrls.map((u, i) => (
-                                  <div key={i} className="relative aspect-[9/16] w-24 overflow-hidden rounded-xl border border-white bg-white/50 shadow-sm">
+                                  <div key={i} className="relative aspect-[9/16] w-16 overflow-hidden rounded-xl border border-white bg-white/50 shadow-sm sm:w-24">
                                     <img src={resolveImageUrl(u)} className="h-full w-full object-contain transition group-hover:scale-110" alt="" />
                                   </div>
                                 ))}
