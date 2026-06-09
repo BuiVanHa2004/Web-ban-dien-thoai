@@ -292,8 +292,17 @@ export default function CompareWidget({ chatOpen }: { chatOpen?: boolean }) {
       >
         <button
           onClick={() => { if (!drag.wasDragged() || chatOpen) setIsOpen(true); }}
+          onTouchEnd={(e) => {
+            if (!drag.wasDragged() || chatOpen) {
+              e.preventDefault();
+              setIsOpen(true);
+            }
+          }}
           className="group relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 sm:h-14 sm:w-auto sm:gap-3 sm:px-5 sm:shadow-2xl sm:hover:pr-6 dark:bg-slate-900"
-          style={{ boxShadow: "0 8px 24px -8px rgba(139,92,246,0.45)" }}
+          style={{ 
+            boxShadow: "0 8px 24px -8px rgba(139,92,246,0.45)",
+            WebkitTapHighlightColor: "transparent",
+          }}
           aria-label="So sánh AI - MyPhone Store"
         >
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 opacity-10 transition-opacity group-hover:opacity-20" />
