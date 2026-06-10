@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { customerAccountService, type CustomerAccountDto, type CustomerAccountCreateUpdatePayload } from "@/services/customerAccountService";
 import type { User as AuthUser } from "@/common/types/auth";
+import AvatarUploadField from "@/components/shared/AvatarUploadField";
 
 export default function ProfileInterface() {
   const [mounted, setMounted] = useState(false);
@@ -61,6 +62,7 @@ export default function ProfileInterface() {
     email: "",
     phone: "",
     address: "",
+    avatarUrl: "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -90,6 +92,7 @@ export default function ProfileInterface() {
         email: data.email,
         phone: data.phone || "",
         address: data.address || "",
+        avatarUrl: data.avatarUrl || "",
       });
     } catch (err) {
       showToast("Không thể tải thông tin tài khoản", "error");
@@ -108,7 +111,7 @@ export default function ProfileInterface() {
       setProfile(updated);
       setEditing(false);
       
-      // Update local storage name if changed
+      // Update local storage name and avatar if changed
       const rawUser = localStorage.getItem("user");
       if (rawUser) {
         const u = JSON.parse(rawUser) as AuthUser;
@@ -199,11 +202,19 @@ export default function ProfileInterface() {
               <div className="relative z-10 flex flex-col items-center">
                 <div className="relative mb-6">
                   <div className="h-28 w-28 overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 to-indigo-700 p-1 shadow-2xl transition-transform">
-                    <div className="flex h-full w-full items-center justify-center rounded-[1.4rem] bg-white dark:bg-slate-900">
-                      <span className="text-4xl font-black text-purple-600">
-                        {profile?.fullName?.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                    {profile?.avatarUrl ? (
+                      <img 
+                        src={profile.avatarUrl} 
+                        alt={profile.fullName} 
+                        className="h-full w-full rounded-[1.4rem] object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center rounded-[1.4rem] bg-white dark:bg-slate-900">
+                        <span className="text-4xl font-black text-purple-600">
+                          {profile?.fullName?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -354,6 +365,19 @@ export default function ProfileInterface() {
                   </div>
 
                   <form onSubmit={handleUpdateProfile} className="space-y-8">
+                    {/* Avatar Upload Section */}
+                    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-950/70">
+                      <AvatarUploadField
+                        label="Ảnh đại diện"
+                        value={formData.avatarUrl}
+                        name={formData.fullName}
+                        helperText="Chọn ảnh tỉ lệ bất kỳ, hệ thống sẽ tự động crop theo tỉ lệ 1:1"
+                        disabled={!editing}
+                        cropMode="square-required"
+                        onChange={(url) => setFormData({...formData, avatarUrl: url || undefined})}
+                      />
+                    </div>
+
                     <div className="grid gap-8 md:grid-cols-2">
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">

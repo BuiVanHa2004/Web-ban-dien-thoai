@@ -14,6 +14,7 @@ public record AdminAccountDto(
         String email,
         String phone,
         String address,
+        String avatarUrl,
         Instant createdAt,
         Instant updatedAt,
         Instant deletedAt
@@ -29,6 +30,7 @@ public record AdminAccountDto(
                 a.getEmail(),
                 a.getPhone(),
                 a.getAddress(),
+                a.getAvatarUrl(),
                 a.getCreatedAt(),
                 a.getUpdatedAt(),
                 a.getDeletedAt()

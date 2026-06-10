@@ -6,6 +6,7 @@ public record CustomerAccountUpsertRequest(
         String password,
         String email,
         String phone,
-        String address
+        String address,
+        String avatarUrl
 ) {
 }

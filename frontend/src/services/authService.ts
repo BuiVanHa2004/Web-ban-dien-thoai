@@ -66,6 +66,7 @@ const toLoginResponse = (data: {
   userId: number;
   name: string;
   email: string;
+  avatarUrl?: string | null;
   role: string;
   userType: string;
 }): { token: string; user: User } => {
@@ -73,6 +74,7 @@ const toLoginResponse = (data: {
     id: data.userId.toString(),
     email: data.email,
     name: data.name,
+    avatarUrl: data.avatarUrl || null,
     userType: data.userType.toLowerCase() as 'admin' | 'customer',
     role: data.role,
   };
@@ -87,6 +89,7 @@ export const authService = {
         userId: number;
         name: string;
         email: string;
+        avatarUrl?: string | null;
         role: string;
         userType: string;
         issuedAt: string;
@@ -115,6 +118,7 @@ export const authService = {
         userId: number;
         name: string;
         email: string;
+        avatarUrl?: string | null;
         role: string;
         userType: string;
         issuedAt: string;
@@ -145,6 +149,7 @@ export const authService = {
         userId: number;
         name: string;
         email: string;
+          avatarUrl?: string | null;
         role: string;
         userType: string;
       } | null;
@@ -178,6 +183,7 @@ export const authService = {
         userId: number;
         name: string;
         email: string;
+          avatarUrl?: string | null;
         role: string;
         userType: string;
       } | null;
@@ -299,6 +305,44 @@ export const authService = {
       }
       throw toApiError('Không thể đặt lại mật khẩu. Vui lòng thử lại sau.');
     }
+  },
+
+  uploadAvatar: async (file: File, token: string): Promise<{ url: string; objectName: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_URL}/api/uploads/avatars`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || 'Không thể upload avatar');
+    }
+
+    return response.json();
+  },
+
+  updateAvatar: async (avatarUrl: string, token: string): Promise<{ message: string; avatarUrl: string }> => {
+    const response = await fetch(`${API_URL}/api/auth/avatar`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ avatarUrl }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Update failed' }));
+      throw new Error(error.message || 'Không thể cập nhật avatar');
+    }
+
+    return response.json();
   },
 };
 

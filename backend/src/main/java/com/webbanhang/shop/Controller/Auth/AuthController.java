@@ -67,6 +67,7 @@ public class AuthController {
                         customer.getFullName(),
                         customer.getEmail(),
                         customer.getUsername(),
+                        customer.getAvatarUrl(),
                         provider,
                         hasPassword,
                         customer.getGoogleId()
@@ -88,6 +89,7 @@ public class AuthController {
                         admin.getFullName(),
                         admin.getEmail(),
                         admin.getUsername(),
+                        admin.getAvatarUrl(),
                         "LOCAL",
                         true,
                         null
@@ -176,5 +178,47 @@ public class AuthController {
         } catch (IllegalArgumentException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
         }
+    }
+
+    @PutMapping("/avatar")
+    public Map<String, String> updateAvatar(@RequestBody Map<String, String> request, Authentication authentication) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Chưa đăng nhập.");
+        }
+
+        String avatarUrl = request.get("avatarUrl");
+        if (avatarUrl == null || avatarUrl.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng cung cấp URL avatar.");
+        }
+
+        String subject = authentication.getName();
+        try {
+            if (subject.startsWith("customer:")) {
+                int id = Integer.parseInt(subject.substring("customer:".length()));
+                var customer = customerAccountRepository.findById(id).orElse(null);
+                if (customer == null || customer.getDeletedAt() != null || (customer.getIsActive() != null && !customer.getIsActive())) {
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Phiên đăng nhập không hợp lệ.");
+                }
+                customer.setAvatarUrl(avatarUrl);
+                customerAccountRepository.save(customer);
+                return Map.of("message", "Cập nhật avatar thành công", "avatarUrl", avatarUrl);
+            }
+            if (subject.startsWith("admin:")) {
+                int id = Integer.parseInt(subject.substring("admin:".length()));
+                var admin = adminAccountRepository.findById(id).orElse(null);
+                if (admin == null || admin.getDeletedAt() != null) {
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Phiên đăng nhập không hợp lệ.");
+                }
+                admin.setAvatarUrl(avatarUrl);
+                adminAccountRepository.save(admin);
+                return Map.of("message", "Cập nhật avatar thành công", "avatarUrl", avatarUrl);
+            }
+        } catch (ResponseStatusException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi cập nhật avatar.");
+        }
+
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Phiên đăng nhập không hợp lệ.");
     }
 }

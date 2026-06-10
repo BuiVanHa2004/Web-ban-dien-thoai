@@ -13,6 +13,7 @@ public record CustomerAccountDto(
         String googleId,
         String phone,
         String address,
+        String avatarUrl,
         Instant createdAt,
         Instant updatedAt,
         Instant deletedAt
@@ -27,6 +28,7 @@ public record CustomerAccountDto(
                 c.getGoogleId(),
                 c.getPhone(),
                 c.getAddress(),
+                c.getAvatarUrl(),
                 c.getCreatedAt(),
                 c.getUpdatedAt(),
                 c.getDeletedAt()

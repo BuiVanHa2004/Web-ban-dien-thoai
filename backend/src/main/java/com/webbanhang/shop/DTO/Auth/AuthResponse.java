@@ -5,6 +5,7 @@ public record AuthResponse(
         Integer userId,
         String name,
         String email,
+        String avatarUrl,
         String role,
         String userType,
         String authProvider,

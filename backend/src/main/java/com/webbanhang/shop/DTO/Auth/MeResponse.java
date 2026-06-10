@@ -7,6 +7,7 @@ public record MeResponse(
         String name,
         String email,
         String username,
+        String avatarUrl,
         String authProvider,
         Boolean hasPassword,
         String googleId

@@ -29,13 +29,13 @@ const requestForm = async <T>(path: string, formData: FormData): Promise<T> => {
 };
 
 export const fileUploadService = {
-  uploadImage: async (file: File): Promise<string> => {
+  uploadAvatar: async (file: File): Promise<string> => {
     try {
       const formData = new FormData();
       formData.append('file', file);
 
       const response = await requestForm<{ url: string; message?: string }>(
-        '/upload/image',
+        '/uploads/avatars',
         formData
       );
       return response.url;
@@ -45,6 +45,10 @@ export const fileUploadService = {
       }
       throw new Error('Không thể upload ảnh. Vui lòng thử lại sau.');
     }
+  },
+
+  uploadImage: async (file: File): Promise<string> => {
+    return fileUploadService.uploadAvatar(file);
   },
 
   uploadCategoryImage: async (file: File): Promise<string> => {

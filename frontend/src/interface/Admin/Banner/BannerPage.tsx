@@ -220,15 +220,15 @@ export default function BannerPage() {
 
       <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm" style={{ minWidth: "600px" }}>
+          <table className="w-full text-left text-sm">
             <thead className="bg-white/55 text-xs uppercase tracking-wide text-slate-700 backdrop-blur-xl dark:bg-slate-950/35 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-3">STT</th>
-                <th className="px-5 py-3">Thông tin Banner</th>
-                <th className="px-5 py-3">Vị trí</th>
-                <th className="px-5 py-3">Ảnh</th>
-                <th className="px-5 py-3">Trạng thái</th>
-                <th className="px-5 py-3">Hành động</th>
+                <th className="px-5 py-3 w-16 text-center">STT</th>
+                <th className="px-5 py-3 min-w-[200px] text-center">Thông tin Banner</th>
+                <th className="px-5 py-3 w-32 text-center">Vị trí</th>
+                <th className="px-5 py-3 w-32 text-center">Ảnh</th>
+                <th className="px-5 py-3 w-32 text-center">Trạng thái</th>
+                <th className="px-5 py-3 min-w-[180px] text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -252,59 +252,67 @@ export default function BannerPage() {
                           : "cursor-pointer opacity-100 hover:bg-slate-50 active:bg-slate-100/70 dark:hover:bg-white/5 dark:active:bg-white/10")
                       }
                     >
-                      <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
+                      <td className="px-5 py-4 text-center text-slate-600 dark:text-slate-300">
                         {idx + 1}
                       </td>
                       <td className="px-5 py-4">
-                        <div className="font-semibold text-slate-900 dark:text-slate-100">
-                          {b.bannerImages.length > 0 ? b.bannerImages[0].title : "Chưa có tiêu đề"}
-                        </div>
-                        {b.bannerImages.length > 0 && b.bannerImages[0].subtitle && (
-                          <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 line-clamp-1">
-                            {b.bannerImages[0].subtitle}
+                        <div className="flex flex-col items-center">
+                          <div className="font-semibold text-slate-900 dark:text-slate-100">
+                            {b.bannerImages.length > 0 ? b.bannerImages[0].title : "Chưa có tiêu đề"}
                           </div>
-                        )}
-                        <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
-                          Cập nhật: {formatDate(b.updatedAt)}
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-700 dark:bg-white/5 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-white/10">
-                          {b.position}
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="relative h-12 w-24 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
-                          <Image
-                            src={(b.bannerImages && b.bannerImages.length > 0) ? b.bannerImages[0].imageUrl : "https://dummyimage.com/240x120/e2e8f0/64748b&text=No+Image"}
-                            alt={b.bannerImages.length > 0 ? (b.bannerImages[0].title || "Banner") : "Banner"}
-                            width={96}
-                            height={48}
-                            unoptimized
-                            className="h-full w-full object-cover cursor-pointer transition-transform duration-700 ease-out hover:scale-125"
-                          />
-                          {b.bannerImages.length > 1 && (
-                            <div className="absolute bottom-1 right-1 rounded bg-black/60 px-1 py-0.5 text-[8px] font-bold text-white">
-                              +{b.bannerImages.length - 1}
+                          {b.bannerImages.length > 0 && b.bannerImages[0].subtitle && (
+                            <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 line-clamp-1">
+                              {b.bannerImages[0].subtitle}
                             </div>
+                          )}
+                          <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+                            Cập nhật: {formatDate(b.updatedAt)}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex justify-center">
+                          <div className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-700 dark:bg-white/5 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-white/10">
+                            {b.position}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex justify-center">
+                          <div className="relative h-12 w-24 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                            <Image
+                              src={(b.bannerImages && b.bannerImages.length > 0) ? b.bannerImages[0].imageUrl : "https://dummyimage.com/240x120/e2e8f0/64748b&text=No+Image"}
+                              alt={b.bannerImages.length > 0 ? (b.bannerImages[0].title || "Banner") : "Banner"}
+                              width={96}
+                              height={48}
+                              unoptimized
+                              className="h-full w-full object-cover cursor-pointer transition-transform duration-700 ease-out hover:scale-125"
+                            />
+                            {b.bannerImages.length > 1 && (
+                              <div className="absolute bottom-1 right-1 rounded bg-black/60 px-1 py-0.5 text-[8px] font-bold text-white">
+                                +{b.bannerImages.length - 1}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex justify-center">
+                          {b.isActive ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 ring-1 ring-emerald-500/20">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                              Hoạt động
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500 dark:bg-white/10 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-white/10">
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                              Tạm dừng
+                            </span>
                           )}
                         </div>
                       </td>
                       <td className="px-5 py-4">
-                        {b.isActive ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 ring-1 ring-emerald-500/20">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                            Hoạt động
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500 dark:bg-white/10 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-white/10">
-                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                            Tạm dừng
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
                           <button
                             type="button"
                             onClick={(e) => {

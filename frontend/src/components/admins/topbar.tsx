@@ -4,20 +4,24 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import NotificationsDropdown from "./notifications";
+import Avatar from "@/components/shared/Avatar";
 
 type TopbarProps = {
   userName?: string;
+  userAvatarUrl?: string | null;
   onToggleSidebar?: () => void;
   onLogout?: () => void;
 };
 
 export default function Topbar({
   userName,
+  userAvatarUrl,
   onToggleSidebar,
   onLogout,
 }: TopbarProps) {
   const router = useRouter();
   const [displayName, setDisplayName] = React.useState(userName || "Admin");
+  const [displayAvatarUrl, setDisplayAvatarUrl] = React.useState<string | null>(userAvatarUrl || null);
   const [greetingLabel, setGreetingLabel] = React.useState("Xin chào");
   const [openMenu, setOpenMenu] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement | null>(null);
@@ -25,13 +29,14 @@ export default function Topbar({
   const syncDisplayName = React.useCallback(() => {
     if (userName && userName.trim()) {
       setDisplayName(userName);
+      setDisplayAvatarUrl(userAvatarUrl || null);
       setGreetingLabel("Xin chào");
       return;
     }
     try {
       const raw = localStorage.getItem("user");
       const parsed = raw
-        ? (JSON.parse(raw) as { name?: string; userType?: string; role?: string })
+        ? (JSON.parse(raw) as { name?: string; avatarUrl?: string | null; userType?: string; role?: string })
         : null;
 
       const userType = (parsed?.userType || "").toLowerCase();
@@ -49,11 +54,13 @@ export default function Topbar({
 
       const name = parsed?.name || "";
       setDisplayName(name.trim() ? name : "Admin");
+      setDisplayAvatarUrl(parsed?.avatarUrl || null);
     } catch {
       setDisplayName("Admin");
+      setDisplayAvatarUrl(userAvatarUrl || null);
       setGreetingLabel("Xin chào");
     }
-  }, [userName]);
+  }, [userAvatarUrl, userName]);
 
   React.useEffect(() => {
     syncDisplayName();
@@ -126,9 +133,12 @@ export default function Topbar({
                 {displayName}
               </div>
             </div>
-            <div className="relative inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-cyan-400 to-fuchsia-500 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-500/10">
-              {displayName.trim().slice(0, 1).toUpperCase() || "A"}
-            </div>
+            <Avatar
+              src={displayAvatarUrl}
+              name={displayName}
+              className="h-9 w-9 rounded-2xl shadow-lg shadow-cyan-500/10"
+              textClassName="text-sm font-semibold"
+            />
             <svg viewBox="0 0 24 24" className={"h-4 w-4 text-slate-600 transition dark:text-slate-300 " + (openMenu ? "rotate-180" : "")}
               fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M6 9l6 6 6-6" />

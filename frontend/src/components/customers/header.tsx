@@ -20,6 +20,7 @@ import { cartService } from "@/services/cartService";
 import { orderService } from "@/services/orderService";
 import { Logo } from "./Logo";
 import CustomerNotifications from "./CustomerNotifications";
+import Avatar from "@/components/shared/Avatar";
 
 const iconBtn =
   "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-500/50 bg-zinc-800/80 text-zinc-100 transition hover:bg-zinc-700/90 sm:h-10 sm:w-10";
@@ -39,12 +40,16 @@ export default function PremiumHeader() {
   useEffect(() => {
     setMounted(true);
 
-    try {
-      const raw = localStorage.getItem("user");
-      setUser(raw ? (JSON.parse(raw) as User) : null);
-    } catch {
-      /* ignore */
-    }
+    const syncUser = () => {
+      try {
+        const raw = localStorage.getItem("user");
+        setUser(raw ? (JSON.parse(raw) as User) : null);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    syncUser();
 
     const syncCartTotal = async () => {
       try {
@@ -100,16 +105,19 @@ export default function PremiumHeader() {
     };
 
     const onStorage = () => {
+      syncUser();
       void syncCartTotal();
       void syncOrderTotal();
     };
 
     window.addEventListener(CART_UPDATED_EVENT, onCartUpdated as EventListener);
     window.addEventListener("storage", onStorage);
+    window.addEventListener("userUpdated", onStorage);
 
     return () => {
       window.removeEventListener(CART_UPDATED_EVENT, onCartUpdated as EventListener);
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("userUpdated", onStorage);
     };
   }, []);
 
@@ -272,9 +280,12 @@ export default function PremiumHeader() {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex h-10 max-w-[140px] items-center gap-2 rounded-xl border border-zinc-500/50 bg-zinc-800/80 p-1 pr-2 transition hover:bg-zinc-700/90"
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 text-sm font-black text-white">
-                    {user.name?.charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar
+                    src={user.avatarUrl}
+                    name={user.name}
+                    className="h-8 w-8 shrink-0 rounded-lg"
+                    textClassName="text-sm font-black"
+                  />
                   <span className="hidden max-w-[72px] truncate text-xs font-bold text-zinc-200 md:block">
                     {user.name}
                   </span>
@@ -425,9 +436,12 @@ export default function PremiumHeader() {
                 {mounted && user ? (
                   <div className="space-y-4">
                     <div className="flex items-center gap-4 rounded-2xl border border-zinc-600/50 bg-zinc-800/60 p-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-600 text-xl font-black text-white">
-                        {user.name?.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar
+                        src={user.avatarUrl}
+                        name={user.name}
+                        className="h-12 w-12 rounded-xl"
+                        textClassName="text-xl font-black"
+                      />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-black text-zinc-100">{user.name}</p>
                         <p className="text-xs text-zinc-500">Khách hàng thân thiết</p>

@@ -107,6 +107,7 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
         customer.setEmail(req.email());
         customer.setPhone(req.phone());
         customer.setAddress(req.address());
+        customer.setAvatarUrl(req.avatarUrl());
 
         if (req.password() != null && !req.password().isBlank()) {
             customer.setPassword(passwordEncoder.encode(req.password()));

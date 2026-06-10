@@ -130,13 +130,15 @@ export default function CreateBanner() {
         })),
       };
 
+      console.log("[Create Banner Payload]", JSON.stringify(payload, null, 2));
       await bannerService.create(payload);
+      showToast("Tạo banner thành công!", "success");
       router.push("/banners");
     } catch (e: any) {
       console.error("[Create Banner Error]", e);
       const msg = e?.message || "Không thể tạo banner.";
       setError(msg);
-      showToast(msg);
+      showToast(msg, "error");
     } finally {
       setSubmitting(false);
     }
@@ -188,11 +190,11 @@ export default function CreateBanner() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Vị trí hiển thị</label>
-                  <div className="relative">
+                  <div className="relative z-10">
                     <button
                       type="button"
                       onClick={() => setOpenDropdown(v => v === "position" ? null : "position")}
-                      className="relative z-[120] flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-4 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                      className="relative flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-4 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                     >
                       <span className="truncate">
                         {position === "SLIDER" ? "Trang chủ - Slider chính" : 
@@ -205,37 +207,32 @@ export default function CreateBanner() {
                     </button>
 
                     {openDropdown === "position" && (
-                      <>
-                        <div 
-                          className="fixed inset-0 z-[99999] bg-slate-950/20 backdrop-blur-md transition-opacity"
-                          onClick={() => setOpenDropdown(null)}
-                        />
-                        <div className="absolute left-0 right-0 z-[120] mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl animate-popover dark:border-white/10 dark:bg-slate-950">
-                          <div className="max-h-56 overflow-auto p-1">
-                            {[
-                              { value: "SLIDER", label: "Trang chủ - Slider chính" },
-                              { value: "TOP", label: "Đầu trang (Top)" },
-                              { value: "MIDDLE", label: "Giữa trang (Middle)" },
-                              { value: "BOTTOM", label: "Cuối trang (Bottom)" },
-                            ].map((opt) => (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                onClick={() => {
-                                  setPosition(opt.value as BannerPosition);
-                                  setOpenDropdown(null);
-                                }}
-                                className={
-                                  "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                                  (position === opt.value ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100" : "text-slate-700 dark:text-slate-200")
-                                }
-                              >
-                                {opt.label}
-                              </button>
-                            ))}
-                          </div>
+                      <div className="absolute left-0 right-0 z-[9999] mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-950">
+                        <div className="max-h-56 overflow-auto p-1">
+                          {[
+                            { value: "SLIDER", label: "Trang chủ - Slider chính" },
+                            { value: "TOP", label: "Đầu trang (Top)" },
+                            { value: "MIDDLE", label: "Giữa trang (Middle)" },
+                            { value: "BOTTOM", label: "Cuối trang (Bottom)" },
+                          ].map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPosition(opt.value as BannerPosition);
+                                setOpenDropdown(null);
+                              }}
+                              className={
+                                "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
+                                (position === opt.value ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100" : "text-slate-700 dark:text-slate-200")
+                              }
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>

@@ -3,6 +3,8 @@
 import React from "react";
 import { RefreshCcw } from "lucide-react";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
+import Avatar from "@/components/shared/Avatar";
+import AvatarUploadField from "@/components/shared/AvatarUploadField";
 
 type AdminAccountDto = {
   accountId: number;
@@ -14,6 +16,7 @@ type AdminAccountDto = {
   email: string;
   phone: string | null;
   address: string | null;
+  avatarUrl?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   deletedAt?: string | null;
@@ -88,6 +91,7 @@ export default function Profile() {
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [address, setAddress] = React.useState("");
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
 
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -112,6 +116,7 @@ export default function Profile() {
       setEmail(data.email || "");
       setPhone(data.phone || "");
       setAddress(data.address || "");
+      setAvatarUrl(data.avatarUrl || null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không thể tải thông tin.");
     } finally {
@@ -153,10 +158,12 @@ export default function Profile() {
             email: email.trim(),
             phone: phone.trim() || null,
             address: address.trim() || null,
+            avatarUrl,
           }),
         }
       );
       setAccount(updated);
+      setAvatarUrl(updated.avatarUrl || null);
       showToast("Cập nhật thông tin thành công.", "success");
 
       try {
@@ -165,7 +172,7 @@ export default function Profile() {
         if (parsed) {
           localStorage.setItem(
             "user",
-            JSON.stringify({ ...parsed, name: updated.fullName })
+            JSON.stringify({ ...parsed, name: updated.fullName, avatarUrl: updated.avatarUrl || null })
           );
           window.dispatchEvent(new Event("userUpdated"));
         }
@@ -288,8 +295,21 @@ export default function Profile() {
 
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
-            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Tài khoản</div>
-            <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-200">
+            <div className="flex flex-col items-center text-center">
+              <Avatar
+                src={avatarUrl}
+                name={fullName || account?.username}
+                className="h-24 w-24 rounded-3xl"
+                textClassName="text-3xl font-black"
+              />
+              <div className="mt-3 text-base font-semibold text-slate-900 dark:text-slate-100">
+                {fullName || account?.username || "Tài khoản"}
+              </div>
+              <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">
+                Ảnh đại diện hiển thị theo khung vuông 1:1 trên toàn bộ website.
+              </div>
+            </div>
+            <div className="mt-5 space-y-2 text-sm text-slate-700 dark:text-slate-200">
               <div className="flex justify-between gap-3">
                 <span className="text-slate-500 dark:text-slate-300">Username</span>
                 <span className="max-w-[60%] truncate font-semibold">{account?.username || "-"}</span>
@@ -312,6 +332,15 @@ export default function Profile() {
               </div>
             ) : tab === "info" ? (
               <form onSubmit={onSaveInfo} className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                <div className="mb-5">
+                  <AvatarUploadField
+                    label="Ảnh đại diện"
+                    value={avatarUrl}
+                    name={fullName || account?.username}
+                    helperText="Admin và nhân viên có thể tải ảnh ở mọi tỉ lệ, website sẽ hiển thị trong khung vuông 1:1."
+                    onChange={setAvatarUrl}
+                  />
+                </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Họ và tên</label>

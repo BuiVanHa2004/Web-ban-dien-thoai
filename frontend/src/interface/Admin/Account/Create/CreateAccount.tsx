@@ -7,6 +7,7 @@ import React from "react";
 
 import { customerAccountService } from "@/services/customerAccountService";
 import ValidationModal from "@/components/admins/ValidationModal";
+import AvatarUploadField from "@/components/shared/AvatarUploadField";
 
 export default function CreateAccount() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function CreateAccount() {
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [address, setAddress] = React.useState("");
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [validationModal, setValidationModal] = React.useState<{ open: boolean; fields: string[] }>({ open: false, fields: [] });
@@ -68,6 +70,7 @@ export default function CreateAccount() {
           email: em,
           phone: phone.trim() || null,
           address: address.trim() || null,
+          avatarUrl,
         });
         router.push("/accounts");
       } catch (e: any) {
@@ -110,6 +113,17 @@ export default function CreateAccount() {
                 {error}
               </div>
             ) : null}
+
+            <div className="mb-5">
+              <AvatarUploadField
+                label="Ảnh đại diện"
+                value={avatarUrl}
+                name={fullName || username}
+                helperText="Khách hàng có thể tải ảnh ở mọi tỉ lệ, hệ thống sẽ tự động crop thành hình vuông 1:1."
+                cropMode="square-required"
+                onChange={setAvatarUrl}
+              />
+            </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -179,8 +193,14 @@ export default function CreateAccount() {
             <div className="p-5">
               <div className="rounded-3xl bg-white/60 p-4 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-slate-950/45 dark:ring-white/10 dark:shadow-2xl dark:shadow-black/40">
                 <div className="flex items-start gap-3">
-                  <div className="inline-flex cursor-pointer h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-base font-semibold text-slate-700 ring-1 ring-slate-200 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">
-                    {(fullName.trim() || username.trim() || "?").slice(0, 1).toUpperCase()}
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-base font-semibold text-slate-700 dark:text-slate-100">
+                        {(fullName.trim() || username.trim() || "?").slice(0, 1).toUpperCase()}
+                      </div>
+                    )}
                   </div>
 
                   <div className="min-w-0">

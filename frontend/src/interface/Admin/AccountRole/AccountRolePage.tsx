@@ -6,6 +6,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 
 import { adminAccountService, AdminAccountDto } from "@/services/adminAccountService";
+import Avatar from "@/components/shared/Avatar";
 
 type AdminAccount = {
   id: string;
@@ -16,6 +17,7 @@ type AdminAccount = {
   email: string;
   phone?: string | null;
   address?: string | null;
+  avatarUrl?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   deletedAt?: string | null;
@@ -45,6 +47,7 @@ function mapDtoToAdmin(dto: AdminAccountDto): AdminAccount {
     email: dto.email,
     phone: dto.phone ?? null,
     address: dto.address ?? null,
+    avatarUrl: dto.avatarUrl ?? null,
     createdAt: dto.createdAt || null,
     updatedAt: dto.updatedAt || null,
     deletedAt: dto.deletedAt || null,
@@ -284,9 +287,19 @@ export default function AccountRolePage() {
                     >
                       <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{idx + 1}</td>
                       <td className="px-5 py-4">
-                        <div className="font-semibold text-slate-900 dark:text-slate-100">{a.fullName}</div>
-                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-                          Cập nhật: {formatDate(a.updatedAt)}
+                        <div className="flex items-center gap-3">
+                          <Avatar 
+                            src={a.avatarUrl} 
+                            name={a.fullName}
+                            className="h-9 w-9 rounded-full shrink-0"
+                            textClassName="text-xs font-bold"
+                          />
+                          <div>
+                            <div className="font-semibold text-slate-900 dark:text-slate-100">{a.fullName}</div>
+                            <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                              Cập nhật: {formatDate(a.updatedAt)}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{a.username}</td>
@@ -379,13 +392,13 @@ export default function AccountRolePage() {
                   className="flex flex-col gap-5 rounded-3xl p-5 sm:flex-row sm:items-center"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
                 >
-                  <div
-                    className="h-24 w-24 cursor-pointer shrink-0 overflow-hidden rounded-full"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}
-                  >
-                    <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-white/90">
-                      {(selectedAccount.fullName || selectedAccount.username || "?").slice(0, 1).toUpperCase()}
-                    </div>
+                  <div className="shrink-0">
+                    <Avatar 
+                      src={selectedAccount.avatarUrl} 
+                      name={selectedAccount.fullName || selectedAccount.username}
+                      className="h-24 w-24 rounded-full"
+                      textClassName="text-2xl font-bold"
+                    />
                   </div>
 
                   <div className="min-w-0 flex-1">

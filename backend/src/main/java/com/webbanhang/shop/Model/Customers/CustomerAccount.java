@@ -53,6 +53,9 @@ public class CustomerAccount {
     @Column(name = "address", columnDefinition = "TEXT")
     private String address;
 
+    @Column(name = "avatar_url", length = 1024)
+    private String avatarUrl;
+
     @Column(name = "created_at")
     private Instant createdAt;
 

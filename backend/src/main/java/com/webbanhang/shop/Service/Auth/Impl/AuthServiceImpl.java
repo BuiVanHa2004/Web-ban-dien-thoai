@@ -67,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
                     "admin:" + admin.getAccountId(),
                     Map.of("userType", "ADMIN", "role", role, "userId", admin.getAccountId())
             );
-            return toAuthResponse(token, admin.getAccountId(), admin.getFullName(), admin.getEmail(), role, "ADMIN", "LOCAL", true);
+            return toAuthResponse(token, admin.getAccountId(), admin.getFullName(), admin.getEmail(), admin.getAvatarUrl(), role, "ADMIN", "LOCAL", true);
         }
 
         CustomerAccount customer = customerAccountRepository.findByUsername(key)
@@ -94,6 +94,7 @@ public class AuthServiceImpl implements AuthService {
                 customer.getCustomerId(),
                 customer.getFullName(),
                 customer.getEmail(),
+                customer.getAvatarUrl(),
                 "CUSTOMER",
                 "CUSTOMER",
                 resolveAuthProvider(customer),
@@ -139,6 +140,7 @@ public class AuthServiceImpl implements AuthService {
                 saved.getCustomerId(),
                 saved.getFullName(),
                 saved.getEmail(),
+                saved.getAvatarUrl(),
                 "CUSTOMER",
                 "CUSTOMER",
                 resolveAuthProvider(saved),
@@ -168,6 +170,7 @@ public class AuthServiceImpl implements AuthService {
                             customer.getCustomerId(),
                             customer.getFullName(),
                             customer.getEmail(),
+                            customer.getAvatarUrl(),
                             "CUSTOMER",
                             "CUSTOMER",
                             resolveAuthProvider(customer),
@@ -222,6 +225,7 @@ public class AuthServiceImpl implements AuthService {
                         saved.getCustomerId(),
                         saved.getFullName(),
                         saved.getEmail(),
+                        saved.getAvatarUrl(),
                         "CUSTOMER",
                         "CUSTOMER",
                         resolveAuthProvider(saved),
@@ -276,6 +280,7 @@ public class AuthServiceImpl implements AuthService {
                         customer.getCustomerId(),
                         customer.getFullName(),
                         customer.getEmail(),
+                        customer.getAvatarUrl(),
                         "CUSTOMER",
                         "CUSTOMER",
                         resolveAuthProvider(customer),
@@ -322,6 +327,7 @@ public class AuthServiceImpl implements AuthService {
             Integer userId,
             String fullName,
             String email,
+            String avatarUrl,
             String role,
             String userType,
             String authProvider,
@@ -332,6 +338,7 @@ public class AuthServiceImpl implements AuthService {
                 userId,
                 fullName,
                 email,
+                avatarUrl,
                 role,
                 userType,
                 authProvider,

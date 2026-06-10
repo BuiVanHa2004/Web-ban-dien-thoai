@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { createPortal } from "react-dom";
+import Avatar from "@/components/shared/Avatar";
 
 import {
   customerAccountService,
@@ -18,6 +19,7 @@ type CustomerAccount = {
   roleName: string;
   email: string;
   googleId?: string | null;
+  avatarUrl?: string | null;
   phone?: string | null;
   address?: string | null;
   createdAt?: string | null;
@@ -34,6 +36,7 @@ function mapDtoToCustomer(dto: CustomerAccountDto): CustomerAccount {
     roleName: "Khách hàng",
     email: dto.email,
     googleId: dto.googleId ?? null,
+    avatarUrl: dto.avatarUrl ?? null,
     phone: dto.phone ?? null,
     address: dto.address ?? null,
     createdAt: dto.createdAt || null,
@@ -383,14 +386,12 @@ export default function AccountPage() {
                   className="flex flex-col gap-5 rounded-3xl p-5 sm:flex-row sm:items-center"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
                 >
-                  <div
-                    className="h-24 w-24 cursor-pointer shrink-0 overflow-hidden rounded-full"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}
-                  >
-                    <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-white/90">
-                      {(selectedAccount.fullName || selectedAccount.username || "?").slice(0, 1).toUpperCase()}
-                    </div>
-                  </div>
+                  <Avatar
+                    src={selectedAccount.avatarUrl}
+                    name={selectedAccount.fullName || selectedAccount.username}
+                    className="h-24 w-24 rounded-full shadow-xl"
+                    textClassName="text-3xl font-black"
+                  />
 
                   <div className="min-w-0 flex-1">
                     <div className="text-lg font-semibold text-white/95">

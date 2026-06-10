@@ -133,6 +133,7 @@ public class AdminAccountServiceImpl implements AdminAccountService {
         admin.setEmail(req.email());
         admin.setPhone(req.phone());
         admin.setAddress(req.address());
+        admin.setAvatarUrl(req.avatarUrl());
 
         Role role = roleRepository.findById(req.roleId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò."));

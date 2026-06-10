@@ -42,25 +42,49 @@ export type BannerUploadResponse = {
 
 const API_URL = process.env.NEXT_PUBLIC_URL || 'http://localhost:8080';
 
+function getAuthHeaders(): HeadersInit {
+  if (typeof window === 'undefined') return {};
+  const token = localStorage.getItem('token');
+  if (!token) return {};
+  return {
+    'Authorization': `Bearer ${token}`,
+  };
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}/api${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
       ...(init?.headers || {}),
     },
+  });
+
+  console.log(`[API Request] ${init?.method || 'GET'} ${path}`, {
+    status: res.status,
+    statusText: res.statusText,
+    ok: res.ok,
   });
 
   if (!res.ok) {
     let message = 'Có lỗi xảy ra.';
     try {
       const data = await res.json();
-      console.error("[API Error Details]", data);
-      message = data?.message || message;
+      console.error("[API Error Details]", {
+        status: res.status,
+        statusText: res.statusText,
+        data,
+      });
+      message = data?.message || data?.error || message;
     } catch {
       // If not JSON, try text
       const text = await res.text();
-      console.error("[API Error Raw]", text);
+      console.error("[API Error Raw]", {
+        status: res.status,
+        text,
+      });
+      message = text || message;
     }
     throw new Error(message);
   }

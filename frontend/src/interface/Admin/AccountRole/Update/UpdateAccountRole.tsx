@@ -7,6 +7,8 @@ import React from "react";
 
 import { adminAccountService, roleService, RoleDto } from "@/services/adminAccountService";
 import ValidationModal from "@/components/admins/ValidationModal";
+import AvatarUploadField from "@/components/shared/AvatarUploadField";
+import Avatar from "@/components/shared/Avatar";
 
 function getRoleLabel(roleName: string) {
   const name = (roleName || "").toUpperCase();
@@ -119,6 +121,7 @@ function UpdateAccountRole() {
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [address, setAddress] = React.useState("");
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
 
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -147,6 +150,7 @@ function UpdateAccountRole() {
         setEmail(dto.email || "");
         setPhone(dto.phone || "");
         setAddress(dto.address || "");
+        setAvatarUrl(dto.avatarUrl || null);
         setRoleId(dto.roleId || (rs.length ? rs[0].roleId : null));
       } catch (e: any) {
         setError(e?.message || "Không tìm thấy tài khoản. Vui lòng quay lại danh sách.");
@@ -210,6 +214,7 @@ function UpdateAccountRole() {
           email: em,
           phone: phone.trim() || null,
           address: address.trim() || null,
+          avatarUrl: avatarUrl || null,
         });
         router.push("/accounts-roles");
       } catch (e: any) {
@@ -275,6 +280,16 @@ function UpdateAccountRole() {
                 </div>
               </div>
             ) : null}
+
+            <AvatarUploadField
+              label="Ảnh đại diện"
+              value={avatarUrl}
+              name={fullName || username}
+              helperText="Ảnh đại diện (tối đa 2MB, định dạng JPG/PNG/WebP)"
+              disabled={formDisabled}
+              cropMode="square-required"
+              onChange={setAvatarUrl}
+            />
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -355,9 +370,12 @@ function UpdateAccountRole() {
             <div className="p-5">
               <div className="rounded-3xl bg-white/60 p-4 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-slate-950/45 dark:ring-white/10 dark:shadow-2xl dark:shadow-black/40">
                 <div className="flex items-start gap-3">
-                  <div className="inline-flex cursor-pointer h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-base font-semibold text-slate-700 ring-1 ring-slate-200 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">
-                    {(fullName.trim() || username.trim() || "?").slice(0, 1).toUpperCase()}
-                  </div>
+                  <Avatar 
+                    src={avatarUrl} 
+                    name={fullName || username}
+                    className="h-12 w-12 rounded-full cursor-pointer shrink-0"
+                    textClassName="text-base font-semibold"
+                  />
 
                   <div className="min-w-0">
                     <div className="font-semibold text-slate-900 dark:text-slate-100">

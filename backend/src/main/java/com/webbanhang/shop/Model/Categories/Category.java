@@ -39,12 +39,6 @@ public class Category {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
-    @Column(name = "price_from", precision = 15, scale = 2)
-    private java.math.BigDecimal priceFrom;
-
-    @Column(name = "price_to", precision = 15, scale = 2)
-    private java.math.BigDecimal priceTo;
-
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
     private Set<CategoryImage> categoryImages = new LinkedHashSet<>();

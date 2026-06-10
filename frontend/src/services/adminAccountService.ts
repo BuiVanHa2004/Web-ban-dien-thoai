@@ -15,6 +15,7 @@ export type AdminAccountDto = {
   email: string;
   phone: string | null;
   address: string | null;
+  avatarUrl?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   deletedAt?: string | null;
@@ -28,6 +29,7 @@ export type AdminAccountCreateUpdatePayload = {
   email: string;
   phone?: string | null;
   address?: string | null;
+  avatarUrl?: string | null;
 };
 
 const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";

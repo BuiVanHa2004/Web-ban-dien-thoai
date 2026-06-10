@@ -57,9 +57,6 @@ public class Product {
     @Column(name = "product_type")
     private ProductType productType;
 
-    @Column(name = "product_main_image", length = 1024)
-    private String productMainImage;
-
     @Column(name = "is_active")
     private Boolean isActive = Boolean.TRUE;
 
