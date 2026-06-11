@@ -69,17 +69,11 @@ export default function CustomerProductCard({
 
   const card = (
     <Link
-      href={isOut ? "#" : `/product/${p.productId}?returnUrl=${encodeURIComponent(returnUrl)}`}
-      onClick={(e) => {
-        if (isOut) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }}
+      href={`/product/${p.productId}?returnUrl=${encodeURIComponent(returnUrl)}`}
       className={
         "group mx-auto block max-w-[220px] cursor-pointer overflow-hidden rounded-3xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/60 shadow-md transition-all duration-300 " +
         (isOut
-          ? "pointer-events-none opacity-55 grayscale"
+          ? "opacity-75 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20"
           : "hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/25")
       }
     >

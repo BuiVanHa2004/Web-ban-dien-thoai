@@ -388,21 +388,21 @@ export default function ProductPage() {
 
       <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="max-h-[750px] overflow-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-white/10">
-          <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+          <table className="min-w-full border-separate border-spacing-0 text-sm">
             <thead className="sticky top-0 z-10 bg-white/80 text-xs uppercase tracking-wide text-slate-700 backdrop-blur-xl dark:bg-slate-900/90 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-4 font-black">STT</th>
-                <th className="px-5 py-4 font-black">Tên sản phẩm</th>
-                <th className="px-5 py-4 font-black">Slug</th>
-                <th className="px-5 py-4 font-black">Ảnh sản phẩm</th>
-                <th className="px-5 py-4 font-black">Thương hiệu</th>
-                <th className="px-5 py-4 font-black">Danh mục</th>
-                <th className="px-5 py-4 font-black">Loại sản phẩm</th>
-                <th className="px-5 py-4 font-black">Màu</th>
-                <th className="px-5 py-4 font-black">RAM</th>
-                <th className="px-5 py-4 font-black">Bộ nhớ</th>
-                <th className="px-5 py-4 font-black">Tồn kho</th>
-                <th className="px-5 py-4 font-black">Hành động</th>
+                <th className="px-5 py-4 font-black text-center">STT</th>
+                <th className="px-5 py-4 font-black text-center">Tên sản phẩm</th>
+                <th className="px-5 py-4 font-black text-center">Slug</th>
+                <th className="px-5 py-4 font-black text-center">Ảnh sản phẩm</th>
+                <th className="px-5 py-4 font-black text-center">Thương hiệu</th>
+                <th className="px-5 py-4 font-black text-center">Danh mục</th>
+                <th className="px-5 py-4 font-black text-center">Loại sản phẩm</th>
+                <th className="px-5 py-4 font-black text-center">Màu</th>
+                <th className="px-5 py-4 font-black text-center">RAM</th>
+                <th className="px-5 py-4 font-black text-center">Bộ nhớ</th>
+                <th className="px-5 py-4 font-black text-center">Tồn kho</th>
+                <th className="px-5 py-4 font-black text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -430,48 +430,52 @@ export default function ProductPage() {
                           : "cursor-pointer hover:bg-slate-50 active:bg-slate-100/70 dark:hover:bg-white/5 dark:active:bg-white/10")
                       }
                     >
-                      <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{idx + 1}</td>
-                      <td className="px-5 py-4">
-                        <div className="font-semibold text-slate-900 dark:text-slate-100">{p.name}</div>
-                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                      <td className="px-5 py-4 text-center text-slate-600 dark:text-slate-300">{idx + 1}</td>
+                      <td className="px-5 py-4 text-center">
+                        <div className="font-semibold text-slate-900 dark:text-slate-100 mx-auto">{p.name}</div>
+                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 mx-auto">
                           Cập nhật: {formatDate(p.updatedAt)}
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-5 py-4 text-center">
                         <div className="text-sm text-slate-700 dark:text-slate-300">{p.slug || "-"}</div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="aspect-[9/16] w-14 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
-                          <Image
-                            src={
-                              resolveImageUrl(p.imageUrl) ||
-                              "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
-                            }
-                            alt={p.name}
-                            width={56}
-                            height={100}
-                            unoptimized
-                            className="h-full w-full cursor-pointer object-cover transition-transform duration-700 ease-out hover:scale-110"
-                          />
+                      <td className="px-5 py-4 text-center">
+                        <div className="flex justify-center">
+                          <div className="aspect-[9/16] w-14 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                            <Image
+                              src={
+                                resolveImageUrl(p.imageUrl) ||
+                                "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
+                              }
+                              alt={p.name}
+                              width={56}
+                              height={100}
+                              unoptimized
+                              className="h-full w-full cursor-pointer object-cover transition-transform duration-700 ease-out hover:scale-110"
+                            />
+                          </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{p.brandName || "-"}</td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{p.categoryName || "-"}</td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{formatProductType(p.productType)}</td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{p.colorNames || "-"}</td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{p.ramGbValues || "-"}</td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{p.storageGbValues || "-"}</td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">
-                        {p.stockQuantity <= 0 ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-600 ring-1 ring-rose-200/50 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-400/20">
-                            Hết hàng
-                          </span>
-                        ) : (
-                          <span className="font-medium">{p.stockQuantity}</span>
-                        )}
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{p.brandName || "-"}</td>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{p.categoryName || "-"}</td>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{formatProductType(p.productType)}</td>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{p.colorNames || "-"}</td>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{p.ramGbValues || "-"}</td>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{p.storageGbValues || "-"}</td>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">
+                        <div className="flex justify-center">
+                          {p.stockQuantity <= 0 ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-600 ring-1 ring-rose-200/50 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-400/20">
+                              Hết hàng
+                            </span>
+                          ) : (
+                            <span className="font-medium">{p.stockQuantity}</span>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="flex flex-wrap items-center gap-2">
+                      <td className="px-5 py-4 text-center">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -703,11 +707,11 @@ export default function ProductPage() {
                         >
                           <div className="text-sm font-semibold text-white/90">Thông số kỹ thuật</div>
                           <div className="overflow-hidden rounded-3xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                            <table className="min-w-full border-collapse text-left text-sm">
+                            <table className="min-w-full border-collapse text-sm">
                               <thead className="text-xs font-semibold text-white/75" style={{ background: "rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                                 <tr className="border-b border-slate-200 dark:border-white/10">
-                                  <th className="px-4 py-3">Thông số</th>
-                                  <th className="px-4 py-3">Giá trị</th>
+                                  <th className="px-4 py-3 text-center">Thông số</th>
+                                  <th className="px-4 py-3 text-center">Giá trị</th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -718,111 +722,111 @@ export default function ProductPage() {
                                     <>
                                       {specs.map((spec, idx) => (
                                         <tr key={String(spec?.specId ?? idx)}>
-                                          <td className="px-4 py-3 text-white/75">Phiên bản</td>
-                                          <td className="px-4 py-3 text-white/90">{spec?.version || "-"}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Phiên bản</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{spec?.version || "-"}</td>
                                         </tr>
                                       ))}
 
                                       {firstSpec?.chip && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Chip</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.chip}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Chip</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.chip}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.screen && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Màn hình</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.screen}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Màn hình</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.screen}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.refreshRate && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Tần số quét</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.refreshRate}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Tần số quét</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.refreshRate}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.battery && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Pin</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.battery}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Pin</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.battery}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.fastCharge && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Sạc nhanh</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.fastCharge}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Sạc nhanh</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.fastCharge}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.cameraRear && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Camera sau</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.cameraRear}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Camera sau</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.cameraRear}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.cameraFront && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Camera trước</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.cameraFront}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Camera trước</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.cameraFront}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.support5g != null && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Hỗ trợ 5G</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.support5g ? "Có" : "Không"}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Hỗ trợ 5G</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.support5g ? "Có" : "Không"}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.nfc != null && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">NFC</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.nfc ? "Có" : "Không"}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">NFC</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.nfc ? "Có" : "Không"}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.operatingSystem && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Hệ điều hành</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.operatingSystem}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Hệ điều hành</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.operatingSystem}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.size && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Kích thước</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.size}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Kích thước</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.size}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.weight && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Trọng lượng</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.weight}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Trọng lượng</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.weight}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.material && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Chất liệu</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.material}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Chất liệu</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.material}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.waterResistance && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Chống nước</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.waterResistance}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Chống nước</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.waterResistance}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.chargingPort && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Cổng sạc</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.chargingPort}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">Cổng sạc</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.chargingPort}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.sim && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">SIM</td>
-                                          <td className="px-4 py-3 text-white/90">{firstSpec.sim}</td>
+                                          <td className="px-4 py-3 text-center text-white/75">SIM</td>
+                                          <td className="px-4 py-3 text-center text-white/90">{firstSpec.sim}</td>
                                         </tr>
                                       )}
                                       {firstSpec?.warranty && (
                                         <tr>
-                                          <td className="px-4 py-3 text-white/75">Bảo hành</td>
-                                          <td className="px-4 py-3 text-white/90">
+                                          <td className="px-4 py-3 text-center text-white/75">Bảo hành</td>
+                                          <td className="px-4 py-3 text-center text-white/90">
                                             {firstSpec.warranty.toLowerCase().includes("tháng")
                                               ? firstSpec.warranty
                                               : `${firstSpec.warranty} tháng`}
@@ -897,15 +901,15 @@ export default function ProductPage() {
 
                                   {(c.variants || []).length > 0 ? (
                                     <div className="mt-3 overflow-hidden rounded-2xl" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
-                                      <table className="min-w-full border-collapse text-left text-sm">
+                                      <table className="min-w-full border-collapse text-sm">
                                         <thead className="text-xs font-semibold text-white/75" style={{ background: "rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                                           <tr>
-                                            <th className="px-3 py-2">RAM</th>
-                                            <th className="px-3 py-2">Bộ nhớ</th>
-                                            <th className="px-3 py-2">Số lượng</th>
-                                            <th className="px-3 py-2">Giá gốc</th>
-                                            <th className="px-3 py-2">Giá giảm</th>
-                                            <th className="px-3 py-2">Giá hiện tại</th>
+                                            <th className="px-3 py-2 text-center">RAM</th>
+                                            <th className="px-3 py-2 text-center">Bộ nhớ</th>
+                                            <th className="px-3 py-2 text-center">Số lượng</th>
+                                            <th className="px-3 py-2 text-center">Giá gốc</th>
+                                            <th className="px-3 py-2 text-center">Giá giảm</th>
+                                            <th className="px-3 py-2 text-center">Giá hiện tại</th>
                                           </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -925,17 +929,17 @@ export default function ProductPage() {
                                             const hasDiscount = discountType && discountType !== "NONE" && discountValue > 0;
                                             return (
                                               <tr key={v.variantId}>
-                                                <td className="px-3 py-2 text-white/90">{v.ramGb ?? "-"}</td>
-                                                <td className="px-3 py-2 text-white/90">{v.storageGb ?? "-"}</td>
-                                                <td className="px-3 py-2 text-white/90">{Number(v.quantity || 0)}</td>
-                                                <td className="px-3 py-2 text-white/80">
+                                                <td className="px-3 py-2 text-center text-white/90">{v.ramGb ?? "-"}</td>
+                                                <td className="px-3 py-2 text-center text-white/90">{v.storageGb ?? "-"}</td>
+                                                <td className="px-3 py-2 text-center text-white/90">{Number(v.quantity || 0)}</td>
+                                                <td className="px-3 py-2 text-center text-white/80">
                                                   {original > 0 ? (
                                                     <span className={hasDiscount ? "line-through" : ""}>
                                                       {original.toLocaleString("vi-VN")}đ
                                                     </span>
                                                   ) : "-"}
                                                 </td>
-                                                <td className="px-3 py-2">
+                                                <td className="px-3 py-2 text-center">
                                                   {hasDiscount ? (
                                                     <span className="font-medium text-rose-300">
                                                       {discountText}
@@ -944,7 +948,7 @@ export default function ProductPage() {
                                                     <span className="text-white/45">-</span>
                                                   )}
                                                 </td>
-                                                <td className="px-3 py-2 font-semibold text-emerald-300">
+                                                <td className="px-3 py-2 text-center font-semibold text-emerald-300">
                                                   {finalPrice > 0 ? `${finalPrice.toLocaleString("vi-VN")}đ` : "-"}
                                                 </td>
                                               </tr>

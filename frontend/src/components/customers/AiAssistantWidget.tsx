@@ -69,13 +69,20 @@ function getOrCreateGuestSessionId() {
   return id;
 }
 
-export default function AiAssistantWidget({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
-  const [open, setOpenState] = React.useState(false);
+export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenChange?: (open: boolean) => void; forceOpen?: boolean }) {
+  const [open, setOpenState] = React.useState(forceOpen || false);
 
   const setOpen = React.useCallback((v: boolean) => {
     setOpenState(v);
     onOpenChange?.(v);
   }, [onOpenChange]);
+
+  // Force open when forceOpen prop changes
+  React.useEffect(() => {
+    if (forceOpen !== undefined) {
+      setOpenState(forceOpen);
+    }
+  }, [forceOpen]);
   const [messages, setMessages] = React.useState<ChatMsg[]>([]);
   const [input, setInput] = React.useState("");
   const [loading, setLoading] = React.useState(false);

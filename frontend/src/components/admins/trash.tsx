@@ -173,12 +173,12 @@ export default function TrashView({
 
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur dark:hover:shadow-black/40">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-full text-sm">
             <thead className="bg-white text-xs uppercase tracking-wide text-slate-600 dark:bg-slate-950/40 dark:text-slate-300">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-3">Tên</th>
-                <th className="px-5 py-3">Thời gian xóa</th>
-                <th className="px-5 py-3">Hành động</th>
+                <th className="px-5 py-3 text-center">Tên</th>
+                <th className="px-5 py-3 text-center">Thời gian xóa</th>
+                <th className="px-5 py-3 text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -202,9 +202,9 @@ export default function TrashView({
                       }
                     >
                       <td className="px-5 py-4">
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-start justify-center gap-3">
                           {!hideImage && (
-                            <div className="h-12 w-12 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                               <Image
                                 src={
                                   resolveImageUrl(it.imageUrl) ||
@@ -218,7 +218,7 @@ export default function TrashView({
                               />
                             </div>
                           )}
-                          <div className="min-w-0">
+                          <div className="min-w-0 text-center">
                             <div className="truncate font-semibold text-slate-900 dark:text-slate-100">
                               {it.title}
                             </div>
@@ -230,11 +230,11 @@ export default function TrashView({
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-slate-700 dark:text-slate-300">
+                      <td className="px-5 py-4 text-center text-slate-700 dark:text-slate-300">
                         {formatDate(it.deletedAt)}
                       </td>
                       <td className="px-5 py-4">
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap justify-center gap-2">
                           <button
                             type="button"
                             onClick={() => restore(it.id)}

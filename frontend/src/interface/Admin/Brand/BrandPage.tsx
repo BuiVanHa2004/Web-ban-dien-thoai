@@ -235,15 +235,15 @@ export default function BrandPage() {
 
       <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="max-h-[700px] overflow-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-white/10">
-          <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
+          <table className="min-w-full border-separate border-spacing-0 text-sm">
             <thead className="sticky top-0 z-10 bg-white/80 text-xs uppercase tracking-wide text-slate-700 backdrop-blur-xl dark:bg-slate-900/90 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-4 font-black">STT</th>
-                <th className="px-5 py-4 font-black">Tên thương hiệu</th>
-                <th className="px-5 py-4 font-black">Slug</th>
-                <th className="px-5 py-4 font-black">Ảnh</th>
-                <th className="px-5 py-4 font-black">Mô tả</th>
-                <th className="px-5 py-4 font-black">Hành động</th>
+                <th className="px-5 py-4 font-black text-center">STT</th>
+                <th className="px-5 py-4 font-black text-center">Tên thương hiệu</th>
+                <th className="px-5 py-4 font-black text-center">Slug</th>
+                <th className="px-5 py-4 font-black text-center">Ảnh</th>
+                <th className="px-5 py-4 font-black text-center">Mô tả</th>
+                <th className="px-5 py-4 font-black text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -271,37 +271,39 @@ export default function BrandPage() {
                           : "cursor-pointer hover:bg-slate-50 active:bg-slate-100/70 dark:hover:bg-white/5 dark:active:bg-white/10")
                       }
                     >
-                      <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{idx + 1}</td>
-                      <td className="px-5 py-4">
+                      <td className="px-5 py-4 text-center text-slate-600 dark:text-slate-300">{idx + 1}</td>
+                      <td className="px-5 py-4 text-center">
                         <div className="font-semibold text-slate-900 dark:text-slate-100">{b.name}</div>
                         <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
                           Cập nhật: {formatDate(b.updatedAt)}
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">
                         <div className="text-sm font-mono">{b.slug || "-"}</div>
                       </td>
                       <td className="px-5 py-4">
-                        <div className="h-20 w-20 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
-                          <Image
-                            src={
-                              (b.brandImages && b.brandImages.length > 0)
-                                ? b.brandImages[0]
-                                : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
-                            }
-                            alt={b.name}
-                            width={80}
-                            height={80}
-                            unoptimized
-                            className="h-full w-full cursor-pointer object-cover transition-transform duration-700 ease-out hover:scale-125"
-                          />
+                        <div className="flex justify-center">
+                          <div className="h-20 w-20 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                            <Image
+                              src={
+                                (b.brandImages && b.brandImages.length > 0)
+                                  ? b.brandImages[0]
+                                  : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
+                              }
+                              alt={b.name}
+                              width={80}
+                              height={80}
+                              unoptimized
+                              className="h-full w-full cursor-pointer object-cover transition-transform duration-700 ease-out hover:scale-125"
+                            />
+                          </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">
-                        <div className="line-clamp-2 max-w-[520px]">{b.description}</div>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">
+                        <div className="line-clamp-2 max-w-[520px] mx-auto">{b.description}</div>
                       </td>
                       <td className="px-5 py-4">
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
                           <button
                             type="button"
                             onClick={(e) => {

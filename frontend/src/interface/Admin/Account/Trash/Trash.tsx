@@ -11,6 +11,7 @@ function mapDtoToItem(dto: CustomerAccountDto): TrashItem {
     id: String(dto.customerId),
     title: dto.fullName,
     subtitle: `${dto.username} • ${dto.email}`,
+    imageUrl: dto.avatarUrl || undefined,
     deletedAt: dto.deletedAt || undefined,
   };
 }

@@ -313,13 +313,13 @@ export default function ContactPage() {
 
       <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-full text-sm">
             <thead className="bg-white/55 text-xs uppercase tracking-wide text-slate-700 backdrop-blur-xl dark:bg-slate-950/35 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-3">STT</th>
-                <th className="px-5 py-3">Tên khách hàng</th>
-                <th className="px-5 py-3">Chủ đề</th>
-                <th className="px-5 py-3">Nội dung (mới nhất)</th>
+                <th className="px-5 py-3 text-center">STT</th>
+                <th className="px-5 py-3 text-center">Tên khách hàng</th>
+                <th className="px-5 py-3 text-center">Chủ đề</th>
+                <th className="px-5 py-3 text-center">Nội dung (mới nhất)</th>
                 <th className="px-5 py-3 text-center">Trạng thái</th>
                 <th className="px-5 py-3 text-center">Hành động</th>
               </tr>
@@ -346,12 +346,12 @@ export default function ContactPage() {
               ) : (
                 filteredTableRows.map((tr, idx) => (
                   <tr key={tr.key} className="transition-all duration-500 hover:bg-slate-50/80 dark:hover:bg-white/5">
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-900 dark:text-white">{idx + 1}</td>
-                    <td className="px-5 py-4">
-                      <div className="font-semibold text-slate-900 dark:text-slate-100">{tr.fullName}</div>
-                      <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{tr.email}</div>
+                    <td className="px-5 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">{idx + 1}</td>
+                    <td className="px-5 py-4 text-center">
+                      <div className="font-semibold text-slate-900 dark:text-slate-100 mx-auto">{tr.fullName}</div>
+                      <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 mx-auto">{tr.email}</div>
                       {tr.latest.createdAt && (
-                        <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{formatDate(tr.latest.createdAt)}</div>
+                        <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 mx-auto">{formatDate(tr.latest.createdAt)}</div>
                       )}
                       {tr.total > 1 && (
                         <div className="mt-1 inline-flex rounded-md bg-green-200 px-1.5 py-0.5 text-[10px] font-bold text-black ring-1 ring-amber-200/50 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/20">
@@ -359,13 +359,13 @@ export default function ContactPage() {
                         </div>
                       )}
                     </td>
-                    <td className="px-5 py-4 text-slate-800 dark:text-slate-200 font-medium">{tr.latest.subject}</td>
-                    <td className="px-5 py-4">
-                      <div className="line-clamp-2 max-w-[400px] text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line">
+                    <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200 font-medium">{tr.latest.subject}</td>
+                    <td className="px-5 py-4 text-center">
+                      <div className="line-clamp-2 max-w-[400px] mx-auto text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line">
                         {tr.latest.message || "-"}
                       </div>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-center">
                       <div className="flex justify-center min-w-[110px]">
                         <span
                           className={
@@ -380,7 +380,7 @@ export default function ContactPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-center">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <button
                           type="button"

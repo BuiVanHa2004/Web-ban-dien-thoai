@@ -20,7 +20,7 @@ import { cartService } from "@/services/cartService";
 import { orderService } from "@/services/orderService";
 import { Logo } from "./Logo";
 import CustomerNotifications from "./CustomerNotifications";
-import Avatar from "@/components/shared/Avatar";
+import Avatar from "@/components/avatar/Avatar";
 
 const iconBtn =
   "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-500/50 bg-zinc-800/80 text-zinc-100 transition hover:bg-zinc-700/90 sm:h-10 sm:w-10";

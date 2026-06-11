@@ -497,17 +497,6 @@ export default function CreateProduct() {
       const validColors = productColors.filter(c => c.colorName.trim() && c.images.length > 0);
       if (validColors.length === 0) {
         missingFields.push("Thêm màu nhanh");
-      } else {
-        const hasValidQuantity = validColors.some(c => {
-          if (c.variants && c.variants.length > 0) {
-            const totalVariantQty = c.variants.reduce((sum, v) => sum + (Number(v.quantity) || 0), 0);
-            return totalVariantQty > 0;
-          }
-          return (c.quantity || 0) > 0;
-        });
-        if (!hasValidQuantity) {
-          missingFields.push("Thêm màu nhanh");
-        }
       }
     }
 

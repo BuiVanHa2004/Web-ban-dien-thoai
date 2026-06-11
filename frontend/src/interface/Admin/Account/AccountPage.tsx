@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { createPortal } from "react-dom";
-import Avatar from "@/components/shared/Avatar";
+import Avatar from "@/components/avatar/Avatar";
 
 import {
   customerAccountService,
@@ -247,13 +247,13 @@ export default function AccountPage() {
           <table className="min-w-full border-collapse text-left text-sm">
             <thead className="bg-white/55 text-xs uppercase tracking-wide text-slate-700 backdrop-blur-xl dark:bg-slate-950/35 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-3">STT</th>
-                <th className="px-5 py-3">Tên người dùng</th>
-                <th className="px-5 py-3">Tên đăng nhập</th>
-                <th className="px-5 py-3">Email</th>
+                <th className="px-5 py-3 text-center">STT</th>
+                <th className="px-5 py-3 text-center">Tên người dùng</th>
+                <th className="px-5 py-3 text-center">Tên đăng nhập</th>
+                <th className="px-5 py-3 text-center">Email</th>
                 <th className="px-5 py-3 text-center">Google</th>
-                <th className="px-5 py-3">Số điện thoại</th>
-                <th className="px-5 py-3">Hành động</th>
+                <th className="px-5 py-3 text-center">Số điện thoại</th>
+                <th className="px-5 py-3 text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -278,15 +278,15 @@ export default function AccountPage() {
                           : "cursor-pointer opacity-100 hover:bg-slate-50 active:bg-slate-100/70 dark:hover:bg-white/5 dark:active:bg-white/10")
                       }
                     >
-                      <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{idx + 1}</td>
-                      <td className="px-5 py-4">
+                      <td className="px-5 py-4 text-center text-slate-600 dark:text-slate-300">{idx + 1}</td>
+                      <td className="px-5 py-4 text-center">
                         <div className="font-semibold text-slate-900 dark:text-slate-100">{a.fullName}</div>
                         <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
                           Cập nhật: {formatDate(a.updatedAt)}
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{a.username}</td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{a.email}</td>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{a.username}</td>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{a.email}</td>
                       <td className="px-5 py-4 text-center">
                         <span
                           className={
@@ -299,9 +299,9 @@ export default function AccountPage() {
                           {isGoogle ? "Có" : "Không"}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{a.phone || "-"}</td>
-                      <td className="px-5 py-4">
-                        <div className="flex flex-wrap items-center gap-2">
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{a.phone || "-"}</td>
+                      <td className="px-5 py-4 text-center">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
                           <button
                             type="button"
                             onClick={(e) => {

@@ -472,14 +472,14 @@ export default function PaymentPage() {
         </div>
 
         <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left text-sm" style={{ minWidth: "640px" }}>
+          <table className="w-full text-sm" style={{ minWidth: "640px" }}>
             <thead className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:bg-slate-800/50">
               <tr>
-                <th className="px-4 sm:px-8 py-4 sm:py-5">Đơn hàng</th>
-                <th className="px-4 sm:px-8 py-4 sm:py-5">Giá trị</th>
-                <th className="px-4 sm:px-8 py-4 sm:py-5">Rủi ro</th>
-                <th className="px-4 sm:px-8 py-4 sm:py-5">Trạng thái</th>
-                <th className="px-4 sm:px-8 py-4 sm:py-5 text-right">Thao tác</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Đơn hàng</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Giá trị</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Rủi ro</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Trạng thái</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -503,30 +503,34 @@ export default function PaymentPage() {
                       a.processingByAdminId ? "bg-indigo-50/30 dark:bg-indigo-500/10" : ""
                     }`}
                   >
-                    <td className="px-4 sm:px-8 py-4 sm:py-6">
+                    <td className="px-4 sm:px-8 py-4 sm:py-6 text-center">
                       <div className="font-black text-slate-900 dark:text-white">ĐH-{a.orderId}</div>
                       <div className="text-[10px] text-slate-400 font-bold">{formatDate(a.createdAt)}</div>
                     </td>
-                    <td className="px-4 sm:px-8 py-4 sm:py-6 font-black text-indigo-600 text-sm sm:text-lg whitespace-nowrap">{formatVnd(a.amount)}</td>
-                    <td className="px-4 sm:px-8 py-4 sm:py-6">
-                      <RiskBadge level={a.riskLevel} />
+                    <td className="px-4 sm:px-8 py-4 sm:py-6 text-center font-black text-indigo-600 text-sm sm:text-lg whitespace-nowrap">{formatVnd(a.amount)}</td>
+                    <td className="px-4 sm:px-8 py-4 sm:py-6 text-center">
+                      <div className="flex justify-center">
+                        <RiskBadge level={a.riskLevel} />
+                      </div>
                     </td>
-                    <td className="px-4 sm:px-8 py-4 sm:py-6">
+                    <td className="px-4 sm:px-8 py-4 sm:py-6 text-center">
                       <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
                         {translatePaymentAttemptStatus(a.status)}
                       </div>
-                      <div className="mt-1 sm:mt-2">
+                      <div className="mt-1 sm:mt-2 flex justify-center">
                         <LockStatus attempt={a} currentAdminId={currentAdminId} />
                       </div>
                     </td>
-                    <td className="px-4 sm:px-8 py-4 sm:py-6 text-right">
-                      <button
-                        onClick={() => handleOpenDetail(a)}
-                        className="inline-flex cursor-pointer items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-2xl bg-white px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md active:translate-y-0 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:ring-cyan-400/15 dark:hover:shadow-black/30"
-                      >
-                        <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        {a.status === "WAITING_CONFIRM" || a.status === "PROCESSING" ? "Xử lý" : "Xem"}
-                      </button>
+                    <td className="px-4 sm:px-8 py-4 sm:py-6 text-center">
+                      <div className="flex justify-center">
+                        <button
+                          onClick={() => handleOpenDetail(a)}
+                          className="inline-flex cursor-pointer items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-2xl bg-white px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md active:translate-y-0 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:ring-cyan-400/15 dark:hover:shadow-black/30"
+                        >
+                          <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                          {a.status === "WAITING_CONFIRM" || a.status === "PROCESSING" ? "Xử lý" : "Xem"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

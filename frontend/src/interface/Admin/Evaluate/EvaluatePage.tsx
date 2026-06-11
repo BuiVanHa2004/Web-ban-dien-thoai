@@ -131,15 +131,15 @@ export default function EvaluatePage() {
 
       <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-full text-sm">
             <thead className="bg-white/55 text-xs uppercase tracking-wide text-slate-700 backdrop-blur-xl dark:bg-slate-950/35 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-3">ID sản phẩm</th>
-                <th className="px-5 py-3">Ảnh</th>
-                <th className="px-5 py-3">Tên sản phẩm</th>
-                <th className="px-5 py-3">Số lượt đánh giá</th>
-                <th className="px-5 py-3">Sao trung bình</th>
-                <th className="px-5 py-3">Hành động</th>
+                <th className="px-5 py-3 text-center">ID sản phẩm</th>
+                <th className="px-5 py-3 text-center">Ảnh</th>
+                <th className="px-5 py-3 text-center">Tên sản phẩm</th>
+                <th className="px-5 py-3 text-center">Số lượt đánh giá</th>
+                <th className="px-5 py-3 text-center">Sao trung bình</th>
+                <th className="px-5 py-3 text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -158,42 +158,46 @@ export default function EvaluatePage() {
               ) : (
                 filtered.map((r) => (
                   <tr key={r.productId} className="hover:bg-slate-50 dark:hover:bg-white/5">
-                    <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{r.productId}</td>
-                    <td className="px-5 py-4">
-                      {r.productImageUrl ? (
-                        <div className="group relative inline-block overflow-hidden rounded-full">
-                          <img
-                            src={r.productImageUrl}
-                            alt={r.productName}
-                            className="h-16 w-16 cursor-pointer rounded-full object-cover ring-1 ring-slate-200 transition-transform duration-300 ease-out group-hover:scale-125 dark:ring-white/10"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-white/10">
-                          <svg viewBox="0 0 24 24" className="h-6 w-6 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5">
-                            <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{r.productId}</td>
+                    <td className="px-5 py-4 text-center">
+                      <div className="flex justify-center">
+                        {r.productImageUrl ? (
+                          <div className="group relative inline-block overflow-hidden rounded-full">
+                            <img
+                              src={r.productImageUrl}
+                              alt={r.productName}
+                              className="h-16 w-16 cursor-pointer rounded-full object-cover ring-1 ring-slate-200 transition-transform duration-300 ease-out group-hover:scale-125 dark:ring-white/10"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-white/10">
+                            <svg viewBox="0 0 24 24" className="h-6 w-6 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+                              <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-center">
+                      <div className="font-semibold text-slate-900 dark:text-slate-100 mx-auto">{r.productName}</div>
+                    </td>
+                    <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{r.reviewCount}</td>
+                    <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">{(Number(r.averageStars) || 0).toFixed(1)}</td>
+                    <td className="px-5 py-4 text-center">
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/evaluates/${encodeURIComponent(r.productId)}`)}
+                          aria-label="Xem chi tiết"
+                          className="inline-flex cursor-pointer items-center justify-center rounded-full bg-white p-2 text-slate-600 ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-indigo-600 hover:shadow-md active:translate-y-0 dark:bg-white/5 dark:text-slate-300 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:text-indigo-400"
+                        >
+                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
+                            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
                           </svg>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="font-semibold text-slate-900 dark:text-slate-100">{r.productName}</div>
-                    </td>
-                    <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{r.reviewCount}</td>
-                    <td className="px-5 py-4 text-slate-800 dark:text-slate-200">{(Number(r.averageStars) || 0).toFixed(1)}</td>
-                    <td className="px-5 py-4">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/evaluates/${encodeURIComponent(r.productId)}`)}
-                        aria-label="Xem chi tiết"
-                        className="inline-flex cursor-pointer items-center justify-center rounded-full bg-white p-2 text-slate-600 ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-indigo-600 hover:shadow-md active:translate-y-0 dark:bg-white/5 dark:text-slate-300 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:text-indigo-400"
-                      >
-                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
-                          <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
-                        </svg>
-                      </button>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

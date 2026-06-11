@@ -7,7 +7,7 @@ import React from "react";
 
 import { customerAccountService } from "@/services/customerAccountService";
 import ValidationModal from "@/components/admins/ValidationModal";
-import AvatarUploadField from "@/components/shared/AvatarUploadField";
+import AvatarUploadField from "@/components/avatar/AvatarUploadField";
 
 function UpdateAccount() {
   const router = useRouter();
@@ -22,7 +22,9 @@ function UpdateAccount() {
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [address, setAddress] = React.useState("");
+  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = React.useState<string | null>(null);
   const [isGoogleAccount, setIsGoogleAccount] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -92,6 +94,25 @@ function UpdateAccount() {
 
     window.setTimeout(async () => {
       try {
+        // Upload avatar first if a new file was selected
+        let uploadedAvatarUrl: string | null = avatarUrl; // Keep existing URL
+        if (avatarFile) {
+          try {
+            const formData = new FormData();
+            formData.append("file", avatarFile);
+            const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_URL || "http://localhost:8080"}/api/uploads/avatars`, {
+              method: "POST",
+              body: formData,
+            });
+            if (uploadResponse.ok) {
+              const data = await uploadResponse.json();
+              uploadedAvatarUrl = data.url || null;
+            }
+          } catch (uploadError) {
+            console.error("Failed to upload avatar:", uploadError);
+          }
+        }
+
         await customerAccountService.update(customerId, {
           fullName: fn,
           username: un,
@@ -99,7 +120,7 @@ function UpdateAccount() {
           email: em,
           phone: phone.trim() || null,
           address: address.trim() || null,
-          avatarUrl,
+          avatarUrl: uploadedAvatarUrl,
         });
         router.push("/accounts");
       } catch (e: any) {
@@ -158,7 +179,10 @@ function UpdateAccount() {
                 name={fullName || username}
                 helperText="Khách hàng có thể tải ảnh ở mọi tỉ lệ, hệ thống sẽ tự động crop thành hình vuông 1:1."
                 cropMode="square-required"
-                onChange={setAvatarUrl}
+                onChange={(file) => {
+                  setAvatarFile(file);
+                }}
+                onPreviewChange={setAvatarPreviewUrl}
                 disabled={formDisabled}
               />
             </div>
@@ -244,8 +268,8 @@ function UpdateAccount() {
               <div className="rounded-3xl bg-white/60 p-4 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-slate-950/45 dark:ring-white/10 dark:shadow-2xl dark:shadow-black/40">
                 <div className="flex items-start gap-3">
                   <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                    {(avatarPreviewUrl || avatarUrl) ? (
+                      <img src={avatarPreviewUrl || avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-base font-semibold text-slate-700 dark:text-slate-100">
                         {(fullName.trim() || username.trim() || "?").slice(0, 1).toUpperCase()}

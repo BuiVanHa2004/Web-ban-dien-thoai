@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import Sidebar from "./sidebar";
 import Topbar from "./topbar";
+import AdminChatBox from "./AdminChatBox";
 import { settingService } from "@/services/settingService";
 
 type AdminLayoutProps = {
@@ -15,6 +16,8 @@ type AdminLayoutProps = {
 
 export default function AdminLayout({ children, userName }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = React.useState(false);
+  const [adminUser, setAdminUser] = React.useState<{ id: number; fullName: string; username: string } | null>(null);
+  const [adminToken, setAdminToken] = React.useState<string | null>(null);
   const router = useRouter();
 
   React.useEffect(() => {
@@ -28,6 +31,10 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
         router.replace("/login");
         return;
       }
+
+      // Set admin user và token cho ChatBox
+      setAdminUser(user as any);
+      setAdminToken(token);
 
       const role = (user.role || "").toUpperCase();
       const isStaff = role && role !== "ADMIN";
@@ -92,6 +99,15 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
           </main>
         </div>
       </div>
+      
+      {/* Admin Chat Box - Hiển thị khi admin đã đăng nhập */}
+      {adminUser && adminToken && (
+        <AdminChatBox
+          adminId={adminUser.id}
+          adminName={adminUser.fullName || adminUser.username}
+          token={adminToken}
+        />
+      )}
     </div>
   );
 }

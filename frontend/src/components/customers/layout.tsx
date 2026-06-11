@@ -5,10 +5,10 @@ import { useRouter, usePathname } from "next/navigation";
 
 import CustomerFooter from "@/components/customers/footer";
 import PremiumHeader from "@/components/customers/header";
-import AiAssistantWidget from "@/components/customers/AiAssistantWidget";
-import CompareWidget from "@/components/customers/CompareWidget";
+import UnifiedAiWidget from "@/components/customers/UnifiedAiWidget";
 import AuthModal from "@/components/customers/AuthModal";
 import CustomerPageTransition from "@/components/customers/CustomerPageTransition";
+import ChatBox from "@/components/customers/ChatBox";
 import { settingService } from "@/services/settingService";
 
 type CustomerLayoutProps = {
@@ -18,7 +18,10 @@ type CustomerLayoutProps = {
 export default function CustomerLayout({ children }: CustomerLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [chatOpen, setChatOpen] = React.useState(false);
+  
+  // State cho ChatBox
+  const [chatUser, setChatUser] = React.useState<{ id: number; fullName: string; username: string } | null>(null);
+  const [chatToken, setChatToken] = React.useState<string | null>(null);
 
   const isProfilePage = pathname === "/profile";
 
@@ -39,6 +42,15 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
       const token = localStorage.getItem("token");
       const userRaw = localStorage.getItem("user");
       const user = userRaw ? (JSON.parse(userRaw) as { userType?: string }) : null;
+
+      // Set chat user và token
+      if (token && user && user.userType === "customer") {
+        setChatUser(user as any);
+        setChatToken(token);
+      } else {
+        setChatUser(null);
+        setChatToken(null);
+      }
 
       if (isProtectedRoute && (!token || !user || user.userType !== "customer")) {
         router.replace("/login");
@@ -100,9 +112,17 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
         </main>
         <CustomerFooter />
       </div>
-      <AiAssistantWidget onOpenChange={setChatOpen} />
-      <CompareWidget chatOpen={chatOpen} />
+      <UnifiedAiWidget />
       <AuthModal />
+      
+      {/* Chat Box - Hiển thị khi user đã đăng nhập */}
+      {chatUser && chatToken && (
+        <ChatBox
+          customerId={chatUser.id}
+          customerName={chatUser.fullName || chatUser.username}
+          token={chatToken}
+        />
+      )}
     </div>
   );
 }

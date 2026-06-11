@@ -78,14 +78,17 @@ public class AiAdvisorService {
                 + (wantsIphone ? "Người dùng đang yêu cầu iPhone/Apple, vì vậy chỉ được gợi ý iPhone/Apple và không được đề xuất hãng khác. " : "")
                 + "Chỉ được sử dụng danh sách sản phẩm được cung cấp. "
                 + "Không bịa thông tin và không tạo productId không có trong danh sách. "
+                + "QUAN TRỌNG: Mỗi sản phẩm có status (CÒN_HÀNG hoặc HẾT_HÀNG). "
+                + "Ưu tiên gợi ý sản phẩm CÒN_HÀNG. Nếu gợi ý sản phẩm HẾT_HÀNG, phải nói rõ 'hiện đã hết hàng' hoặc 'tạm hết hàng'. "
                 + "Trong phần answer: tuyệt đối KHÔNG được nhắc tới productId hay ký hiệu kiểu (productId=123). "
                 + "Tuyệt đối không được nhắc tới bất kỳ sản phẩm/nhãn hàng nào không có trong danh sách cung cấp. "
                 + "Kết quả phải là JSON đúng chuẩn với schema: {\"answer\": string, \"recommendedProductIds\": number[]}";
 
         String userPrompt = "Nhu cầu người dùng: " + userMessage + "\n\n"
-                + "Danh sách sản phẩm (chỉ dùng các productId này):\n"
+                + "Danh sách sản phẩm (chỉ dùng các productId này, CHÚ Ý status CÒN_HÀNG/HẾT_HÀNG):\n"
                 + buildCompactProductContext(sample)
                 + "\n\nYêu cầu: chọn đúng " + k + " sản phẩm phù hợp nhất (hoặc ít hơn nếu không đủ). "
+                + "Ưu tiên sản phẩm CÒN_HÀNG. Nếu gợi ý sản phẩm HẾT_HÀNG thì phải thông báo rõ trong answer. "
                 + "Trong answer, hãy giải thích ngắn gọn theo tiêu chí người dùng (giá, pin, camera, hiệu năng, màn hình...). "
                 + "Trong answer chỉ được nhắc TÊN sản phẩm, không được nhắc productId. "
                 + "Trả lời ngắn gọn, dưới 80 từ.";
@@ -236,6 +239,11 @@ public class AiAdvisorService {
 
             BigDecimal minPrice = getMinPrice(p);
             if (minPrice != null) parts.add("price=" + minPrice);
+            
+            // Add stock status
+            boolean inStock = hasSellableVariant(p);
+            parts.add("status=" + (inStock ? "CÒN_HÀNG" : "HẾT_HÀNG"));
+            
             if (p.getBrand() != null && p.getBrand().getBrandName() != null) parts.add("brand=" + safe(p.getBrand().getBrandName()));
             if (p.getCategory() != null && p.getCategory().getCategoryName() != null) parts.add("category=" + safe(p.getCategory().getCategoryName()));
 

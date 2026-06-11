@@ -23,7 +23,7 @@ export default function Avatar({
         <img
           src={src}
           alt={name || "Avatar"}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover aspect-square"
         />
       </div>
     );

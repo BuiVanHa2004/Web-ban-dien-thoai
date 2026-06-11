@@ -3,8 +3,8 @@
 import React from "react";
 import { RefreshCcw } from "lucide-react";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
-import Avatar from "@/components/shared/Avatar";
-import AvatarUploadField from "@/components/shared/AvatarUploadField";
+import Avatar from "@/components/avatar/Avatar";
+import AvatarUploadField from "@/components/avatar/AvatarUploadField";
 
 type AdminAccountDto = {
   accountId: number;
@@ -92,6 +92,8 @@ export default function Profile() {
   const [phone, setPhone] = React.useState("");
   const [address, setAddress] = React.useState("");
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
 
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -100,6 +102,8 @@ export default function Profile() {
   const loadProfile = React.useCallback(async () => {
     setLoading(true);
     setError(null);
+    setAvatarFile(null);
+    setAvatarPreview(null);
 
     const userId = getCurrentUserId();
     if (!userId) {
@@ -148,6 +152,26 @@ export default function Profile() {
 
     setSavingInfo(true);
     try {
+      // Upload avatar if there's a new file
+      let finalAvatarUrl = avatarUrl;
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append("file", avatarFile);
+        
+        const uploadRes = await fetch(`${API_URL}/api/uploads/avatars`, {
+          method: "POST",
+          headers: getAuthHeader(),
+          body: formData,
+        });
+        
+        if (!uploadRes.ok) {
+          throw new Error("Không thể tải ảnh đại diện lên server.");
+        }
+        
+        const uploadData = await uploadRes.json() as { url: string };
+        finalAvatarUrl = uploadData.url;
+      }
+      
       const updated = await requestJson<AdminAccountDto>(`/admin-accounts/${account.accountId}`,
         {
           method: "PUT",
@@ -158,12 +182,14 @@ export default function Profile() {
             email: email.trim(),
             phone: phone.trim() || null,
             address: address.trim() || null,
-            avatarUrl,
+            avatarUrl: finalAvatarUrl,
           }),
         }
       );
       setAccount(updated);
       setAvatarUrl(updated.avatarUrl || null);
+      setAvatarFile(null); // Clear file after successful save
+      setAvatarPreview(null); // Clear preview after successful save
       showToast("Cập nhật thông tin thành công.", "success");
 
       try {
@@ -334,11 +360,14 @@ export default function Profile() {
               <form onSubmit={onSaveInfo} className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                 <div className="mb-5">
                   <AvatarUploadField
+                    key={`avatar-${account?.accountId || 'new'}`}
                     label="Ảnh đại diện"
                     value={avatarUrl}
                     name={fullName || account?.username}
                     helperText="Admin và nhân viên có thể tải ảnh ở mọi tỉ lệ, website sẽ hiển thị trong khung vuông 1:1."
-                    onChange={setAvatarUrl}
+                    onChange={setAvatarFile}
+                    onPreviewChange={setAvatarPreview}
+                    cropMode="square-required"
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

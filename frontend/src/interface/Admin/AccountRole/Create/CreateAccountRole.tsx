@@ -7,8 +7,8 @@ import React from "react";
 
 import { adminAccountService, roleService, RoleDto } from "@/services/adminAccountService";
 import ValidationModal from "@/components/admins/ValidationModal";
-import AvatarUploadField from "@/components/shared/AvatarUploadField";
-import Avatar from "@/components/shared/Avatar";
+import AvatarUploadField from "@/components/avatar/AvatarUploadField";
+import Avatar from "@/components/avatar/Avatar";
 
 function getRoleLabel(roleName: string) {
   const name = (roleName || "").toUpperCase();
@@ -117,7 +117,9 @@ export default function CreateAccountRole() {
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [address, setAddress] = React.useState("");
+  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = React.useState<string | null>(null);
 
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -195,6 +197,25 @@ export default function CreateAccountRole() {
 
     window.setTimeout(async () => {
       try {
+        // Upload avatar first if exists
+        let uploadedAvatarUrl: string | null = null;
+        if (avatarFile) {
+          try {
+            const formData = new FormData();
+            formData.append("file", avatarFile);
+            const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_URL || "http://localhost:8080"}/api/uploads/avatars`, {
+              method: "POST",
+              body: formData,
+            });
+            if (uploadResponse.ok) {
+              const data = await uploadResponse.json();
+              uploadedAvatarUrl = data.url || null;
+            }
+          } catch (uploadError) {
+            console.error("Failed to upload avatar:", uploadError);
+          }
+        }
+
         await adminAccountService.create({
           fullName: fn,
           username: un,
@@ -203,7 +224,7 @@ export default function CreateAccountRole() {
           email: em,
           phone: phone.trim() || null,
           address: address.trim() || null,
-          avatarUrl: avatarUrl || null,
+          avatarUrl: uploadedAvatarUrl,
         });
         router.push("/accounts-roles");
       } catch (e: any) {
@@ -267,7 +288,10 @@ export default function CreateAccountRole() {
               helperText="Ảnh đại diện (tối đa 2MB, định dạng JPG/PNG/WebP)"
               disabled={loadingRoles || roles.length === 0}
               cropMode="square-required"
-              onChange={setAvatarUrl}
+              onChange={(file) => {
+                setAvatarFile(file);
+              }}
+              onPreviewChange={setAvatarPreviewUrl}
             />
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -354,7 +378,7 @@ export default function CreateAccountRole() {
               <div className="rounded-3xl bg-white/60 p-4 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-slate-950/45 dark:ring-white/10 dark:shadow-2xl dark:shadow-black/40">
                 <div className="flex items-start gap-3">
                   <Avatar 
-                    src={avatarUrl} 
+                    src={avatarPreviewUrl || avatarUrl} 
                     name={fullName || username}
                     className="h-12 w-12 rounded-full cursor-pointer shrink-0"
                     textClassName="text-base font-semibold"

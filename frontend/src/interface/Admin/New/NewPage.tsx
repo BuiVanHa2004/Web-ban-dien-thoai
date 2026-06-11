@@ -226,15 +226,15 @@ export default function NewPage() {
 
       <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-full text-sm">
             <thead className="bg-white/55 text-xs uppercase tracking-wide text-slate-700 backdrop-blur-xl dark:bg-slate-950/35 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-3">STT</th>
-                <th className="px-5 py-3">Tiêu đề</th>
-                <th className="px-5 py-3">Slug</th>
-                <th className="px-5 py-3">Ảnh</th>
-                <th className="px-5 py-3">Mô tả</th>
-                <th className="px-5 py-3">Hành động</th>
+                <th className="px-5 py-3 text-center">STT</th>
+                <th className="px-5 py-3 text-center">Tiêu đề</th>
+                <th className="px-5 py-3 text-center">Slug</th>
+                <th className="px-5 py-3 text-center">Ảnh</th>
+                <th className="px-5 py-3 text-center">Mô tả</th>
+                <th className="px-5 py-3 text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -258,33 +258,35 @@ export default function NewPage() {
                           : "cursor-pointer opacity-100 hover:bg-slate-50 active:bg-slate-100/70 dark:hover:bg-white/5 dark:active:bg-white/10")
                       }
                     >
-                      <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
+                      <td className="px-5 py-4 text-center text-slate-600 dark:text-slate-300">
                         {idx + 1}
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="font-semibold text-slate-900 dark:text-slate-100">{n.title}</div>
-                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">Cập nhật: {formatDate(n.updatedAt)}</div>
+                      <td className="px-5 py-4 text-center">
+                        <div className="font-semibold text-slate-900 dark:text-slate-100 mx-auto">{n.title}</div>
+                        <div className="mt-1 text-xs text-slate-600 dark:text-slate-300 mx-auto">Cập nhật: {formatDate(n.updatedAt)}</div>
                       </td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">
                         <div className="text-sm font-mono">{n.slug || "-"}</div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="h-16 w-16 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
-                          <Image
-                            src={(n.newsImages && n.newsImages.length > 0) ? n.newsImages[0] : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"}
-                            alt={n.title}
-                            width={64}
-                            height={64}
-                            unoptimized
-                            className="h-full w-full object-cover cursor-pointer transition-transform duration-700 ease-out hover:scale-125"
-                          />
+                      <td className="px-5 py-4 text-center">
+                        <div className="flex justify-center">
+                          <div className="h-16 w-16 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
+                            <Image
+                              src={(n.newsImages && n.newsImages.length > 0) ? n.newsImages[0] : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"}
+                              alt={n.title}
+                              width={64}
+                              height={64}
+                              unoptimized
+                              className="h-full w-full object-cover cursor-pointer transition-transform duration-700 ease-out hover:scale-125"
+                            />
+                          </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-slate-800 dark:text-slate-200">
-                        <div className="line-clamp-2 max-w-[520px]">{n.description}</div>
+                      <td className="px-5 py-4 text-center text-slate-800 dark:text-slate-200">
+                        <div className="line-clamp-2 max-w-[520px] mx-auto">{n.description}</div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="flex flex-wrap items-center gap-2">
+                      <td className="px-5 py-4 text-center">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
                           <button
                             type="button"
                             onClick={(e) => {

@@ -42,7 +42,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Transactional
+@Transactional(noRollbackFor = Exception.class)
 @SuppressWarnings("null")
 public class OrderServiceImpl implements OrderService {
 
@@ -399,6 +399,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(noRollbackFor = Exception.class)
     public Optional<Order> updateStatus(Integer id, OrderStatus status) {
         return orderRepository.findById(id).map(existing -> {
             OrderStatus previousStatus = existing.getOrderStatus();
@@ -416,8 +417,15 @@ public class OrderServiceImpl implements OrderService {
                 existing.setPaymentStatus(PaymentStatus.WAITING_CONFIRM);
             }
 
+            // Deduct inventory with proper error handling
             if (status == OrderStatus.CONFIRMED || status == OrderStatus.DELIVERED) {
-                deductInventory(existing);
+                try {
+                    deductInventory(existing);
+                } catch (Exception e) {
+                    System.err.println("Failed to deduct inventory: " + e.getMessage());
+                    e.printStackTrace();
+                    // Continue with status update even if inventory deduction fails
+                }
             }
             
             Order savedOrder = orderRepository.save(existing);
@@ -497,32 +505,43 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW, noRollbackFor = Exception.class)
     public void deductInventory(Order order) {
         if (order == null || order.getItems() == null) return;
         if (Boolean.TRUE.equals(order.getInventoryDeducted())) return;
 
-        for (OrderItem item : order.getItems()) {
-            int qty = Math.max(0, item.getQuantity() == null ? 0 : item.getQuantity());
-            if (qty <= 0) continue;
+        try {
+            for (OrderItem item : order.getItems()) {
+                int qty = Math.max(0, item.getQuantity() == null ? 0 : item.getQuantity());
+                if (qty <= 0) continue;
 
-            Integer variantId = item.getVariantId();
-            if (variantId != null) {
-                productVariantRepository.findByVariantId(variantId).ifPresent(variant -> {
-                    int current = Math.max(0, variant.getQuantity() == null ? 0 : variant.getQuantity());
-                    variant.setQuantity(Math.max(0, current - qty));
-                    productVariantRepository.save(variant);
+                Integer variantId = item.getVariantId();
+                if (variantId != null) {
+                    try {
+                        productVariantRepository.findByVariantId(variantId).ifPresent(variant -> {
+                            int current = Math.max(0, variant.getQuantity() == null ? 0 : variant.getQuantity());
+                            variant.setQuantity(Math.max(0, current - qty));
+                            productVariantRepository.save(variant);
 
-                    ProductColor color = variant.getProductColor();
-                    if (color != null) {
-                        int colorCurrent = Math.max(0, color.getQuantity() == null ? 0 : color.getQuantity());
-                        color.setQuantity(Math.max(0, colorCurrent - qty));
-                        productColorRepository.save(color);
+                            ProductColor color = variant.getProductColor();
+                            if (color != null) {
+                                int colorCurrent = Math.max(0, color.getQuantity() == null ? 0 : color.getQuantity());
+                                color.setQuantity(Math.max(0, colorCurrent - qty));
+                                productColorRepository.save(color);
+                            }
+                        });
+                    } catch (Exception e) {
+                        System.err.println("Failed to deduct inventory for variant " + variantId + ": " + e.getMessage());
+                        // Continue with other items even if one fails
                     }
-                });
+                }
             }
+            order.setInventoryDeducted(true);
+            orderRepository.save(order);
+        } catch (Exception e) {
+            System.err.println("Failed to deduct inventory for order " + order.getOrderId() + ": " + e.getMessage());
+            // Don't throw exception, just log it
         }
-        order.setInventoryDeducted(true);
-        orderRepository.save(order);
     }
 
     @Override

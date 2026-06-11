@@ -101,6 +101,7 @@ export default function ProductId() {
   const [variantModalOpen, setVariantModalOpen] = React.useState(false);
   const [pendingAction, setPendingAction] = React.useState<"add" | "buy">("add");
   const [lastActionButtonEl, setLastActionButtonEl] = React.useState<HTMLElement | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = React.useState(false);
 
   const [selectedColorId, setSelectedColorId] = React.useState<number | null>(null);
   const [selectedVariantId, setSelectedVariantId] = React.useState<number | null>(null);
@@ -507,7 +508,7 @@ export default function ProductId() {
                         whileHover={{ scale: 1.05 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ duration: 0.4 }}
-                        className={`h-full w-full object-contain cursor-zoom-in transition-all duration-500 ${isOutOfStock ? "blur-md grayscale opacity-50" : ""}`}
+                        className="h-full w-full object-contain cursor-zoom-in transition-all duration-500"
                       />
                     );
                   }
@@ -841,7 +842,7 @@ export default function ProductId() {
                 className={
                   "inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-zinc-500/70 bg-zinc-800/70 px-6 text-sm font-bold text-zinc-100 shadow-md shadow-black/20 ring-1 ring-zinc-500/35 transition " +
                   (isOutOfStock
-                    ? "cursor-not-allowed opacity-50"
+                    ? "cursor-not-allowed opacity-30 grayscale blur-[0.5px] pointer-events-none"
                     : "cursor-pointer hover:border-purple-500/55 hover:bg-zinc-700/90 hover:text-purple-200 hover:ring-purple-500/30 active:scale-[0.98]")
                 }
               >
@@ -857,7 +858,7 @@ export default function ProductId() {
                 className={
                   "inline-flex h-14 flex-[1.5] items-center justify-center rounded-2xl border-2 border-purple-500/60 bg-gradient-to-r from-purple-600 to-indigo-600 px-6 text-sm font-bold text-white shadow-xl shadow-purple-600/30 ring-1 ring-purple-400/40 transition " +
                   (isOutOfStock
-                    ? "cursor-not-allowed opacity-50"
+                    ? "cursor-not-allowed opacity-30 grayscale blur-[0.5px] pointer-events-none"
                     : "cursor-pointer hover:border-purple-400/80 hover:shadow-2xl hover:shadow-purple-500/35 active:scale-[0.98]")
                 }
               >
@@ -906,8 +907,72 @@ export default function ProductId() {
           if (lastActionButtonEl) {
             flyProductToCart(lastActionButtonEl, resolveImageUrl(selection.imageUrl));
           }
+          
+          // Show success modal
+          setShowSuccessModal(true);
+          setTimeout(() => {
+            setShowSuccessModal(false);
+          }, 2000);
         }}
       />
+
+      {/* Success Modal */}
+      {portalReady && showSuccessModal && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+          <div
+            onClick={() => setShowSuccessModal(false)}
+            style={{ 
+              backgroundColor: "rgba(15, 23, 42, 0.7)", 
+              backdropFilter: "blur(6px)", 
+              WebkitBackdropFilter: "blur(6px)" 
+            }}
+            className="absolute inset-0"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="relative w-full max-w-md overflow-hidden rounded-[2.5rem]"
+            style={{ 
+              background: "rgba(255,255,255,0.08)", 
+              backdropFilter: "blur(20px)", 
+              WebkitBackdropFilter: "blur(20px)", 
+              border: "1px solid rgba(255,255,255,0.15)", 
+              boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
+              animation: "avatarModalScaleIn 180ms ease-out"
+            }}
+          >
+            <div className="p-8">
+              <div className="flex flex-col items-center text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+                  className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20 ring-2 ring-emerald-400/50"
+                >
+                  <svg className="h-10 w-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                </motion.div>
+                <h3 className="text-2xl font-black tracking-tight text-white/95">
+                  Thêm vào giỏ hàng thành công!
+                </h3>
+                <p className="mt-3 text-sm text-white/70">
+                  Sản phẩm đã được thêm vào giỏ hàng của bạn.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowSuccessModal(false)}
+                  className="mt-8 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/30 transition hover:shadow-2xl hover:shadow-emerald-500/40 active:scale-[0.98]"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

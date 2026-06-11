@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { customerAccountService, type CustomerAccountDto, type CustomerAccountCreateUpdatePayload } from "@/services/customerAccountService";
 import type { User as AuthUser } from "@/common/types/auth";
-import AvatarUploadField from "@/components/shared/AvatarUploadField";
+import AvatarUploadField from "@/components/avatar/AvatarUploadField";
 
 export default function ProfileInterface() {
   const [mounted, setMounted] = useState(false);
@@ -64,6 +64,8 @@ export default function ProfileInterface() {
     address: "",
     avatarUrl: "",
   });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -80,6 +82,8 @@ export default function ProfileInterface() {
   const fetchProfile = async () => {
     try {
       setLoading(true);
+      setAvatarFile(null);
+      setAvatarPreview(null);
       const rawUser = localStorage.getItem("user");
       if (!rawUser) return;
       const user = JSON.parse(rawUser) as AuthUser;
@@ -107,8 +111,38 @@ export default function ProfileInterface() {
     
     try {
       setUpdating(true);
-      const updated = await customerAccountService.update(profile.customerId, formData);
+      
+      // Upload avatar if there's a new file
+      let finalAvatarUrl = formData.avatarUrl;
+      if (avatarFile) {
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", avatarFile);
+        
+        const token = localStorage.getItem("token");
+        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_URL || "http://localhost:8080"}/api/uploads/avatars`, {
+          method: "POST",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: formDataUpload,
+        });
+        
+        if (!uploadRes.ok) {
+          throw new Error("Không thể tải ảnh đại diện lên server.");
+        }
+        
+        const uploadData = await uploadRes.json() as { url: string };
+        finalAvatarUrl = uploadData.url;
+      }
+      
+      const updated = await customerAccountService.update(profile.customerId, {
+        ...formData,
+        avatarUrl: finalAvatarUrl,
+      });
       setProfile(updated);
+      setFormData(prev => ({...prev, avatarUrl: updated.avatarUrl || ""}));
+      setAvatarFile(null); // Clear file after successful save
+      setAvatarPreview(null); // Clear preview after successful save
       setEditing(false);
       
       // Update local storage name and avatar if changed
@@ -355,7 +389,22 @@ export default function ProfileInterface() {
                     ) : (
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setEditing(false)}
+                          onClick={() => {
+                            setEditing(false);
+                            setAvatarFile(null);
+                            setAvatarPreview(null);
+                            // Reset form data to original profile data
+                            if (profile) {
+                              setFormData({
+                                fullName: profile.fullName,
+                                username: profile.username,
+                                email: profile.email,
+                                phone: profile.phone || "",
+                                address: profile.address || "",
+                                avatarUrl: profile.avatarUrl || "",
+                              });
+                            }
+                          }}
                           className="rounded-xl border border-slate-100 px-5 py-2.5 text-xs font-black text-slate-500 transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5"
                         >
                           Hủy bỏ
@@ -368,13 +417,15 @@ export default function ProfileInterface() {
                     {/* Avatar Upload Section */}
                     <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-950/70">
                       <AvatarUploadField
+                        key={editing ? 'editing' : 'view'}
                         label="Ảnh đại diện"
                         value={formData.avatarUrl}
                         name={formData.fullName}
                         helperText="Chọn ảnh tỉ lệ bất kỳ, hệ thống sẽ tự động crop theo tỉ lệ 1:1"
                         disabled={!editing}
                         cropMode="square-required"
-                        onChange={(url) => setFormData({...formData, avatarUrl: url || undefined})}
+                        onChange={setAvatarFile}
+                        onPreviewChange={setAvatarPreview}
                       />
                     </div>
 

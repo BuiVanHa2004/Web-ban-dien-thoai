@@ -6,11 +6,20 @@ import React from "react";
 import TrashView, { TrashItem } from "@/components/admins/trash";
 import { adminAccountService, AdminAccountDto } from "@/services/adminAccountService";
 
+function getRoleLabel(roleName: string) {
+  const name = (roleName || "").toUpperCase();
+  if (name === "ADMIN" || name === "ADMINISTRATOR") return "Quản trị viên";
+  if (name === "STAFF") return "Nhân viên";
+  if (name === "MANAGER") return "Quản lý";
+  return roleName || "-";
+}
+
 function mapDtoToItem(dto: AdminAccountDto): TrashItem {
   return {
     id: String(dto.accountId),
     title: dto.fullName,
-    subtitle: `${dto.username} • ${dto.roleName || "-"} • ${dto.email}`,
+    subtitle: `${dto.username} • ${getRoleLabel(dto.roleName || "-")} • ${dto.email}`,
+    imageUrl: dto.avatarUrl || undefined,
     deletedAt: dto.deletedAt || undefined,
   };
 }

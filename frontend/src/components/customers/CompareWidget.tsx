@@ -129,8 +129,22 @@ function RenderMd({ text }: { text: string }) {
   );
 }
 
-export default function CompareWidget({ chatOpen }: { chatOpen?: boolean }) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function CompareWidget({ chatOpen, forceOpen, onClose }: { chatOpen?: boolean; forceOpen?: boolean; onClose?: () => void }) {
+  const [isOpen, setIsOpen] = useState(forceOpen || false);
+
+  // Force open when forceOpen prop changes
+  React.useEffect(() => {
+    if (forceOpen && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [forceOpen, isOpen]);
+
+  // Call onClose callback when widget is closed
+  React.useEffect(() => {
+    if (!isOpen && onClose) {
+      onClose();
+    }
+  }, [isOpen, onClose]);
   const [products, setProducts] = useState<ProductDto[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
 

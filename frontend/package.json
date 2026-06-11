@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.3",
+    "@stomp/stompjs": "^7.0.0",
     "exceljs": "^4.4.0",
     "framer-motion": "^12.38.0",
     "groq-sdk": "^1.1.2",
@@ -23,6 +24,7 @@
     "react-easy-crop": "^5.5.7",
     "react-redux": "^9.1.2",
     "recharts": "^3.8.1",
+    "sockjs-client": "^1.6.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
@@ -31,6 +33,7 @@
     "@types/pdfmake": "^0.3.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sockjs-client": "^1.5.4",
     "babel-plugin-react-compiler": "1.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"

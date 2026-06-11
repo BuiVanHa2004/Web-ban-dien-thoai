@@ -4,7 +4,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import NotificationsDropdown from "./notifications";
-import Avatar from "@/components/shared/Avatar";
+import Avatar from "@/components/avatar/Avatar";
 
 type TopbarProps = {
   userName?: string;

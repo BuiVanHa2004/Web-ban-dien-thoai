@@ -415,28 +415,29 @@ export default function OrderId() {
       {!isCancelled && (
         <div className="rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/55 p-4 backdrop-blur-md sm:rounded-[2.5rem] sm:p-6 lg:p-8">
           <div className="overflow-x-auto pb-3">
-            <div className="flex min-w-[440px] items-start pb-1 sm:min-w-0">
+            <div className="flex min-w-[440px] items-center pb-1 sm:min-w-0">
               {steps.map((step, idx) => {
                 const isPast = idx < currentStatusIdx;
                 const isCurrent = idx === currentStatusIdx;
 
                 return (
                   <React.Fragment key={step.id}>
-                    <div className="flex flex-1 flex-col items-center gap-2 min-w-0">
+                    <div className="flex flex-col items-center gap-2 shrink-0">
                       <div className={`
                         flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-all duration-500
                         ${isPast ? "bg-emerald-500 text-white" : isCurrent ? "bg-purple-600 text-white" : "bg-zinc-700 text-zinc-400"}
                       `}>
                         {isPast ? <CheckCircle2 className="h-5 w-5" /> : <step.icon className="h-5 w-5" />}
                       </div>
-                      <span className={`w-full text-center text-[11px] font-bold leading-tight px-1 ${isCurrent ? "text-purple-400" : "text-slate-500"}`}>
+                      <span className={`text-center text-[11px] font-bold leading-tight px-1 min-w-[70px] ${isCurrent ? "text-purple-400" : "text-slate-500"}`}>
                         {step.label}
                       </span>
                     </div>
                     {idx < steps.length - 1 && (
-                      <div className="relative mt-5 h-[2px] w-6 shrink-0 bg-zinc-700 mx-1">
+                      <div className="relative h-1 flex-1 min-w-[20px] -mx-0">
+                        <div className={`absolute inset-0 rounded-full transition-all duration-500 ${idx < currentStatusIdx ? "bg-zinc-600" : "bg-purple-600/40"}`} />
                         <div
-                          className="absolute inset-0 bg-emerald-500 transition-all duration-1000"
+                          className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-1000 rounded-full shadow-sm shadow-emerald-500/30"
                           style={{ width: idx < currentStatusIdx ? "100%" : "0%" }}
                         />
                       </div>
@@ -704,12 +705,12 @@ export default function OrderId() {
                                 )}
 
                                 {review.adminReply && (
-                                  <div className="mt-2 rounded-lg border border-emerald-100 bg-emerald-50/30 p-3 dark:border-emerald-900/10">
+                                  <div className="mt-2 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-3 dark:border-emerald-400/30 dark:bg-emerald-500/15">
                                     <div className="flex items-center gap-2 mb-1">
-                                      <span className="flex h-4 w-4 items-center justify-center rounded bg-emerald-600 text-[8px] font-black text-white">S</span>
-                                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">Shop đã phản hồi</span>
+                                      <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-600 text-[9px] font-black text-white shadow-sm">S</span>
+                                      <span className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">Phản hồi từ Shop</span>
                                     </div>
-                                    <p className="text-xs text-slate-600 dark:text-slate-400">{review.adminReply}</p>
+                                    <p className="text-sm font-medium text-slate-700 leading-relaxed dark:text-slate-200">{review.adminReply}</p>
                                   </div>
                                 )}
                               </div>

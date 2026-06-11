@@ -680,7 +680,6 @@ export default function ContactPage() {
                     <div className="flex min-w-0 flex-col gap-3">
                       <div className="min-w-0 flex-1 space-y-2 sm:space-y-3">
                         <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-                          <span className="whitespace-nowrap rounded-lg bg-purple-100 px-2 py-0.5 text-[9px] font-black text-purple-700 dark:bg-purple-900/40 sm:px-3 sm:py-1 sm:text-[10px]">ID: #{h.contactId}</span>
                           <span className="flex min-w-0 items-center gap-1 text-[10px] font-bold text-slate-400 sm:gap-1.5 sm:text-xs">
                             <Clock className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
                             <span className="truncate">{formatDate(h.createdAt)}</span>

@@ -7,8 +7,8 @@ import React from "react";
 
 import { adminAccountService, roleService, RoleDto } from "@/services/adminAccountService";
 import ValidationModal from "@/components/admins/ValidationModal";
-import AvatarUploadField from "@/components/shared/AvatarUploadField";
-import Avatar from "@/components/shared/Avatar";
+import AvatarUploadField from "@/components/avatar/AvatarUploadField";
+import Avatar from "@/components/avatar/Avatar";
 
 function getRoleLabel(roleName: string) {
   const name = (roleName || "").toUpperCase();

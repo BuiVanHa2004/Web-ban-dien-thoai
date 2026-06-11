@@ -352,50 +352,52 @@ export default function PaymentPage() {
 
   if (success === "COD") {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="mx-auto w-full max-w-2xl px-1 py-6 sm:px-0 sm:py-12"
-      >
-        <div className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-2xl shadow-emerald-500/10 sm:rounded-[3rem] sm:p-12 dark:border-emerald-500/20 dark:bg-slate-900/50">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 sm:h-24 sm:w-24">
-            <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12" />
-          </div>
-          <h1 className="mt-6 text-2xl font-black text-slate-900 sm:mt-8 sm:text-3xl dark:text-white">
-            Đặt hàng thành công!
-          </h1>
-          <p className="mt-3 text-base font-medium text-slate-500 sm:text-lg dark:text-slate-400">
-            Cảm ơn bạn đã tin tưởng. Đơn hàng của bạn đang được xử lý và sẽ sớm được giao tới địa chỉ của bạn.
-          </p>
-
-          <div className="mt-6 rounded-2xl bg-slate-50 p-4 sm:mt-8 sm:p-6 dark:bg-slate-800">
-            <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</div>
-            <div className="mt-1 break-all text-xl font-black text-purple-600 sm:text-2xl">
-              #{String(createdOrder?.orderCode || createdOrder?.orderId)}
+      <div className="flex min-h-screen items-center justify-center px-4 py-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-2xl"
+        >
+          <div className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-2xl shadow-emerald-500/10 sm:rounded-[3rem] sm:p-12 dark:border-emerald-500/20 dark:bg-slate-900/50">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 sm:h-24 sm:w-24">
+              <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12" />
             </div>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-center text-sm font-bold text-slate-600 dark:text-slate-300">
-              <Truck className="h-4 w-4 shrink-0" />
-              <span>Phương thức:</span>
-              <span className="text-emerald-600">Thanh toán khi nhận hàng (COD)</span>
+            <h1 className="mt-6 text-2xl font-black text-slate-900 sm:mt-8 sm:text-3xl dark:text-white">
+              Đặt hàng thành công!
+            </h1>
+            <p className="mt-3 text-base font-medium text-slate-500 sm:text-lg dark:text-slate-400">
+              Cảm ơn bạn đã tin tưởng. Đơn hàng của bạn đang được xử lý và sẽ sớm được giao tới địa chỉ của bạn.
+            </p>
+
+            <div className="mt-6 rounded-2xl bg-slate-50 p-4 sm:mt-8 sm:p-6 dark:bg-slate-800">
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</div>
+              <div className="mt-1 break-all text-xl font-black text-purple-600 sm:text-2xl">
+                #{String(createdOrder?.orderCode || createdOrder?.orderId)}
+              </div>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-center text-sm font-bold text-slate-600 dark:text-slate-300">
+                <Truck className="h-4 w-4 shrink-0" />
+                <span>Phương thức:</span>
+                <span className="text-emerald-600">Thanh toán khi nhận hàng (COD)</span>
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4">
+              <Link
+                href="/order"
+                className="flex-1 rounded-2xl bg-slate-900 px-6 py-3.5 text-center text-sm font-black text-white transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900"
+              >
+                Xem đơn hàng
+              </Link>
+              <Link
+                href="/product"
+                className="flex-1 rounded-2xl bg-purple-600 px-6 py-3.5 text-center text-sm font-black text-white shadow-xl shadow-purple-500/20 transition hover:bg-purple-700 active:scale-95"
+              >
+                Tiếp tục mua sắm
+              </Link>
             </div>
           </div>
-
-          <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4">
-            <Link
-              href="/order"
-              className="flex-1 rounded-2xl bg-slate-900 px-6 py-3.5 text-center text-sm font-black text-white transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900"
-            >
-              Xem đơn hàng
-            </Link>
-            <Link
-              href="/product"
-              className="flex-1 rounded-2xl bg-purple-600 px-6 py-3.5 text-center text-sm font-black text-white shadow-xl shadow-purple-500/20 transition hover:bg-purple-700 active:scale-95"
-            >
-              Tiếp tục mua sắm
-            </Link>
-          </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     );
   }
 

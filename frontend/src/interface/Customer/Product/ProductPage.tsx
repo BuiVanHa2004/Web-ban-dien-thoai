@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React from "react";
+import { createPortal } from "react-dom";
 
 import { categoryService, type CategoryDto } from "@/services/categoryService";
 import { productService, type ProductDto } from "@/services/productService";
@@ -127,6 +128,7 @@ export default function ProductPage() {
   const [selectedProductForCart, setSelectedProductForCart] = React.useState<ProductDto | null>(null);
   const [variantModalOpen, setVariantModalOpen] = React.useState(false);
   const [lastAddButtonEl, setLastAddButtonEl] = React.useState<HTMLElement | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = React.useState(false);
 
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -469,8 +471,72 @@ export default function ProductPage() {
           window.setTimeout(() => {
             setRecentlyAddedProductIds((prev) => prev.filter((id) => id !== selectedProductForCart.productId));
           }, 1300);
+          
+          // Show success modal
+          setShowSuccessModal(true);
+          setTimeout(() => {
+            setShowSuccessModal(false);
+          }, 2000);
         }}
       />
+
+      {/* Success Modal */}
+      {typeof window !== "undefined" && showSuccessModal && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+          <div
+            onClick={() => setShowSuccessModal(false)}
+            style={{ 
+              backgroundColor: "rgba(15, 23, 42, 0.7)", 
+              backdropFilter: "blur(6px)", 
+              WebkitBackdropFilter: "blur(6px)" 
+            }}
+            className="absolute inset-0"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="relative w-full max-w-md overflow-hidden rounded-[2.5rem]"
+            style={{ 
+              background: "rgba(255,255,255,0.08)", 
+              backdropFilter: "blur(20px)", 
+              WebkitBackdropFilter: "blur(20px)", 
+              border: "1px solid rgba(255,255,255,0.15)", 
+              boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
+              animation: "avatarModalScaleIn 180ms ease-out"
+            }}
+          >
+            <div className="p-8">
+              <div className="flex flex-col items-center text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+                  className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20 ring-2 ring-emerald-400/50"
+                >
+                  <svg className="h-10 w-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                </motion.div>
+                <h3 className="text-2xl font-black tracking-tight text-white/95">
+                  Thêm vào giỏ hàng thành công!
+                </h3>
+                <p className="mt-3 text-sm text-white/70">
+                  Sản phẩm đã được thêm vào giỏ hàng của bạn.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowSuccessModal(false)}
+                  className="mt-8 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/30 transition hover:shadow-2xl hover:shadow-emerald-500/40 active:scale-[0.98]"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
