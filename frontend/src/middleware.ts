@@ -49,11 +49,15 @@ export function middleware(req: NextRequest) {
   const hostname = (req.headers.get("host") || "").split(":")[0];
   const { pathname } = req.nextUrl;
 
-  // Skip static files and Next.js internals
+  // Skip static files, Next.js internals, and shared auth routes
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/favicon") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/maintenance") ||
+    pathname.startsWith("/signin-google") ||
     pathname.includes(".")
   ) {
     return NextResponse.next();
