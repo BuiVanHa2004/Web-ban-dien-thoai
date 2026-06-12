@@ -68,7 +68,16 @@ export default function Register() {
         localStorage.setItem("token", res.token);
         localStorage.setItem("user", JSON.stringify(res.user));
       }
-      router.push(res.user.userType === "admin" ? "/statistical" : "/");
+      if (res.user.userType === "admin") {
+        const adminDomain = process.env.NEXT_PUBLIC_ADMIN_DOMAIN;
+        if (adminDomain && typeof window !== "undefined" && !window.location.hostname.includes("admin")) {
+          window.location.href = `https://${adminDomain}/statistical`;
+        } else {
+          router.push("/statistical");
+        }
+      } else {
+        router.push("/");
+      }
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Đăng ký thất bại.");
     } finally {

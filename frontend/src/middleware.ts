@@ -11,8 +11,8 @@ import { NextRequest, NextResponse } from "next/server";
  *   NEXT_PUBLIC_ADMIN_DOMAIN    = myphone-store-admin.vercel.app
  */
 
-const CUSTOMER_DOMAIN = process.env.NEXT_PUBLIC_CUSTOMER_DOMAIN || "";
-const ADMIN_DOMAIN = process.env.NEXT_PUBLIC_ADMIN_DOMAIN || "";
+const CUSTOMER_DOMAIN = process.env.CUSTOMER_DOMAIN || process.env.NEXT_PUBLIC_CUSTOMER_DOMAIN || "";
+const ADMIN_DOMAIN = process.env.ADMIN_DOMAIN || process.env.NEXT_PUBLIC_ADMIN_DOMAIN || "";
 
 // Routes that belong to the admin portal
 const ADMIN_ROUTES = [
