@@ -2,7 +2,9 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080/ws-chat';
+// SockJS requires http/https URL (not wss://) — it upgrades to WebSocket internally
+const WS_URL_RAW = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080/ws-chat';
+const WS_URL = WS_URL_RAW.replace(/^wss:\/\//, 'https://').replace(/^ws:\/\//, 'http://');
 
 export interface ChatMessage {
     id: number;
