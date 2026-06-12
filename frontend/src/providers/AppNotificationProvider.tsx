@@ -137,7 +137,7 @@ export default function AppNotificationProvider({
         <AnimatePresence>
           {toast && (
             <div
-              className="fixed inset-0 flex items-center justify-center p-4"
+              className="fixed inset-0 flex items-center justify-center"
               style={{ zIndex: 99999 }}
             >
               {/* Backdrop */}
@@ -153,12 +153,17 @@ export default function AppNotificationProvider({
                   WebkitBackdropFilter: "blur(6px)",
                 }}
               />
-              {/* Modal */}
+              {/* Modal — full-width on mobile like admin notification panel */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white p-8 text-center shadow-2xl dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800"
+                className="relative mx-3 w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white p-8 text-center shadow-2xl dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800"
+                style={{
+                  marginLeft: "max(0.75rem, env(safe-area-inset-left))",
+                  marginRight: "max(0.75rem, env(safe-area-inset-right))",
+                  paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+                }}
               >
                 {/* Icon */}
                 <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${
