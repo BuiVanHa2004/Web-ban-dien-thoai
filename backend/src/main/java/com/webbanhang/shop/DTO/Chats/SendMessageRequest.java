@@ -1,5 +1,6 @@
 package com.webbanhang.shop.DTO.Chats;
 
+import com.webbanhang.shop.Model.Chats.MessageType;
 import com.webbanhang.shop.Model.Chats.SenderType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,4 +14,6 @@ public class SendMessageRequest {
     private SenderType senderType;
     private Long senderId;
     private String message;
+    private MessageType messageType;
+    private String attachmentUrl;
 }

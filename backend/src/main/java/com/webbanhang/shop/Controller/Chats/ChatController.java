@@ -36,7 +36,7 @@ public class ChatController {
             @PathVariable Long chatRoomId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
-        Page<ChatMessageDTO> messages = chatService.getChatMessages(chatRoomId, page, size);
+        Page<ChatMessageDTO> messages = chatService.getCustomerChatMessages(chatRoomId, page, size);
         return ResponseEntity.ok(messages);
     }
 
@@ -77,7 +77,7 @@ public class ChatController {
             @PathVariable Long chatRoomId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
-        Page<ChatMessageDTO> messages = chatService.getChatMessages(chatRoomId, page, size);
+        Page<ChatMessageDTO> messages = chatService.getAdminChatMessages(chatRoomId, page, size);
         return ResponseEntity.ok(messages);
     }
 
@@ -145,6 +145,34 @@ public class ChatController {
     @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> deleteMessage(@PathVariable Long messageId) {
         chatService.deleteMessage(messageId);
+        return ResponseEntity.ok().build();
+    }
+    
+    // Edit message - Only sender can edit TEXT messages
+    @PutMapping("/chat/messages/{messageId}/edit")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ChatMessageDTO> editMessage(
+            @PathVariable Long messageId,
+            @RequestBody com.webbanhang.shop.DTO.Chats.EditMessageRequest request) {
+        ChatMessageDTO editedMessage = chatService.editMessage(messageId, request.getNewMessage());
+        return ResponseEntity.ok(editedMessage);
+    }
+    
+    // Recall message - Both sides see "Tin nhắn đã được thu hồi"
+    @PostMapping("/chat/messages/{messageId}/recall")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ChatMessageDTO> recallMessage(@PathVariable Long messageId) {
+        ChatMessageDTO recalledMessage = chatService.recallMessage(messageId);
+        return ResponseEntity.ok(recalledMessage);
+    }
+    
+    // Delete message for specific user (Messenger style)
+    @PostMapping("/chat/messages/{messageId}/delete-for-me")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Void> deleteMessageForMe(
+            @PathVariable Long messageId,
+            @RequestBody com.webbanhang.shop.DTO.Chats.DeleteMessageRequest request) {
+        chatService.deleteMessageForUser(messageId, request.getDeleterType());
         return ResponseEntity.ok().build();
     }
 

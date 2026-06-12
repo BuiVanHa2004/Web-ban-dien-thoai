@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Trash2, Image as ImageIcon } from 'lucide-react';
 import { chatService, ChatMessage, ChatRoom } from '@/services/chatService';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import MessageMenu from '@/components/chat/MessageMenu';
 
 interface ChatBoxProps {
     customerId: number;
@@ -172,6 +171,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
             // MESSENGER STYLE: Always get THE SAME room (never create duplicate)
             const room = await chatService.getOrCreateChatRoom(customerId, token);
             console.log('✅ [ChatBox] Chat room:', room);
+            console.log('📋 [ChatBox] Customer deleted at:', room.customerDeletedAt);
             
             setChatRoom(room);
             
@@ -206,26 +206,49 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
         }
     };
 
-    const handleEditMessage = async (messageId: number, newMessage: string) => {
-        try {
-            const updated = await chatService.editMessage(messageId, newMessage, token);
-            setMessages(prev => prev.map(m => m.id === messageId ? updated : m));
-        } catch (error) {
-            console.error('Failed to edit message:', error);
-            alert('Không thể chỉnh sửa tin nhắn. Vui lòng thử lại.');
+    const deleteMessage = async (messageId: number) => {
+        if (!chatRoom) return;
+        
+        // Check if message is already recalled
+        const messageToDelete = messages.find(m => m.id === messageId);
+        const isRecalled = messageToDelete?.message === 'Tin nhắn đã thu hồi';
+        
+        if (isRecalled) {
+            // Message already recalled - delete directly without confirm
+            try {
+                setMessages(prev => prev.filter(m => m.id !== messageId));
+                // No API call needed - just remove from UI
+                console.log('🗑️ Removed recalled message from UI:', messageId);
+            } catch (error) {
+                console.error('Failed to remove message:', error);
+            }
+            return;
         }
-    };
-
-    const handleRecallMessage = async (messageId: number) => {
+        
+        // Normal message - show confirm dialog
         setConfirmDialog({
             isOpen: true,
             type: 'confirm',
-            title: 'Thu hồi tin nhắn',
-            message: 'Bạn có chắc muốn thu hồi tin nhắn này? Cả hai bên sẽ thấy "Tin nhắn đã được thu hồi".',
+            title: 'Xóa tin nhắn',
+            message: 'Bạn có chắc muốn thu hồi tin nhắn này? Tin nhắn sẽ hiển thị "Tin nhắn đã thu hồi".',
             onConfirm: async () => {
                 try {
-                    const recalled = await chatService.recallMessage(messageId, token);
-                    setMessages(prev => prev.map(m => m.id === messageId ? recalled : m));
+                    // Optimistic update: Cập nhật UI ngay lập tức
+                    setMessages(prev => prev.map(m => 
+                        m.id === messageId 
+                            ? { 
+                                ...m, 
+                                message: 'Tin nhắn đã thu hồi', 
+                                messageType: 'TEXT' as const,
+                                attachmentUrl: undefined,
+                                isDeleted: true 
+                              } as ChatMessage
+                            : m
+                    ));
+                    
+                    // Gọi API xóa
+                    await chatService.deleteMessage(messageId, token);
+                    
                     setConfirmDialog({
                         isOpen: true,
                         type: 'success',
@@ -234,7 +257,9 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                         onConfirm: () => setConfirmDialog(prev => ({ ...prev, isOpen: false })),
                     });
                 } catch (error) {
-                    console.error('Failed to recall message:', error);
+                    console.error('Failed to delete message:', error);
+                    // Rollback nếu lỗi
+                    loadMessages();
                     setConfirmDialog({
                         isOpen: true,
                         type: 'error',
@@ -245,42 +270,6 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                 }
             },
         });
-    };
-
-    const handleDeleteMessage = async (messageId: number) => {
-        setConfirmDialog({
-            isOpen: true,
-            type: 'confirm',
-            title: 'Xóa tin nhắn',
-            message: 'Bạn có chắc muốn xóa tin nhắn này? (Chỉ bạn không thấy, Admin vẫn thấy)',
-            onConfirm: async () => {
-                try {
-                    await chatService.deleteMessageForMe(messageId, 'CUSTOMER', token);
-                    setMessages(prev => prev.filter(m => m.id !== messageId));
-                    setConfirmDialog({
-                        isOpen: true,
-                        type: 'success',
-                        title: 'Thành công',
-                        message: 'Tin nhắn đã được xóa khỏi danh sách của bạn!',
-                        onConfirm: () => setConfirmDialog(prev => ({ ...prev, isOpen: false })),
-                    });
-                } catch (error) {
-                    console.error('Failed to delete message:', error);
-                    setConfirmDialog({
-                        isOpen: true,
-                        type: 'error',
-                        title: 'Lỗi',
-                        message: 'Không thể xóa tin nhắn. Vui lòng thử lại.',
-                        onConfirm: () => setConfirmDialog(prev => ({ ...prev, isOpen: false })),
-                    });
-                }
-            },
-        });
-    };
-
-    const deleteMessage = async (messageId: number) => {
-        // Keep old function for compatibility
-        handleRecallMessage(messageId);
     };
 
     const deleteAllMessages = async () => {
@@ -499,79 +488,68 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                                     </div>
                                 ) : (
                                     <>
-                                        {messages.map((message) => {
-                                            const isRecalled = message.recalled || message.message === 'Tin nhắn đã được thu hồi';
-                                            const isOwnMessage = message.senderType === 'CUSTOMER';
-
-                                            return (
-                                                <div
-                                                    key={message.id}
-                                                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-                                                >
-                                                    <div
-                                                        className={`max-w-[75%] rounded-3xl px-4 py-3 shadow-md group relative ${
-                                                            isOwnMessage
-                                                                ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
-                                                                : 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
-                                                        }`}
+                                        {messages.map((message) => (
+                                        <div
+                                            key={message.id}
+                                            className={`flex ${message.senderType === 'CUSTOMER' ? 'justify-end' : 'justify-start'}`}
+                                        >
+                                            <div
+                                                className={`max-w-[75%] rounded-3xl px-4 py-3 shadow-md group relative ${
+                                                    message.senderType === 'CUSTOMER'
+                                                        ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
+                                                        : 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
+                                                }`}
+                                            >
+                                                {/* Nút xóa - chỉ hiện khi hover */}
+                                                {message.senderType === 'CUSTOMER' && (
+                                                    <button
+                                                        onClick={() => deleteMessage(message.id)}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                                                        title="Xóa tin nhắn"
                                                     >
-                                                        {/* MESSAGE MENU - Thay thế nút X */}
-                                                        <MessageMenu
-                                                            messageId={message.id}
-                                                            messageType={message.messageType}
-                                                            message={message.message}
-                                                            recalled={isRecalled}
-                                                            isOwnMessage={isOwnMessage}
-                                                            onEdit={handleEditMessage}
-                                                            onRecall={handleRecallMessage}
-                                                            onDelete={handleDeleteMessage}
+                                                        ×
+                                                    </button>
+                                                )}
+                                                
+                                                {message.senderType === 'ADMIN' && (
+                                                    <p className="text-xs font-bold text-white mb-1.5">
+                                                        {message.senderName || 'Nhân viên hỗ trợ'}
+                                                    </p>
+                                                )}
+                                                
+                                                {/* Display image or text */}
+                                                {message.messageType === 'IMAGE' && message.attachmentUrl ? (
+                                                    <div className="space-y-1.5">
+                                                        <img 
+                                                            src={message.attachmentUrl} 
+                                                            alt="Hình ảnh" 
+                                                            className="max-w-full rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
+                                                            onClick={() => window.open(message.attachmentUrl, '_blank')}
+                                                            loading="lazy"
                                                         />
-                                                        
-                                                        {!isOwnMessage && message.senderName && (
-                                                            <p className="text-xs font-bold text-white mb-1.5">
-                                                                {message.senderName || 'Nhân viên hỗ trợ'}
-                                                            </p>
-                                                        )}
-                                                        
-                                                        {/* Display image or text */}
-                                                        {message.messageType === 'IMAGE' && message.attachmentUrl && !isRecalled ? (
-                                                            <div className="space-y-1.5">
-                                                                <img 
-                                                                    src={message.attachmentUrl} 
-                                                                    alt="Hình ảnh" 
-                                                                    className="max-w-full rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
-                                                                    onClick={() => window.open(message.attachmentUrl, '_blank')}
-                                                                    loading="lazy"
-                                                                />
-                                                                {message.message && (
-                                                                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words font-medium">
-                                                                        {message.message}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        ) : (
+                                                        {message.message && (
                                                             <p className="text-sm leading-relaxed whitespace-pre-wrap break-words font-medium">
                                                                 {message.message}
                                                             </p>
                                                         )}
-
-                                                        {/* Edited badge */}
-                                                        {message.edited && !isRecalled && (
-                                                            <p className="text-xs mt-1 italic opacity-75">(đã chỉnh sửa)</p>
-                                                        )}
-                                                        
-                                                        <p className={`text-xs mt-1.5 font-medium ${
-                                                            isOwnMessage ? 'text-white' : 'text-white/95'
-                                                        }`}>
-                                                            {new Date(message.createdAt).toLocaleTimeString('vi-VN', {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                            })}
-                                                        </p>
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
+                                                ) : (
+                                                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words font-medium">
+                                                        {message.message}
+                                                    </p>
+                                                )}
+                                                
+                                                <p className={`text-xs mt-1.5 font-medium ${
+                                                    message.senderType === 'CUSTOMER' ? 'text-white' : 'text-white/95'
+                                                }`}>
+                                                    {new Date(message.createdAt).toLocaleTimeString('vi-VN', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
                                     
                                     {/* Image Preview - Show in chat area */}
                                     {imagePreview && (

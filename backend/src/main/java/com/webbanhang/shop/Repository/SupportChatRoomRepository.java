@@ -9,21 +9,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Repository
 public interface SupportChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     
     // Get or create active chat room for customer (exclude deleted rooms)
-    @Query("SELECT cr FROM SupportChatRoom cr WHERE cr.customer.customerId = :customerId AND cr.status = :status AND cr.customerDeletedAt IS NULL ORDER BY cr.lastMessageAt DESC")
-    Optional<ChatRoom> findByCustomerIdAndStatus(@Param("customerId") Long customerId, @Param("status") ChatRoomStatus status);
+    // Use Pageable to LIMIT 1 and prevent duplicates
+    @Query("SELECT cr FROM SupportChatRoom cr WHERE cr.customer.customerId = :customerId AND cr.status = :status ORDER BY cr.lastMessageAt DESC")
+    Page<ChatRoom> findByCustomerIdAndStatusPaged(@Param("customerId") Long customerId, @Param("status") ChatRoomStatus status, Pageable pageable);
     
-    // Customer view: Exclude rooms deleted by customer, include all others
-    @Query("SELECT cr FROM SupportChatRoom cr WHERE cr.customer.customerId = :customerId AND cr.customerDeletedAt IS NULL ORDER BY cr.lastMessageAt DESC")
+    // Get ALL rooms for customer (to check for existing room)
+    @Query("SELECT cr FROM SupportChatRoom cr WHERE cr.customer.customerId = :customerId ORDER BY cr.lastMessageAt DESC")
     Page<ChatRoom> findByCustomerId(@Param("customerId") Long customerId, Pageable pageable);
     
-    // Admin view: Exclude rooms deleted by admin, include all others
-    @Query("SELECT cr FROM SupportChatRoom cr WHERE cr.status = :status AND cr.adminDeletedAt IS NULL ORDER BY cr.lastMessageAt DESC")
+    // Admin view: Show rooms with NEW messages OR not deleted by admin
+    @Query("SELECT cr FROM SupportChatRoom cr WHERE cr.status = :status " +
+           "AND (cr.adminDeletedAt IS NULL " +
+           "     OR EXISTS (SELECT 1 FROM SupportChatMessage m WHERE m.chatRoom.id = cr.id AND m.createdAt > cr.adminDeletedAt)) " +
+           "ORDER BY cr.lastMessageAt DESC")
     Page<ChatRoom> findByStatus(@Param("status") ChatRoomStatus status, Pageable pageable);
     
     @Query("SELECT cr FROM SupportChatRoom cr WHERE cr.admin.accountId = :adminId AND cr.status = :status AND cr.adminDeletedAt IS NULL ORDER BY cr.lastMessageAt DESC")

@@ -1,5 +1,6 @@
 package com.webbanhang.shop.DTO.Chats;
 
+import com.webbanhang.shop.Model.Chats.MessageType;
 import com.webbanhang.shop.Model.Chats.SenderType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,14 @@ public class ChatMessageDTO {
     private String senderName;
     private String senderAvatar;
     private String message;
+    private Boolean edited;
+    private LocalDateTime editedAt;
+    private Boolean recalled;
+    private LocalDateTime recalledAt;
+    private Boolean deletedForAdmin;
+    private Boolean deletedForCustomer;
+    private MessageType messageType;
+    private String attachmentUrl;
     private Boolean isRead;
     private LocalDateTime createdAt;
 }

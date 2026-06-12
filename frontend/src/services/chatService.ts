@@ -12,6 +12,14 @@ export interface ChatMessage {
     senderName: string;
     senderAvatar?: string;
     message: string;
+    edited?: boolean;
+    editedAt?: string;
+    recalled?: boolean;
+    recalledAt?: string;
+    deletedForAdmin?: boolean;
+    deletedForCustomer?: boolean;
+    messageType: 'TEXT' | 'IMAGE' | 'FILE' | 'SYSTEM';
+    attachmentUrl?: string;
     isRead: boolean;
     createdAt: string;
 }
@@ -38,6 +46,8 @@ export interface SendMessageRequest {
     senderType: 'CUSTOMER' | 'ADMIN';
     senderId: number;
     message: string;
+    messageType?: 'TEXT' | 'IMAGE' | 'FILE' | 'SYSTEM';
+    attachmentUrl?: string;
 }
 
 class ChatService {
@@ -91,6 +101,26 @@ class ChatService {
         return response.json();
     }
 
+    async uploadChatImage(file: File, token: string): Promise<{ url: string }> {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`${API_URL}/uploads/avatars`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+        });
+        
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+            throw new Error(error.message || 'Không thể upload ảnh');
+        }
+        
+        return response.json();
+    }
+
     async markAdminMessagesAsRead(chatRoomId: number, token: string): Promise<void> {
         await fetch(`${API_URL}/customer/chat/read/${chatRoomId}`, {
             method: 'PUT',
@@ -120,6 +150,69 @@ class ChatService {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Delete message failed:', response.status, errorText);
+            throw new Error(`Failed to delete message: ${response.status} - ${errorText}`);
+        }
+    }
+
+    /**
+     * EDIT MESSAGE - Chỉnh sửa tin nhắn TEXT
+     */
+    async editMessage(messageId: number, newMessage: string, token: string): Promise<ChatMessage> {
+        const response = await fetch(`${API_URL}/chat/messages/${messageId}/edit`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ messageId, newMessage }),
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Edit message failed:', response.status, errorText);
+            throw new Error(`Failed to edit message: ${response.status} - ${errorText}`);
+        }
+        
+        return response.json();
+    }
+
+    /**
+     * RECALL MESSAGE - Thu hồi tin nhắn (cả hai bên thấy)
+     */
+    async recallMessage(messageId: number, token: string): Promise<ChatMessage> {
+        const response = await fetch(`${API_URL}/chat/messages/${messageId}/recall`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Recall message failed:', response.status, errorText);
+            throw new Error(`Failed to recall message: ${response.status} - ${errorText}`);
+        }
+        
+        return response.json();
+    }
+
+    /**
+     * DELETE MESSAGE FOR ME - Xóa tin nhắn chỉ ở phía người xóa
+     */
+    async deleteMessageForMe(messageId: number, deleterType: 'ADMIN' | 'CUSTOMER', token: string): Promise<void> {
+        const response = await fetch(`${API_URL}/chat/messages/${messageId}/delete-for-me`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ messageId, deleterType }),
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Delete message for me failed:', response.status, errorText);
             throw new Error(`Failed to delete message: ${response.status} - ${errorText}`);
         }
     }
@@ -315,6 +408,15 @@ class ChatService {
     subscribeToChat(chatRoomId: number, onMessageReceived: (message: ChatMessage) => void): void {
         if (!this.stompClient) {
             console.error('❌ [ChatService] STOMP client not initialized');
+            return;
+        }
+
+        // Check if connection is active
+        if (!this.stompClient.connected) {
+            console.warn('⏳ [ChatService] STOMP not connected yet, waiting...');
+            setTimeout(() => {
+                this.subscribeToChat(chatRoomId, onMessageReceived);
+            }, 500);
             return;
         }
 

@@ -31,6 +31,24 @@ public class ChatMessage {
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
+    @Column(name = "edited")
+    private Boolean edited = false;
+
+    @Column(name = "edited_at")
+    private LocalDateTime editedAt;
+
+    @Column(name = "recalled")
+    private Boolean recalled = false;
+
+    @Column(name = "recalled_at")
+    private LocalDateTime recalledAt;
+
+    @Column(name = "deleted_for_admin")
+    private Boolean deletedForAdmin = false;
+
+    @Column(name = "deleted_for_customer")
+    private Boolean deletedForCustomer = false;
+
     @Column(name = "message_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private MessageType messageType = MessageType.TEXT;

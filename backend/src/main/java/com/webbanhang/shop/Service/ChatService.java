@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,27 +33,75 @@ public class ChatService {
     private final com.webbanhang.shop.Repository.Customers.CustomerAccountRepository customerAccountRepository;
     private final com.webbanhang.shop.Repository.Admins.AdminAccountRepository adminAccountRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final com.webbanhang.shop.Service.Storage.MinioStorageService minioStorageService;
 
     @Transactional
     public ChatRoomDTO getOrCreateChatRoom(Long customerId) {
         CustomerAccount customer = customerAccountRepository.findById(customerId.intValue())
             .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        // Find existing active room that customer hasn't deleted
-        Optional<ChatRoom> existingRoom = chatRoomRepository.findByCustomerIdAndStatus(customerId, ChatRoomStatus.ACTIVE);
+        // MESSENGER PRINCIPLE: 1 Customer = 1 ChatRoom FOREVER
+        // Find ANY room for this customer (ACTIVE or CLOSED)
+        List<ChatRoom> allRooms = chatRoomRepository.findByCustomerId(customerId, Pageable.unpaged()).getContent();
         
-        ChatRoom chatRoom;
-        if (existingRoom.isPresent()) {
-            chatRoom = existingRoom.get();
-            log.info("✅ Found existing chat room: {} for customer: {}", chatRoom.getId(), customerId);
+        final ChatRoom chatRoom; // Make final for lambda usage
+        
+        if (!allRooms.isEmpty()) {
+            // Room exists - reuse it (even if CLOSED)
+            ChatRoom selectedRoom = allRooms.stream()
+                .filter(r -> r.getStatus() == ChatRoomStatus.ACTIVE)
+                .findFirst()
+                .orElse(allRooms.get(0)); // If all closed, take first and reactivate
+            
+            // Reactivate if closed
+            if (selectedRoom.getStatus() == ChatRoomStatus.CLOSED) {
+                log.info("🔄 Reactivating closed chat room: {} for customer: {}", selectedRoom.getId(), customerId);
+                selectedRoom.setStatus(ChatRoomStatus.ACTIVE);
+                selectedRoom.setLastMessageAt(LocalDateTime.now());
+                selectedRoom = chatRoomRepository.save(selectedRoom);
+            } else {
+                log.info("✅ Found existing ACTIVE chat room: {} for customer: {}", selectedRoom.getId(), customerId);
+            }
+            
+            // CRITICAL: Close ALL other ACTIVE rooms (DUPLICATE PROTECTION)
+            final Long keepRoomId = selectedRoom.getId();
+            long duplicateCount = allRooms.stream()
+                .filter(r -> r.getStatus() == ChatRoomStatus.ACTIVE && !r.getId().equals(keepRoomId))
+                .count();
+            
+            if (duplicateCount > 0) {
+                log.error("⚠️ CRITICAL: Found {} duplicate ACTIVE rooms for customer: {}. Fixing...", duplicateCount, customerId);
+                allRooms.stream()
+                    .filter(r -> r.getStatus() == ChatRoomStatus.ACTIVE && !r.getId().equals(keepRoomId))
+                    .forEach(r -> {
+                        r.setStatus(ChatRoomStatus.CLOSED);
+                        chatRoomRepository.save(r);
+                        log.info("🗑️ Closed duplicate ACTIVE room: {}", r.getId());
+                    });
+            }
+            
+            chatRoom = selectedRoom;
         } else {
-            // No active room found, create new one
-            chatRoom = new ChatRoom();
-            chatRoom.setCustomer(customer);
-            chatRoom.setStatus(ChatRoomStatus.ACTIVE);
-            chatRoom.setLastMessageAt(LocalDateTime.now());
-            chatRoom = chatRoomRepository.save(chatRoom);
-            log.info("✅ Created new chat room: {} for customer: {}", chatRoom.getId(), customerId);
+            // No room exists - create NEW one (first time only)
+            ChatRoom newRoom = new ChatRoom();
+            newRoom.setCustomer(customer);
+            newRoom.setStatus(ChatRoomStatus.ACTIVE);
+            newRoom.setLastMessageAt(LocalDateTime.now());
+            
+            // DUPLICATE PROTECTION: Check again before save
+            List<ChatRoom> checkDuplicate = chatRoomRepository.findByCustomerIdAndStatusPaged(
+                customerId, 
+                ChatRoomStatus.ACTIVE, 
+                PageRequest.of(0, 1)
+            ).getContent();
+            
+            if (!checkDuplicate.isEmpty()) {
+                log.warn("⚠️ Race condition detected: Room created while checking. Using existing room.");
+                chatRoom = checkDuplicate.get(0);
+            } else {
+                chatRoom = chatRoomRepository.save(newRoom);
+                log.info("✅ Created NEW chat room: {} for customer: {}", chatRoom.getId(), customerId);
+            }
         }
 
         return convertToChatRoomDTO(chatRoom);
@@ -64,20 +112,31 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
             .orElseThrow(() -> new RuntimeException("Chat room not found"));
 
-        // MESSENGER LOGIC: When new message sent, restore chat for recipient
+        // MESSENGER STYLE DELETE LOGIC:
+        // When Admin sends message → Customer sees chat again (but FILTERED by timestamp)
+        // When Customer sends message → Admin sees chat again (but FILTERED by timestamp)
+        // 
+        // CRITICAL: DO NOT set deleted_at = NULL
+        // Keep timestamp to filter old messages
+        
         if (request.getSenderType() == SenderType.CUSTOMER) {
-            // Customer sends → Restore chat for Admin
+            // Customer sent message
             if (chatRoom.getAdminDeletedAt() != null) {
-                log.info("🔄 Customer sent message, restoring chat for Admin in room: {}", chatRoom.getId());
-                chatRoom.setAdminDeletedAt(null);
+                log.info("✅ Customer sent message → Admin will see chat again (but only messages after {})", 
+                    chatRoom.getAdminDeletedAt());
+                // Admin deleted chat → keep timestamp, just make chat visible
             }
         } else if (request.getSenderType() == SenderType.ADMIN) {
-            // Admin sends → Restore chat for Customer
+            // Admin sent message
             if (chatRoom.getCustomerDeletedAt() != null) {
-                log.info("🔄 Admin sent message, restoring chat for Customer in room: {}", chatRoom.getId());
-                chatRoom.setCustomerDeletedAt(null);
+                log.info("✅ Admin sent message → Customer will see chat again (but only messages after {})", 
+                    chatRoom.getCustomerDeletedAt());
+                // Customer deleted chat → keep timestamp, just make chat visible
             }
         }
+        
+        // IMPORTANT: Do NOT modify deleted_at timestamps
+        // They are used for filtering messages, not hiding chat
 
         // Create and save message
         ChatMessage message = new ChatMessage();
@@ -85,24 +144,24 @@ public class ChatService {
         message.setSenderType(request.getSenderType());
         message.setSenderId(request.getSenderId());
         message.setMessage(request.getMessage());
-        message.setMessageType(MessageType.TEXT);
+        message.setMessageType(request.getMessageType() != null ? request.getMessageType() : MessageType.TEXT);
+        message.setAttachmentUrl(request.getAttachmentUrl());
         message.setIsRead(false);
         message.setReadAt(null);
         
         message = chatMessageRepository.save(message);
 
-        // Update last message info in chat room for fast preview
+        // Update last message preview
+        String lastMessagePreview = message.getMessageType() == MessageType.IMAGE ? "📷 Hình ảnh" : request.getMessage();
         chatRoom.setLastMessageAt(LocalDateTime.now());
-        chatRoom.setLastMessage(truncateMessage(request.getMessage(), 100));
+        chatRoom.setLastMessage(truncateMessage(lastMessagePreview, 100));
         chatRoom.setLastMessageSenderType(request.getSenderType());
         chatRoomRepository.save(chatRoom);
 
         ChatMessageDTO messageDTO = convertToChatMessageDTO(message);
 
-        // Send real-time notification via WebSocket
         messagingTemplate.convertAndSend("/topic/chat/" + chatRoom.getId(), messageDTO);
         
-        // Notify admins about new customer message (for notification badge)
         if (request.getSenderType() == SenderType.CUSTOMER) {
             messagingTemplate.convertAndSend("/topic/admin/new-message", messageDTO);
             log.info("✅ Notified admins about new message from customer in room: {}", chatRoom.getId());
@@ -112,8 +171,65 @@ public class ChatService {
     }
 
     public Page<ChatMessageDTO> getChatMessages(Long chatRoomId, int page, int size) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+            .orElseThrow(() -> new RuntimeException("Chat room not found"));
+        
         Pageable pageable = PageRequest.of(page, size);
-        Page<ChatMessage> messages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtAsc(chatRoomId, pageable);
+        Page<ChatMessage> messages;
+        
+        // BUG 2 FIX: Load messages after delete timestamp based on caller
+        // This method is called by both admin and customer endpoints
+        // We need context to know which deleted_at to check
+        // For now, load all messages (caller will filter in controller)
+        messages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtAsc(chatRoomId, pageable);
+        
+        return messages.map(this::convertToChatMessageDTO);
+    }
+    
+    // BUG 2 FIX: Separate methods for customer and admin with proper filtering
+    public Page<ChatMessageDTO> getCustomerChatMessages(Long chatRoomId, int page, int size) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+            .orElseThrow(() -> new RuntimeException("Chat room not found"));
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ChatMessage> messages;
+        
+        if (chatRoom.getCustomerDeletedAt() != null) {
+            // Customer deleted - only load messages after delete timestamp AND not deleted by customer
+            log.info("📋 Customer view: Loading messages after {} (excluding deleted)", chatRoom.getCustomerDeletedAt());
+            messages = chatMessageRepository.findByChatRoomIdAfterTimestampForCustomer(
+                chatRoomId, 
+                chatRoom.getCustomerDeletedAt(), 
+                pageable
+            );
+        } else {
+            // No chat deletion - load all messages not deleted by customer
+            messages = chatMessageRepository.findByChatRoomIdForCustomer(chatRoomId, pageable);
+        }
+        
+        return messages.map(this::convertToChatMessageDTO);
+    }
+    
+    public Page<ChatMessageDTO> getAdminChatMessages(Long chatRoomId, int page, int size) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+            .orElseThrow(() -> new RuntimeException("Chat room not found"));
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ChatMessage> messages;
+        
+        if (chatRoom.getAdminDeletedAt() != null) {
+            // Admin deleted - only load messages after delete timestamp AND not deleted by admin
+            log.info("📋 Admin view: Loading messages after {} (excluding deleted)", chatRoom.getAdminDeletedAt());
+            messages = chatMessageRepository.findByChatRoomIdAfterTimestampForAdmin(
+                chatRoomId, 
+                chatRoom.getAdminDeletedAt(), 
+                pageable
+            );
+        } else {
+            // No chat deletion - load all messages not deleted by admin
+            messages = chatMessageRepository.findByChatRoomIdForAdmin(chatRoomId, pageable);
+        }
+        
         return messages.map(this::convertToChatMessageDTO);
     }
 
@@ -138,6 +254,7 @@ public class ChatService {
 
     public Page<ChatRoomDTO> getAdminChatRooms(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        // MESSENGER STYLE: Show rooms with NEW messages after admin deleted OR not deleted
         Page<ChatRoom> chatRooms = chatRoomRepository.findByStatus(ChatRoomStatus.ACTIVE, pageable);
         return chatRooms.map(this::convertToChatRoomDTO);
     }
@@ -169,19 +286,125 @@ public class ChatService {
         return chatRoomRepository.countUnassignedActiveRooms();
     }
 
+    /**
+     * EDIT MESSAGE - Only TEXT messages can be edited
+     * Người gửi chỉnh sửa tin nhắn, hiển thị "(đã chỉnh sửa)"
+     */
     @Transactional
-    public void deleteMessage(Long messageId) {
-        // Soft delete: Update message content instead of deleting
+    public ChatMessageDTO editMessage(Long messageId, String newMessage) {
         ChatMessage message = chatMessageRepository.findById(messageId)
             .orElseThrow(() -> new RuntimeException("Message not found"));
-        message.setMessage("Tin nhắn đã thu hồi");
+        
+        // Validation: Only TEXT messages can be edited
+        if (message.getMessageType() != MessageType.TEXT) {
+            throw new RuntimeException("Only text messages can be edited");
+        }
+        
+        // Validation: Cannot edit recalled messages
+        if (Boolean.TRUE.equals(message.getRecalled())) {
+            throw new RuntimeException("Cannot edit recalled messages");
+        }
+        
+        Long chatRoomId = message.getChatRoom().getId();
+        
+        // Update message
+        message.setMessage(newMessage);
+        message.setEdited(true);
+        message.setEditedAt(LocalDateTime.now());
+        message = chatMessageRepository.save(message);
+        
+        log.info("✏️ Message {} edited by user", messageId);
+        
+        // Broadcast edit event via WebSocket
+        ChatMessageDTO editedMessageDTO = convertToChatMessageDTO(message);
+        messagingTemplate.convertAndSend("/topic/chat/" + chatRoomId, editedMessageDTO);
+        log.info("📡 Broadcasted edit event for message {} to room {}", messageId, chatRoomId);
+        
+        return editedMessageDTO;
+    }
+    
+    /**
+     * RECALL MESSAGE (THU HỒI) - Both sides see "Tin nhắn đã được thu hồi"
+     * Cả admin và customer đều thấy tin nhắn đã thu hồi
+     * Images are deleted from MinIO
+     */
+    @Transactional
+    public ChatMessageDTO recallMessage(Long messageId) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException("Message not found"));
+        
+        Long chatRoomId = message.getChatRoom().getId();
+        
+        // If message has image attachment, delete from MinIO
+        if (message.getMessageType() == MessageType.IMAGE && message.getAttachmentUrl() != null) {
+            try {
+                log.info("🗑️ Deleting image from MinIO: {}", message.getAttachmentUrl());
+                minioStorageService.deleteByUrl(message.getAttachmentUrl());
+                log.info("✅ Image deleted from MinIO successfully");
+            } catch (Exception e) {
+                log.error("❌ Failed to delete image from MinIO: {}", e.getMessage());
+            }
+        }
+        
+        // Mark as recalled
+        message.setMessage("Tin nhắn đã được thu hồi");
+        message.setMessageType(MessageType.TEXT);
+        message.setAttachmentUrl(null);
+        message.setRecalled(true);
+        message.setRecalledAt(LocalDateTime.now());
+        message = chatMessageRepository.save(message);
+        
+        log.info("🔙 Message {} recalled", messageId);
+        
+        // Broadcast recall event via WebSocket
+        ChatMessageDTO recalledMessageDTO = convertToChatMessageDTO(message);
+        messagingTemplate.convertAndSend("/topic/chat/" + chatRoomId, recalledMessageDTO);
+        log.info("📡 Broadcasted recall event for message {} to room {}", messageId, chatRoomId);
+        
+        return recalledMessageDTO;
+    }
+    
+    /**
+     * DELETE MESSAGE (XÓA CHỈ Ở PHÍA NGƯỜI XÓA)
+     * Messenger style: Independent delete for each user
+     * Người xóa không thấy, người còn lại vẫn thấy
+     * CAN delete without recalling first
+     */
+    @Transactional
+    public void deleteMessageForUser(Long messageId, SenderType deleterType) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException("Message not found"));
+        
+        // Mark as deleted for specific user (no validation needed)
+        if (deleterType == SenderType.ADMIN) {
+            message.setDeletedForAdmin(true);
+        } else {
+            message.setDeletedForCustomer(true);
+        }
+        
         chatMessageRepository.save(message);
+        log.info("🗑️ Message {} marked as deleted for {}", messageId, deleterType);
+        
+        // NOTE: NO WebSocket broadcast - delete is local to user's UI only
+        // Other side still sees the message
+    }
+    
+    /**
+     * DEPRECATED: Use recallMessage() instead
+     */
+    @Deprecated
+    @Transactional
+    public void deleteMessage(Long messageId) {
+        log.warn("⚠️ DEPRECATED: deleteMessage() called, use recallMessage() instead");
+        recallMessage(messageId);
     }
 
     /**
      * MESSENGER STYLE: Delete chat for one side only (Admin or Customer)
      * Does NOT physically delete messages from database.
      * Other side still sees full history.
+     * 
+     * MinIO Cleanup: If BOTH sides have deleted, cleanup all images
      */
     @Transactional
     public void deleteChatRoomForAdmin(Long chatRoomId) {
@@ -192,12 +415,19 @@ public class ChatService {
         chatRoomRepository.save(chatRoom);
         
         log.info("🗑️ Admin deleted chat room: {} (Customer still sees it)", chatRoomId);
+        
+        // Check if BOTH sides have deleted → cleanup MinIO images
+        if (chatRoom.getCustomerDeletedAt() != null && chatRoom.getAdminDeletedAt() != null) {
+            cleanupMinIOImagesForChatRoom(chatRoomId);
+        }
     }
 
     /**
      * MESSENGER STYLE: Delete chat for Customer only
      * Does NOT physically delete messages from database.
      * Admin side still sees full history.
+     * 
+     * MinIO Cleanup: If BOTH sides have deleted, cleanup all images
      */
     @Transactional
     public void deleteChatRoomForCustomer(Long chatRoomId) {
@@ -208,12 +438,50 @@ public class ChatService {
         chatRoomRepository.save(chatRoom);
         
         log.info("🗑️ Customer deleted chat room: {} (Admin still sees it)", chatRoomId);
+        
+        // Check if BOTH sides have deleted → cleanup MinIO images
+        if (chatRoom.getCustomerDeletedAt() != null && chatRoom.getAdminDeletedAt() != null) {
+            cleanupMinIOImagesForChatRoom(chatRoomId);
+        }
+    }
+    
+    /**
+     * Cleanup all images in a chat room from MinIO
+     * Only called when BOTH Customer and Admin have deleted the chat
+     */
+    private void cleanupMinIOImagesForChatRoom(Long chatRoomId) {
+        try {
+            log.info("🧹 BOTH SIDES DELETED → Cleaning up MinIO images for chat room: {}", chatRoomId);
+            List<ChatMessage> allMessages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtAsc(
+                chatRoomId, 
+                Pageable.unpaged()
+            ).getContent();
+            
+            int imageCount = 0;
+            for (ChatMessage message : allMessages) {
+                if (message.getMessageType() == MessageType.IMAGE && message.getAttachmentUrl() != null) {
+                    try {
+                        log.info("🗑️ Deleting image from MinIO: {}", message.getAttachmentUrl());
+                        minioStorageService.deleteByUrl(message.getAttachmentUrl());
+                        imageCount++;
+                    } catch (Exception e) {
+                        log.error("❌ Failed to delete image from MinIO: {}", e.getMessage());
+                        // Continue deleting other images
+                    }
+                }
+            }
+            log.info("✅ Cleaned up {} images from MinIO in chat room: {}", imageCount, chatRoomId);
+        } catch (Exception e) {
+            log.error("❌ Error during MinIO cleanup for chat room {}: {}", chatRoomId, e.getMessage());
+        }
     }
 
     /**
      * DEPRECATED: Do NOT use this for independent delete
      * This physically deletes messages from database
      * Use deleteChatRoomForAdmin or deleteChatRoomForCustomer instead
+     * 
+     * WARNING: This also deletes all images from MinIO
      */
     @Deprecated
     @Transactional
@@ -221,6 +489,33 @@ public class ChatService {
         // Verify chat room exists
         chatRoomRepository.findById(chatRoomId)
             .orElseThrow(() -> new RuntimeException("Chat room not found"));
+        
+        // CRITICAL: Delete all images from MinIO before deleting messages
+        try {
+            log.info("🗑️ Fetching all messages with images in chat room: {}", chatRoomId);
+            List<ChatMessage> allMessages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtAsc(
+                chatRoomId, 
+                Pageable.unpaged()
+            ).getContent();
+            
+            int imageCount = 0;
+            for (ChatMessage message : allMessages) {
+                if (message.getMessageType() == MessageType.IMAGE && message.getAttachmentUrl() != null) {
+                    try {
+                        log.info("🗑️ Deleting image from MinIO: {}", message.getAttachmentUrl());
+                        minioStorageService.deleteByUrl(message.getAttachmentUrl());
+                        imageCount++;
+                    } catch (Exception e) {
+                        log.error("❌ Failed to delete image from MinIO: {}", e.getMessage());
+                        // Continue deleting other images
+                    }
+                }
+            }
+            log.info("✅ Deleted {} images from MinIO in chat room: {}", imageCount, chatRoomId);
+        } catch (Exception e) {
+            log.error("❌ Error during MinIO cleanup for chat room {}: {}", chatRoomId, e.getMessage());
+            // Continue with message deletion even if MinIO cleanup fails
+        }
         
         // Bulk delete all messages in the chat room
         chatMessageRepository.deleteAllByChatRoomId(chatRoomId);
@@ -247,10 +542,17 @@ public class ChatService {
         dto.setSenderType(message.getSenderType());
         dto.setSenderId(message.getSenderId());
         dto.setMessage(message.getMessage());
+        dto.setEdited(message.getEdited());
+        dto.setEditedAt(message.getEditedAt());
+        dto.setRecalled(message.getRecalled());
+        dto.setRecalledAt(message.getRecalledAt());
+        dto.setDeletedForAdmin(message.getDeletedForAdmin());
+        dto.setDeletedForCustomer(message.getDeletedForCustomer());
+        dto.setMessageType(message.getMessageType());
+        dto.setAttachmentUrl(message.getAttachmentUrl());
         dto.setIsRead(message.getIsRead());
         dto.setCreatedAt(message.getCreatedAt());
 
-        // Set sender info
         if (message.getSenderType() == SenderType.CUSTOMER) {
             CustomerAccount customer = message.getChatRoom().getCustomer();
             dto.setSenderName(customer.getFullName());

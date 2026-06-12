@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Users, Trash2 } from 'lucide-react';
+import { MessageCircle, X, Send, Users, Trash2, Image as ImageIcon } from 'lucide-react';
 import { chatService, ChatMessage, ChatRoom } from '@/services/chatService';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import MessageMenu from '@/components/chat/MessageMenu';
 
 interface AdminChatBoxProps {
     adminId: number;
@@ -18,10 +19,13 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [totalUnread, setTotalUnread] = useState(0);
+    const [imagePreview, setImagePreview] = useState<{ file: File; url: string } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const selectedRoomRef = useRef<ChatRoom | null>(null);
     const isLoadingRoomsRef = useRef<boolean>(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     // Dialog states
     const [confirmDialog, setConfirmDialog] = useState<{
@@ -110,8 +114,21 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                     // ✅ RULE 1: Message cho room ĐANG XEM (ACTIVE)
                     console.log('✅ [AdminChatBox] Message for ACTIVE room');
                     
-                    // Add message to UI
-                    setMessages(prev => [...prev, message]);
+                    // Check if message already exists (for recall events)
+                    setMessages(prev => {
+                        const existingIndex = prev.findIndex(m => m.id === message.id);
+                        
+                        if (existingIndex !== -1) {
+                            // Message exists - UPDATE (for recall)
+                            console.log('🔄 [AdminChatBox] Updating existing message:', message.id);
+                            const updated = [...prev];
+                            updated[existingIndex] = message;
+                            return updated;
+                        } else {
+                            // New message - ADD
+                            return [...prev, message];
+                        }
+                    });
                     
                     if (message.senderType === 'CUSTOMER') {
                         // ✅ CRITICAL: Admin đang xem chat → Mark as read NGAY
@@ -159,6 +176,25 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        // Auto scroll when image preview appears
+        if (imagePreview) {
+            // Wait for image to render, then scroll
+            setTimeout(() => {
+                scrollToBottom();
+            }, 150);
+        }
+    }, [imagePreview]);
+
+    useEffect(() => {
+        // Auto scroll when selecting a room
+        if (selectedRoom && messages.length > 0) {
+            setTimeout(() => {
+                scrollToBottom();
+            }, 100);
+        }
+    }, [selectedRoom]);
 
     useEffect(() => {
         // Tính số lượng KHÁCH HÀNG có tin nhắn chưa đọc (không phải tổng số tin nhắn)
@@ -231,21 +267,26 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
         }
     };
 
-    const deleteMessage = async (messageId: number) => {
+    const handleEditMessage = async (messageId: number, newMessage: string) => {
+        try {
+            const updated = await chatService.editMessage(messageId, newMessage, token);
+            setMessages(prev => prev.map(m => m.id === messageId ? updated : m));
+        } catch (error) {
+            console.error('Failed to edit message:', error);
+            alert('Không thể chỉnh sửa tin nhắn. Vui lòng thử lại.');
+        }
+    };
+
+    const handleRecallMessage = async (messageId: number) => {
         setConfirmDialog({
             isOpen: true,
             type: 'confirm',
-            title: 'Xóa tin nhắn',
-            message: 'Bạn có chắc muốn thu hồi tin nhắn này? Tin nhắn sẽ hiển thị "Tin nhắn đã thu hồi".',
+            title: 'Thu hồi tin nhắn',
+            message: 'Bạn có chắc muốn thu hồi tin nhắn này? Cả hai bên sẽ thấy "Tin nhắn đã được thu hồi".',
             onConfirm: async () => {
                 try {
-                    await chatService.deleteMessage(messageId, token);
-                    // Cập nhật tin nhắn thành "đã thu hồi"
-                    setMessages(prev => prev.map(m => 
-                        m.id === messageId 
-                            ? { ...m, message: 'Tin nhắn đã thu hồi', isDeleted: true } as any
-                            : m
-                    ));
+                    const recalled = await chatService.recallMessage(messageId, token);
+                    setMessages(prev => prev.map(m => m.id === messageId ? recalled : m));
                     setConfirmDialog({
                         isOpen: true,
                         type: 'success',
@@ -254,7 +295,7 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                         onConfirm: () => setConfirmDialog(prev => ({ ...prev, isOpen: false })),
                     });
                 } catch (error) {
-                    console.error('Failed to delete message:', error);
+                    console.error('Failed to recall message:', error);
                     setConfirmDialog({
                         isOpen: true,
                         type: 'error',
@@ -267,6 +308,42 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
         });
     };
 
+    const handleDeleteMessage = async (messageId: number) => {
+        setConfirmDialog({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Xóa tin nhắn',
+            message: 'Bạn có chắc muốn xóa tin nhắn này? (Chỉ bạn không thấy, Customer vẫn thấy)',
+            onConfirm: async () => {
+                try {
+                    await chatService.deleteMessageForMe(messageId, 'ADMIN', token);
+                    setMessages(prev => prev.filter(m => m.id !== messageId));
+                    setConfirmDialog({
+                        isOpen: true,
+                        type: 'success',
+                        title: 'Thành công',
+                        message: 'Tin nhắn đã được xóa khỏi danh sách của bạn!',
+                        onConfirm: () => setConfirmDialog(prev => ({ ...prev, isOpen: false })),
+                    });
+                } catch (error) {
+                    console.error('Failed to delete message:', error);
+                    setConfirmDialog({
+                        isOpen: true,
+                        type: 'error',
+                        title: 'Lỗi',
+                        message: 'Không thể xóa tin nhắn. Vui lòng thử lại.',
+                        onConfirm: () => setConfirmDialog(prev => ({ ...prev, isOpen: false })),
+                    });
+                }
+            },
+        });
+    };
+
+    const deleteMessage = async (messageId: number) => {
+        // Keep old function for compatibility
+        handleRecallMessage(messageId);
+    };
+
     const deleteAllMessages = async () => {
         if (!selectedRoom) return;
         
@@ -274,10 +351,10 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
             isOpen: true,
             type: 'confirm',
             title: 'Xóa đoạn chat',
-            message: 'Bạn có chắc muốn xóa đoạn chat này? Khách hàng vẫn sẽ thấy lịch sử trò chuyện của họ.',
+            message: 'Bạn có chắc muốn xóa đoạn chat này? Bạn chỉ thấy tin nhắn mới khi Khách hàng trả lời.',
             onConfirm: async () => {
                 try {
-                    // MESSENGER STYLE: Delete for admin only
+                    // MESSENGER STYLE: Set admin_deleted_at timestamp
                     await chatService.deleteAdminChatRoom(selectedRoom.id, token);
                     
                     // Go back to list
@@ -287,11 +364,15 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                     // Reload chat rooms
                     loadChatRooms();
                     
+                    console.log('✅ [AdminChatBox] Admin deleted chat at:', new Date().toISOString());
+                    console.log('📌 [AdminChatBox] Chat will reappear when customer sends new message');
+                    console.log('📌 [AdminChatBox] Only NEW messages (after delete time) will be visible');
+                    
                     setConfirmDialog({
                         isOpen: true,
                         type: 'success',
                         title: 'Thành công',
-                        message: 'Đã xóa đoạn chat! (Khách hàng vẫn thấy lịch sử của họ)',
+                        message: 'Đã xóa đoạn chat! Bạn sẽ chỉ thấy tin nhắn mới khi Khách hàng trả lời.',
                         onConfirm: () => setConfirmDialog(prev => ({ ...prev, isOpen: false })),
                     });
                 } catch (error) {
@@ -317,12 +398,77 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                 senderType: 'ADMIN' as const,
                 senderId: adminId,
                 message: inputMessage.trim(),
+                messageType: 'TEXT' as const,
             };
 
             await chatService.sendAdminMessage(request, token);
             setInputMessage('');
         } catch (error) {
             console.error('Failed to send message:', error);
+        }
+    };
+
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !selectedRoom) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Vui lòng chọn file ảnh (jpg, png, gif, webp)');
+            return;
+        }
+
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 5MB');
+            return;
+        }
+
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(file);
+        setImagePreview({ file, url: previewUrl });
+        // Scroll is handled by useEffect
+        
+        // Reset file input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const handleConfirmImage = async () => {
+        if (!imagePreview || !selectedRoom) return;
+
+        try {
+            setIsUploading(true);
+            
+            // Upload to MinIO
+            const uploadResult = await chatService.uploadChatImage(imagePreview.file, token);
+            
+            const request = {
+                chatRoomId: selectedRoom.id,
+                senderType: 'ADMIN' as const,
+                senderId: adminId,
+                message: '',
+                messageType: 'IMAGE' as const,
+                attachmentUrl: uploadResult.url,
+            };
+
+            await chatService.sendAdminMessage(request, token);
+            
+            // Cleanup
+            URL.revokeObjectURL(imagePreview.url);
+            setImagePreview(null);
+        } catch (error) {
+            console.error('Failed to send image:', error);
+            alert('Không thể gửi ảnh. Vui lòng thử lại.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleCancelImage = () => {
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview.url);
+            setImagePreview(null);
         }
     };
 
@@ -519,69 +665,146 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                                 <>
                                     {/* Messages Area */}
                                     <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white min-h-0">
-                                        {messages.map((message) => (
-                                            <div
-                                                key={message.id}
-                                                className={`flex ${message.senderType === 'ADMIN' ? 'justify-end' : 'justify-start'}`}
-                                            >
+                                        {messages.map((message) => {
+                                            const isRecalled = message.recalled || message.message === 'Tin nhắn đã được thu hồi';
+                                            const isOwnMessage = message.senderType === 'ADMIN';
+
+                                            return (
                                                 <div
-                                                    className={`max-w-[75%] rounded-2xl px-4 py-2.5 group relative ${
-                                                        message.senderType === 'ADMIN'
-                                                            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
-                                                            : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
-                                                    }`}
+                                                    key={message.id}
+                                                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
                                                 >
-                                                    {/* Nút xóa - chỉ hiện khi hover và là tin nhắn của admin */}
-                                                    {message.senderType === 'ADMIN' && (
-                                                        <button
-                                                            onClick={() => deleteMessage(message.id)}
-                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
-                                                            title="Xóa tin nhắn"
-                                                        >
-                                                            ×
-                                                        </button>
-                                                    )}
-                                                    
-                                                    {message.senderType === 'CUSTOMER' && (
-                                                        <p className="text-xs font-semibold text-white mb-1">
-                                                            {message.senderName}
+                                                    <div
+                                                        className={`max-w-[75%] rounded-2xl px-4 py-2.5 group relative ${
+                                                            isOwnMessage
+                                                                ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+                                                                : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
+                                                        }`}
+                                                    >
+                                                        {/* MESSAGE MENU - Thay thế nút X */}
+                                                        <MessageMenu
+                                                            messageId={message.id}
+                                                            messageType={message.messageType}
+                                                            message={message.message}
+                                                            recalled={isRecalled}
+                                                            isOwnMessage={isOwnMessage}
+                                                            onEdit={handleEditMessage}
+                                                            onRecall={handleRecallMessage}
+                                                            onDelete={handleDeleteMessage}
+                                                        />
+                                                        
+                                                        {!isOwnMessage && message.senderName && (
+                                                            <p className="text-xs font-semibold text-white mb-1">
+                                                                {message.senderName}
+                                                            </p>
+                                                        )}
+                                                        
+                                                        {message.messageType === 'IMAGE' && message.attachmentUrl && !isRecalled ? (
+                                                            <div className="space-y-1.5">
+                                                                <img 
+                                                                    src={message.attachmentUrl} 
+                                                                    alt="Hình ảnh" 
+                                                                    className="max-w-full rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
+                                                                    onClick={() => window.open(message.attachmentUrl, '_blank')}
+                                                                    loading="lazy"
+                                                                />
+                                                                {message.message && (
+                                                                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                                                                        {message.message}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                                                                {message.message}
+                                                            </p>
+                                                        )}
+
+                                                        {/* Edited badge */}
+                                                        {message.edited && !isRecalled && (
+                                                            <p className="text-xs mt-1 italic opacity-75">(đã chỉnh sửa)</p>
+                                                        )}
+                                                        
+                                                        <p className={`text-xs mt-1 ${
+                                                            isOwnMessage ? 'text-white' : 'text-white'
+                                                        }`}>
+                                                            {new Date(message.createdAt).toLocaleTimeString('vi-VN', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                            })}
                                                         </p>
-                                                    )}
-                                                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                                                        {message.message}
-                                                    </p>
-                                                    <p className={`text-xs mt-1 ${
-                                                        message.senderType === 'ADMIN' ? 'text-white' : 'text-white'
-                                                    }`}>
-                                                        {new Date(message.createdAt).toLocaleTimeString('vi-VN', {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit',
-                                                        })}
-                                                    </p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        
+                                        {/* Image Preview - Show in chat area */}
+                                        {imagePreview && (
+                                            <div className="flex justify-end">
+                                                <div className="max-w-[75%] bg-gray-100 rounded-2xl p-3 shadow-lg">
+                                                    <p className="text-xs font-semibold text-gray-700 mb-2">📷 Xem trước ảnh</p>
+                                                    <img 
+                                                        src={imagePreview.url} 
+                                                        alt="Preview" 
+                                                        className="max-w-full rounded-xl mb-2"
+                                                    />
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={handleConfirmImage}
+                                                            disabled={isUploading}
+                                                            className="flex-1 bg-purple-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-purple-600 transition-colors disabled:opacity-50"
+                                                        >
+                                                            {isUploading ? 'Đang gửi...' : '✓ Đồng ý'}
+                                                        </button>
+                                                        <button
+                                                            onClick={handleCancelImage}
+                                                            disabled={isUploading}
+                                                            className="flex-1 bg-gray-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition-colors disabled:opacity-50"
+                                                        >
+                                                            × Hủy
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        ))}
+                                        )}
                                         <div ref={messagesEndRef} />
                                     </div>
 
                                     {/* Input Area */}
                                     <div className="p-4 bg-white/100 border-t-2 border-gray-300 shadow-inner flex-shrink-0">
-                                        <div className="flex items-end gap-2">
-                                            <textarea
+                                        <div className="flex items-center gap-2">
+                                            <input 
+                                                ref={fileInputRef}
+                                                type="file" 
+                                                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif" 
+                                                className="hidden" 
+                                                onChange={handleImageSelect}
+                                                disabled={isUploading || !!imagePreview}
+                                            />
+                                            <button
+                                                onClick={() => fileInputRef.current?.click()}
+                                                disabled={isUploading || !!imagePreview}
+                                                className="bg-gray-100 text-gray-700 p-3 rounded-xl hover:bg-gray-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex-shrink-0"
+                                                title="Gửi hình ảnh"
+                                            >
+                                                <ImageIcon className="w-5 h-5" />
+                                            </button>
+                                            <input
+                                                type="text"
                                                 value={inputMessage}
                                                 onChange={(e) => setInputMessage(e.target.value)}
                                                 onKeyPress={handleKeyPress}
-                                                placeholder="Nhập tin nhắn..."
-                                                className="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent max-h-32 overflow-y-auto"
-                                                rows={2}
+                                                placeholder={isUploading ? "Đang tải ảnh..." : "Nhập tin nhắn..."}
+                                                className="flex-1 border-2 border-gray-300 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                                                disabled={isUploading || !!imagePreview}
                                             />
                                             <button
                                                 onClick={sendMessage}
-                                                disabled={!inputMessage.trim()}
-                                                className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                                disabled={!inputMessage.trim() || isUploading || !!imagePreview}
+                                                className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-md flex-shrink-0"
                                                 aria-label="Gửi tin nhắn"
                                             >
-                                                <Send className="w-4 h-4" />
+                                                <Send className="w-5 h-5" />
                                             </button>
                                         </div>
                                     </div>
