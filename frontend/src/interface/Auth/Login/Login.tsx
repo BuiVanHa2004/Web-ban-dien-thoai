@@ -49,7 +49,12 @@ export default function Login() {
       if (res.user.userType === "admin") {
         const adminDomain = process.env.NEXT_PUBLIC_ADMIN_DOMAIN;
         if (adminDomain && typeof window !== "undefined" && !window.location.hostname.includes("admin")) {
-          window.location.href = `https://${adminDomain}/statistical`;
+          // Pass token via URL so admin domain can store it in its own localStorage
+          const params = new URLSearchParams({
+            token: res.token,
+            user: JSON.stringify(res.user),
+          });
+          window.location.href = `https://${adminDomain}/auth-transfer?${params.toString()}`;
         } else {
           router.push("/statistical");
         }

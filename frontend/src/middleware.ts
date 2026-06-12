@@ -58,6 +58,7 @@ export function middleware(req: NextRequest) {
     pathname.startsWith("/register") ||
     pathname.startsWith("/maintenance") ||
     pathname.startsWith("/signin-google") ||
+    pathname.startsWith("/auth-transfer") ||
     pathname.includes(".")
   ) {
     return NextResponse.next();
