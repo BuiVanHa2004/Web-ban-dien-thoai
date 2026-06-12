@@ -13,7 +13,7 @@ export default function UnifiedAiWidget() {
 
   const drag = useDraggableEdge({
     storageKey: "unified-ai-widget-pos",
-    margin: typeof window !== "undefined" && window.innerWidth < 640 ? 16 : 24,
+    margin: 24,
   });
 
   const safariFixStyle = {

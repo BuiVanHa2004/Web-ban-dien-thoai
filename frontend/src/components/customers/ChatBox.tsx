@@ -434,7 +434,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
             {!isOpen && (
                 <button
                     onClick={toggleOpen}
-                    className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full p-3 sm:p-4 shadow-2xl hover:shadow-green-400/50 transition-all duration-300 z-50 group hover:scale-110"
+                    className="fixed bottom-6 left-4 sm:bottom-6 sm:right-6 sm:left-auto bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full p-3 sm:p-4 shadow-2xl hover:shadow-green-400/50 transition-all duration-300 z-50 group hover:scale-110"
                     aria-label="Mở chat hỗ trợ"
                 >
                     <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -445,7 +445,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                             {unreadCount > 99 ? '99+' : unreadCount}
                         </span>
                     )}
-                    <span className="absolute right-16 top-1/2 -translate-y-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <span className="absolute left-16 top-1/2 -translate-y-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none sm:left-auto sm:right-16">
                         Bạn cần hỗ trợ?
                     </span>
                 </button>
