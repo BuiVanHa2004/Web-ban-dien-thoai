@@ -1,14 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-/**
- * Auth Transfer Page
- * Receives token + user from another domain via URL params,
- * stores them in this domain's localStorage, then redirects.
- */
-export default function AuthTransferPage() {
+function AuthTransferContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -20,7 +15,6 @@ export default function AuthTransferPage() {
       if (token && user) {
         localStorage.setItem("token", token);
         localStorage.setItem("user", user);
-        // Clean URL then redirect
         window.history.replaceState({}, "", "/statistical");
         router.replace("/statistical");
       } else {
@@ -38,5 +32,19 @@ export default function AuthTransferPage() {
         <p className="text-sm text-slate-400">Đang chuyển hướng...</p>
       </div>
     </div>
+  );
+}
+
+export default function AuthTransferPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-dvh items-center justify-center bg-[#0f172a]">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+        </div>
+      }
+    >
+      <AuthTransferContent />
+    </Suspense>
   );
 }
