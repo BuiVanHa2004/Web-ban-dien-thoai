@@ -54,7 +54,13 @@ export default function Login() {
           router.push("/statistical");
         }
       } else {
-        router.push("/");
+        // Customer account: if on admin domain, redirect to customer domain
+        const customerDomain = process.env.NEXT_PUBLIC_CUSTOMER_DOMAIN;
+        if (customerDomain && typeof window !== "undefined" && window.location.hostname !== customerDomain) {
+          window.location.href = `https://${customerDomain}/home`;
+        } else {
+          router.push("/home");
+        }
       }
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Đăng nhập thất bại.");
@@ -110,7 +116,12 @@ export default function Login() {
                   router.push("/statistical");
                 }
               } else {
-                router.push("/");
+                const customerDomain = process.env.NEXT_PUBLIC_CUSTOMER_DOMAIN;
+                if (customerDomain && window.location.hostname !== customerDomain) {
+                  window.location.href = `https://${customerDomain}/home`;
+                } else {
+                  router.push("/home");
+                }
               }
               resolve();
             } catch (err: any) {
