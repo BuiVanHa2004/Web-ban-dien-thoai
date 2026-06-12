@@ -12,17 +12,7 @@ import ProductVariantPickerModal from "@/components/customers/ProductVariantPick
 import CustomerProductCard from "@/components/customers/CustomerProductCard";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
-
-function resolveImageUrl(input?: any): string | undefined {
-  if (typeof input !== "string") return undefined;
-  const raw = input.trim();
-  if (!raw) return undefined;
-  if (/^(https?:)?\/\//i.test(raw)) return raw;
-  if (/^(data:|blob:)/i.test(raw)) return raw;
-  if (raw.startsWith("/")) return `${API_URL}${raw}`;
-  return `${API_URL}/${raw}`;
-}
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function formatVnd(value: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);

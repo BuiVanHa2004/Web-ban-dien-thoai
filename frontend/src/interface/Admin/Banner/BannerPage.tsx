@@ -123,18 +123,18 @@ export default function BannerPage() {
   if (!mounted) return null;
 
   return (
-    <div className="space-y-5">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-4 sm:space-y-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/60 px-3 py-1 text-xs font-semibold text-slate-800 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
-            <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_18px_rgba(236,72,153,0.55)]" />
+        <div className="min-w-0">
+          <div className="inline-flex w-fit items-center gap-2 whitespace-nowrap rounded-full bg-white/60 px-3 py-1 text-xs font-semibold text-slate-800 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-green-500 shadow-[0_0_18px_rgba(236,72,153,0.55)]" />
             Banners
           </div>
           <h1 className="mt-3 text-xl font-semibold text-slate-900 dark:text-slate-100">Quản lý Banner</h1>
           <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">Quản lý các banner quảng cáo, vị trí hiển thị và trạng thái.</p>
         </div>
 
-        <div className="flex flex-wrap gap-2 sm:flex-row sm:items-center">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           <Link
             href="/banners/create"
             className="group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl bg-slate-900/90 px-3 py-2 text-xs font-semibold text-white shadow-sm ring-1 ring-slate-900/10 backdrop-blur-xl transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-slate-900 hover:shadow-md active:translate-y-0 sm:px-4 sm:text-sm dark:bg-linear-to-br dark:from-pink-400/20 dark:to-purple-500/15 dark:text-slate-100 dark:ring-1 dark:ring-pink-400/20 dark:shadow-lg dark:shadow-pink-500/5 dark:hover:ring-pink-400/30"
@@ -167,7 +167,7 @@ export default function BannerPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-3xl border border-slate-200/70 bg-white/60 p-4 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out md:flex-row md:items-center md:justify-between dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
+      <div className="flex min-w-0 flex-col gap-3 rounded-3xl border border-slate-200/70 bg-white/60 p-4 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out md:flex-row md:items-center md:justify-between dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="flex items-center gap-3">
           <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-800 ring-1 ring-slate-200/70 backdrop-blur-xl dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -218,17 +218,17 @@ export default function BannerPage() {
         </div>
       ) : null}
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
+      <div className="min-w-0 overflow-hidden rounded-3xl border border-slate-200/70 bg-white/60 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-950/45 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="min-w-[720px] w-full text-left text-sm">
             <thead className="bg-white/55 text-xs uppercase tracking-wide text-slate-700 backdrop-blur-xl dark:bg-slate-950/35 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-3 w-16 text-center">STT</th>
-                <th className="px-5 py-3 min-w-[200px] text-center">Thông tin Banner</th>
-                <th className="px-5 py-3 w-32 text-center">Vị trí</th>
-                <th className="px-5 py-3 w-32 text-center">Ảnh</th>
-                <th className="px-5 py-3 w-32 text-center">Trạng thái</th>
-                <th className="px-5 py-3 min-w-[180px] text-center">Hành động</th>
+                <th className="w-16 px-3 py-3 text-center sm:px-5">STT</th>
+                <th className="min-w-[180px] px-3 py-3 text-center sm:px-5">Thông tin Banner</th>
+                <th className="w-28 px-3 py-3 text-center sm:px-5">Vị trí</th>
+                <th className="w-28 px-3 py-3 text-center sm:px-5">Ảnh</th>
+                <th className="w-28 px-3 py-3 text-center sm:px-5">Trạng thái</th>
+                <th className="min-w-[160px] px-3 py-3 text-center sm:px-5">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -252,10 +252,10 @@ export default function BannerPage() {
                           : "cursor-pointer opacity-100 hover:bg-slate-50 active:bg-slate-100/70 dark:hover:bg-white/5 dark:active:bg-white/10")
                       }
                     >
-                      <td className="px-5 py-4 text-center text-slate-600 dark:text-slate-300">
+                      <td className="px-3 py-4 text-center text-slate-600 dark:text-slate-300 sm:px-5">
                         {idx + 1}
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-3 py-4 sm:px-5">
                         <div className="flex flex-col items-center">
                           <div className="font-semibold text-slate-900 dark:text-slate-100">
                             {b.bannerImages.length > 0 ? b.bannerImages[0].title : "Chưa có tiêu đề"}
@@ -270,14 +270,14 @@ export default function BannerPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-3 py-4 sm:px-5">
                         <div className="flex justify-center">
                           <div className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-700 dark:bg-white/5 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-white/10">
                             {b.position}
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-3 py-4 sm:px-5">
                         <div className="flex justify-center">
                           <div className="relative h-12 w-24 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                             <Image
@@ -296,7 +296,7 @@ export default function BannerPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-3 py-4 sm:px-5">
                         <div className="flex justify-center">
                           {b.isActive ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 ring-1 ring-emerald-500/20">
@@ -311,15 +311,15 @@ export default function BannerPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="flex flex-wrap items-center justify-center gap-2">
+                      <td className="px-3 py-4 sm:px-5">
+                        <div className="flex flex-col items-stretch justify-center gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               router.push(`/banners/update?id=${encodeURIComponent(b.id)}`);
                             }}
-                            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-amber-500 px-3 py-2 text-xs font-semibold text-amber-950 shadow-sm ring-1 ring-amber-500/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-amber-400 hover:shadow-md active:translate-y-0 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-1 dark:ring-amber-400/20 dark:hover:bg-amber-500/20 dark:hover:ring-amber-400/30 dark:hover:shadow-black/30"
+                            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-amber-500 px-3 py-2 text-xs font-semibold text-amber-950 shadow-sm ring-1 ring-amber-500/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-amber-400 hover:shadow-md active:translate-y-0 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-1 dark:ring-amber-400/20 dark:hover:bg-amber-500/20 dark:hover:ring-amber-400/30 dark:hover:shadow-black/30"
                           >
                             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M16.5 3.5l4 4L7 21H3v-4z" />
@@ -354,32 +354,31 @@ export default function BannerPage() {
 
       {mounted && selectedBanner ? createPortal(
         <div
-          className="fixed inset-0 flex items-center justify-center p-4"
-          style={{ zIndex: 99999 }}
+          className="fixed inset-0 z-[99999] flex items-center justify-center overflow-y-auto p-3 sm:p-4"
         >
           {/* Overlay */}
           <div
-            className="absolute inset-0"
+            className="fixed inset-0"
             style={{ backgroundColor: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
             onMouseDown={() => setSelectedBanner(null)}
           />
           {/* Modal card */}
           <div
-            className="relative w-full max-w-3xl overflow-hidden rounded-[2.5rem] animate-[scaleIn_180ms_ease-out]"
+            className="relative mx-auto my-auto w-full min-w-0 max-w-3xl max-h-[92dvh] overflow-y-auto rounded-2xl animate-[scaleIn_180ms_ease-out] sm:rounded-[2.5rem]"
             style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" }}
           >
             {/* Header */}
             <div
-              className="flex items-start justify-between gap-3 px-6 py-5"
+              className="flex items-start justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5"
               style={{ background: "rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.1)" }}
             >
-              <div className="min-w-0">
+              <div className="min-w-0 pr-2">
                 <div className="text-sm font-medium text-white/90">Chi tiết Banner</div>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedBanner(null)}
-                className="inline-flex cursor-pointer h-10 w-10 items-center justify-center rounded-2xl text-white/70 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-2xl text-white/70 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
                 style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
               >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -389,8 +388,8 @@ export default function BannerPage() {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 p-4 sm:space-y-6 sm:p-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
                 <div className="space-y-4">
                   <div>
                     <div className="text-[10px] uppercase tracking-wider font-semibold text-white/50 mb-1">Tiêu đề (Ảnh 1)</div>
@@ -454,7 +453,7 @@ export default function BannerPage() {
 
               {/* Meta grid */}
               <div
-                className="grid grid-cols-2 gap-6 rounded-3xl p-6"
+                className="grid grid-cols-1 gap-4 rounded-3xl p-4 sm:grid-cols-2 sm:gap-6 sm:p-6"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
               >
                 <div className="space-y-1">
@@ -474,13 +473,13 @@ export default function BannerPage() {
 
             {/* Footer */}
             <div
-              className="flex items-center justify-end gap-3 px-6 py-5"
+              className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6 sm:py-5"
               style={{ background: "rgba(255,255,255,0.05)", borderTop: "1px solid rgba(255,255,255,0.1)" }}
             >
               <button
                 type="button"
                 onClick={() => setSelectedBanner(null)}
-                className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-5 text-sm font-semibold text-white/85 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-2xl px-5 text-sm font-semibold text-white/85 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0 sm:w-auto"
                 style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
               >
                 Đóng
@@ -491,7 +490,7 @@ export default function BannerPage() {
                   router.push(`/banners/update?id=${encodeURIComponent(selectedBanner.id)}`);
                   setSelectedBanner(null);
                 }}
-                className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-5 text-sm font-semibold text-white shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0"
+                className="inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-2xl px-5 text-sm font-semibold text-white shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 sm:w-auto"
                 style={{ background: "rgba(236,72,153,0.85)", border: "1px solid rgba(236,72,153,0.3)", boxShadow: "0 4px 20px rgba(236,72,153,0.25)" }}
               >
                 Chỉnh sửa

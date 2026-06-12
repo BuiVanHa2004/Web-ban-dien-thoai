@@ -195,40 +195,40 @@ export default function UpdateBanner() {
     <>
       <AdminActionBar backHref="/banners" formId="banner-form" submitting={submitting} disabled={formDisabled} />
 
-      <div className="space-y-5">
-        <div className="flex flex-col gap-3">
+      <div className="mx-auto w-full min-w-0 max-w-6xl space-y-4 sm:space-y-5">
+        <div className="flex flex-col gap-3 pr-28 sm:pr-0">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/60 px-3 py-1 text-xs font-semibold text-slate-800 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
-              <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_18px_rgba(34,211,238,0.55)]" />
-              Cập nhật Banner
+            <div className="inline-flex w-fit items-center gap-2 whitespace-nowrap rounded-full bg-white/60 px-3 py-1 text-xs font-semibold text-slate-800 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-green-500 shadow-[0_0_18px_rgba(34,211,238,0.55)]" />
+              Sửa banner
             </div>
             <h1 className="mt-3 text-xl font-semibold text-slate-900 dark:text-slate-100">Sửa thông tin banner</h1>
             <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">ID: #{bannerId} - Cập nhật nội dung và vị trí hiển thị.</p>
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-5 pt-14 sm:pt-0">
+        <div className="mx-auto grid w-full min-w-0 max-w-full grid-cols-1 gap-4 pt-14 sm:pt-6 lg:grid-cols-5 lg:gap-6">
           <form
             id="banner-form"
             onSubmit={onSubmit}
             ref={dropdownScopeRef}
-            className="lg:col-span-3 overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur"
+            className="mx-auto w-full min-w-0 max-w-full overflow-x-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur sm:rounded-[2rem] lg:col-span-3"
           >
-            <div className="border-b border-slate-200 bg-slate-50 px-6 py-5 dark:border-white/10 dark:bg-slate-950/60">
+            <div className="border-b border-slate-200 bg-slate-50 px-4 py-4 dark:border-white/10 dark:bg-slate-950/60 sm:px-6 sm:py-5">
               <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Chi tiết Banner</div>
               <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">Cập nhật tiêu đề, vị trí và quản lý danh sách ảnh.</div>
             </div>
 
-            <div className="space-y-6 p-6">
+            <div className="min-w-0 space-y-6 p-4 sm:p-6">
               {loading && (
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 animate-pulse">
                   Đang tải dữ liệu...
                 </div>
               )}
               {error && (
-                <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200 flex justify-between items-center">
+                <div className="flex flex-col gap-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200 sm:flex-row sm:items-center sm:justify-between">
                   <span>{error}</span>
-                  <button onClick={() => window.location.reload()} className="hover:underline text-[10px] uppercase font-bold tracking-widest">Thử lại</button>
+                  <button onClick={() => window.location.reload()} className="self-start text-[10px] font-bold uppercase tracking-widest hover:underline sm:self-auto">Thử lại</button>
                 </div>
               )}
 
@@ -238,15 +238,15 @@ export default function UpdateBanner() {
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
+              <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="min-w-0 space-y-2">
                   <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Vị trí</label>
-                  <div className="relative">
+                  <div className="relative min-w-0 w-full">
                     <button
                       type="button"
                       disabled={formDisabled}
                       onClick={() => setOpenDropdown(v => v === "position" ? null : "position")}
-                      className="relative z-[120] flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-4 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 disabled:opacity-50"
+                      className="relative z-[120] box-border flex h-11 w-full min-w-0 max-w-full cursor-pointer items-center justify-between gap-2 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 disabled:opacity-50 sm:px-4"
                     >
                       <span className="truncate">
                         {position === "SLIDER" ? "Slider chính" : 
@@ -293,42 +293,42 @@ export default function UpdateBanner() {
                     )}
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="min-w-0 space-y-2">
                   <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Trạng thái</label>
-                  <div className="flex h-11 items-center gap-3 px-1">
+                  <div className="box-border flex h-11 w-full min-w-0 max-w-full items-center gap-3 rounded-2xl bg-slate-100 px-3 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 sm:px-4">
                     <input
                       type="checkbox"
                       checked={isActive}
                       onChange={(e) => setIsActive(e.target.checked)}
                       disabled={formDisabled}
-                      className="h-5 w-5 cursor-pointer rounded-lg border-slate-300 text-cyan-600 focus:ring-cyan-500 dark:border-white/20 dark:bg-white/5 disabled:opacity-50"
+                      className="h-5 w-5 shrink-0 cursor-pointer rounded-lg border-slate-300 text-cyan-600 focus:ring-cyan-500 dark:border-white/20 dark:bg-white/5 disabled:opacity-50"
                     />
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    <span className="min-w-0 truncate text-sm font-semibold text-slate-700 dark:text-slate-300">
                       {isActive ? "Đang hoạt động" : "Không hoạt động"}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
+              <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="min-w-0 space-y-2">
                   <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Ngày bắt đầu</label>
                   <input
                     type="datetime-local"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     disabled={formDisabled}
-                    className="h-11 w-full rounded-2xl bg-slate-100 px-4 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:ring-cyan-400/25 disabled:opacity-50"
+                    className="box-border h-11 w-full min-w-0 max-w-full rounded-2xl bg-slate-100 px-3 text-xs text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:ring-cyan-400/25 disabled:opacity-50 sm:px-4 sm:text-sm"
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="min-w-0 space-y-2">
                   <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Ngày kết thúc</label>
                   <input
                     type="datetime-local"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     disabled={formDisabled}
-                    className="h-11 w-full rounded-2xl bg-slate-100 px-4 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:ring-cyan-400/25 disabled:opacity-50"
+                    className="box-border h-11 w-full min-w-0 max-w-full rounded-2xl bg-slate-100 px-3 text-xs text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:ring-cyan-400/25 disabled:opacity-50 sm:px-4 sm:text-sm"
                   />
                 </div>
               </div>
@@ -370,7 +370,7 @@ export default function UpdateBanner() {
 
                 <input ref={imageInputRef} type="file" multiple accept="image/*" onChange={handleImageSelect} disabled={formDisabled} className="hidden" />
 
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
                   {images.map((img) => (
                     <div key={img.id} className="relative overflow-hidden rounded-[1.5rem] bg-slate-100 p-3 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 group">
                       <div className="aspect-video relative overflow-hidden rounded-xl border border-slate-200 dark:border-white/10 shadow-sm cursor-pointer">
@@ -379,7 +379,7 @@ export default function UpdateBanner() {
                           type="button"
                           onClick={() => removeImage(img.id)}
                           disabled={formDisabled}
-                          className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-xl bg-rose-500 text-white shadow-xl opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 disabled:opacity-40"
+                          className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-xl bg-rose-500 text-white shadow-xl opacity-100 transition-opacity hover:scale-110 disabled:opacity-40 sm:opacity-0 sm:group-hover:opacity-100"
                         >
                           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <path d="M18 6L6 18M6 6l12 12" />
@@ -426,12 +426,12 @@ export default function UpdateBanner() {
             </div>
           </form>
 
-          <div className="lg:col-span-2 space-y-4">
-            <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur">
-              <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 dark:border-white/10 dark:bg-slate-950/60 font-bold text-sm text-slate-900 dark:text-white">
+          <div className="mx-auto w-full min-w-0 max-w-full space-y-4 lg:col-span-2">
+            <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur sm:rounded-[2rem]">
+              <div className="border-b border-slate-200 bg-slate-50 px-4 py-4 text-sm font-bold text-slate-900 dark:border-white/10 dark:bg-slate-950/60 dark:text-white sm:px-6">
                 Giao diện hiện tại
               </div>
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <div className="group relative aspect-video overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-xl dark:border-white/10 dark:bg-white/5 cursor-pointer">
                   {images.length > 0 ? (
                     <Image src={images[0].preview} alt="Preview" fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
@@ -446,7 +446,7 @@ export default function UpdateBanner() {
                     </div>
                   )}
                   
-                  <div className="absolute inset-0 flex flex-col justify-end bg-linear-to-t from-black/70 via-transparent to-transparent p-6 text-white opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                  <div className="absolute inset-0 flex flex-col justify-end bg-linear-to-t from-black/70 via-transparent to-transparent p-4 text-white opacity-100 transition-opacity duration-500 sm:p-6 sm:opacity-0 sm:group-hover:opacity-100">
                     <div className="text-lg font-bold truncate">{images[0]?.title || "Tiêu đề banner"}</div>
                     <div className="text-xs opacity-80 truncate">{images[0]?.subtitle || "Phụ đề banner"}</div>
                     <div className="mt-2 text-[10px] font-black uppercase tracking-tighter bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-lg w-fit">{position}</div>

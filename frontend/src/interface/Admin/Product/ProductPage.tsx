@@ -8,19 +8,9 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { resolveImageUrl } from "@/common/resolveImageUrl";
+
 import { productService, ProductDto, ProductType, DiscountType, ProductImageDto } from "@/services/productService";
-
-const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
-
-function resolveImageUrl(input?: string | null | unknown): string | undefined {
-  const raw = typeof input === "string" ? input.trim() : "";
-  if (!raw) return undefined;
-  if (/^(https?:)?\/\//i.test(raw)) return raw;
-  if (/^(data:|blob:)/i.test(raw)) return raw;
-  if (raw.startsWith("/")) return `${API_URL}${raw}`;
-  return `${API_URL}/${raw}`;
-}
-
 function getProductPreviewImage(dto: ProductDto): string | undefined {
   // Try to get thumbnail first, then first image
   const thumbnailImage = dto.productImages?.find(img => img.isThumbnail)?.imageUrl;

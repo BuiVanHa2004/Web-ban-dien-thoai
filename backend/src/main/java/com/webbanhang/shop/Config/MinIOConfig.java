@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 @Configuration
 @ConditionalOnExpression("T(org.springframework.util.StringUtils).hasText('${minio.endpoint:}')")
@@ -27,12 +28,18 @@ public class MinIOConfig {
     @Value("${minio.url-prefix}")
     private String urlPrefix;
 
+    @Value("${minio.region:}")
+    private String region;
+
     @Bean
     public MinioClient minioClient() {
-        return MinioClient.builder()
+        MinioClient.Builder builder = MinioClient.builder()
                 .endpoint(endpoint)
-                .credentials(accessKey, secretKey)
-                .build();
+                .credentials(accessKey, secretKey);
+        if (StringUtils.hasText(region)) {
+            builder.region(region);
+        }
+        return builder.build();
     }
 }
 

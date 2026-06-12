@@ -513,16 +513,20 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
       {/* ---- Chat panel ---- */}
       {open && (
         <div
-          className="fixed bottom-0 left-0 right-0 mx-auto sm:bottom-6 sm:right-6 sm:left-auto sm:mx-0 z-[1000] flex flex-col overflow-hidden rounded-t-[2rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-300"
-          style={{
-            width: "min(420px, 100vw)",
-            height: "min(650px, calc(100dvh - 0rem))",
-            border: "1px solid rgba(255,255,255,0.1)",
-            background: "linear-gradient(165deg, #0f172a 0%, #1e1b4b 100%)",
-            boxShadow: "0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.5)",
-            WebkitTransform: "translateZ(0)",
-          }}
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setOpen(false)}
         >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex flex-col overflow-hidden rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-full sm:w-[420px]"
+            style={{
+              height: "min(650px, 85dvh)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              background: "linear-gradient(165deg, #0f172a 0%, #1e1b4b 100%)",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.5)",
+              WebkitTransform: "translateZ(0)",
+            }}
+          >
           {/* Subtle glow effect */}
           <div className="absolute -top-[50%] -left-[50%] h-[200%] w-[200%] pointer-events-none opacity-20"
             style={{ background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)" }} />
@@ -541,9 +545,7 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
               </div>
               <div>
                 <div className="text-sm font-black uppercase tracking-wider">MyPhone AI</div>
-                <div className="text-[10px] font-medium text-white/70">
-                  Sẵn sàng tư vấn 24/7
-                </div>
+                <div className="text-[10px] font-medium text-white/70">Sẵn sàng tư vấn 24/7</div>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -683,11 +685,12 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
               Professional Assistant · MyPhone Store
             </div>
           </div>
+          </div>
         </div>
       )}
 
       {/* scoped styles */}
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{__html: `
         @keyframes fabPulse {
           0%,100% { box-shadow: 0 0 0 0 rgba(139,92,246,.5); }
           50% { box-shadow: 0 0 0 12px rgba(139,92,246,0); }
@@ -703,7 +706,7 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
           0%,80%,100% { transform: scale(0.4); opacity:.4; }
           40% { transform: scale(1); opacity:1; }
         }
-      `}</style>
+      `}} />
     </>
   );
 }

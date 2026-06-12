@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
+import { createPortal } from 'react-dom';
 import { fileUploadService } from '@/services/fileUploadService';
 
 interface AvatarUploadCropperProps {
@@ -196,59 +197,74 @@ export default function AvatarUploadCropper({
         </div>
       )}
 
-      {/* Cropper */}
-      {imageSrc && (
-        <div className="space-y-4">
-          <div className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
-            <Cropper
-              image={imageSrc}
-              crop={crop}
-              zoom={zoom}
-              aspect={1}
-              onCropChange={setCrop}
-              onCropComplete={onCropComplete}
-              onZoomChange={setZoom}
-              cropShape="round"
-              showGrid={false}
-            />
-          </div>
+      {/* Cropper - render qua Portal ra document.body */}
+      {imageSrc && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-sm flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-zinc-700">
+              <span className="text-base font-bold text-gray-800 dark:text-white">↔ Căn chỉnh vùng ảnh</span>
+            </div>
 
-          {/* Zoom slider */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Thu phóng
-            </label>
-            <input
-              type="range"
-              min={1}
-              max={3}
-              step={0.1}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full"
-            />
-          </div>
+            {/* Cropper */}
+            <div className="relative w-full bg-gray-100" style={{ height: 280 }}>
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+                cropShape="round"
+                showGrid={false}
+              />
+            </div>
 
-          {/* Action buttons */}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleUpload}
-              disabled={isUploading}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isUploading ? 'Đang upload...' : 'Xác nhận'}
-            </button>
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={isUploading}
-              className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Hủy
-            </button>
+            {/* Hint */}
+            <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-xs text-blue-700 dark:text-blue-300 font-medium">
+              💡 <strong>Kéo thả ảnh</strong> để di chuyển, dùng thanh trượt để phóng to/thu nhỏ
+            </div>
+
+            {/* Zoom slider */}
+            <div className="px-4 py-3 space-y-1">
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>Phóng to/thu nhỏ</span>
+                <span>{Math.round(zoom * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.1}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-full accent-blue-600"
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="px-4 py-3 border-t border-gray-200 dark:border-zinc-700 flex gap-3">
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={isUploading}
+                className="flex-1 py-2.5 bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-white rounded-xl font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleUpload}
+                disabled={isUploading}
+                className="flex-1 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+              >
+                {isUploading ? 'Đang upload...' : 'Xác nhận'}
+              </button>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Error message */}

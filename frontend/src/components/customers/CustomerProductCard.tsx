@@ -7,15 +7,7 @@ import type { ProductDto } from "@/services/productService";
 
 const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
 
-function resolveImageUrl(input?: string | null): string | undefined {
-  if (typeof input !== "string") return undefined;
-  const raw = input.trim();
-  if (!raw) return undefined;
-  if (/^(https?:)?\/\//i.test(raw)) return raw;
-  if (/^(data:|blob:)/i.test(raw)) return raw;
-  if (raw.startsWith("/")) return `${API_URL}${raw}`;
-  return `${API_URL}/${raw}`;
-}
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function getProductPreviewImage(p: ProductDto): string | null {
   return (

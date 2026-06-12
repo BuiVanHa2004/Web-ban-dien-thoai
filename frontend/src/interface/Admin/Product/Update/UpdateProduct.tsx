@@ -14,17 +14,7 @@ import { brandService, BrandDto } from "@/services/brandService";
 import { categoryService, CategoryDto } from "@/services/categoryService";
 import { productService, DiscountType, ProductType, ProductDto, ProductColorUpsertRequest } from "@/services/productService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
-
-const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
-
-function resolveImageUrl(input?: string | null | unknown): string | undefined {
-  const raw = typeof input === "string" ? input.trim() : "";
-  if (!raw) return undefined;
-  if (/^(https?:)?\/\//i.test(raw)) return raw;
-  if (/^(data:|blob:)/i.test(raw)) return raw;
-  if (raw.startsWith("/")) return `${API_URL}${raw}`;
-  return `${API_URL}/${raw}`;
-}
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function getProductPreviewImage(dto: ProductDto): string {
   // Try to get thumbnail first, then first image

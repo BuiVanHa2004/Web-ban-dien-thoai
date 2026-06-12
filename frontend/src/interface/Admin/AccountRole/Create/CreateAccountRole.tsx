@@ -242,12 +242,12 @@ export default function CreateAccountRole() {
   }, [roleId, roles]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 pr-28 sm:pr-0 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
-            <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_18px_rgba(232,121,249,0.55)]" />
-            Thêm tài khoản quản trị viên
+          <div className="inline-flex w-fit items-center gap-2 whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-green-500 shadow-[0_0_18px_rgba(232,121,249,0.55)]" />
+            Thêm tài khoản admin
           </div>
           <h1 className="mt-3 text-xl font-semibold text-slate-900 dark:text-slate-100">Thêm tài khoản admin</h1>
           <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">Tạo tài khoản Quản trị viên/Nhân viên mới.</p>
@@ -256,11 +256,11 @@ export default function CreateAccountRole() {
 
       <AdminActionBar backHref="/accounts-roles" formId="account-form" submitting={submitting} disabled={loadingRoles || roles.length === 0} />
 
-      <div className="grid gap-6 rounded-3xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 backdrop-blur dark:bg-white/5 dark:ring-white/10 sm:p-6 lg:grid-cols-5 pt-14 sm:pt-4">
+      <div className="mx-auto grid w-full min-w-0 max-w-full grid-cols-1 gap-4 overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-white/5 sm:gap-6 sm:p-6 lg:grid-cols-5 pt-14 sm:pt-6">
         <form
           id="account-form"
           onSubmit={onSubmit}
-          className="lg:col-span-3 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur dark:hover:shadow-black/40"
+          className="mx-auto w-full min-w-0 max-w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur dark:hover:shadow-black/40 lg:col-span-3"
         >
           <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950/60">
             <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Thông tin tài khoản</div>
@@ -368,8 +368,8 @@ export default function CreateAccountRole() {
 
         </form>
 
-        <div className="lg:col-span-2">
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur dark:hover:shadow-black/40">
+        <div className="mx-auto w-full min-w-0 max-w-full lg:col-span-2">
+          <div className="w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-white/10 dark:bg-slate-950/60 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5 dark:backdrop-blur dark:hover:shadow-black/40">
             <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-white/10 dark:bg-slate-950/60">
               <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Xem trước</div>
               <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">Card tài khoản hiển thị ở danh sách.</div>

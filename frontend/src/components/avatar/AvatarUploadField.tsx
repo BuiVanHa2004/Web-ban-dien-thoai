@@ -6,8 +6,14 @@ import { Camera, LoaderCircle, Move, Upload } from "lucide-react";
 import Avatar from "@/components/avatar/Avatar";
 import { fileUploadService } from "@/services/fileUploadService";
 
-const VIEWPORT_SIZE = 320;
+const DEFAULT_VIEWPORT_SIZE = 320;
 const OUTPUT_SIZE = 800;
+const MIN_VIEWPORT_SIZE = 220;
+
+function getCropViewportSize() {
+  if (typeof window === "undefined") return DEFAULT_VIEWPORT_SIZE;
+  return Math.min(DEFAULT_VIEWPORT_SIZE, Math.max(MIN_VIEWPORT_SIZE, window.innerWidth - 96));
+}
 
 type CropDraft = {
   objectUrl: string;
@@ -75,10 +81,20 @@ export default function AvatarUploadField({
   const dragStartRef = React.useRef({ x: 0, y: 0 });
   const [mounted, setMounted] = React.useState(false);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  const [viewportSize, setViewportSize] = React.useState(DEFAULT_VIEWPORT_SIZE);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  React.useEffect(() => {
+    if (!draft) return;
+
+    const updateViewportSize = () => setViewportSize(getCropViewportSize());
+    updateViewportSize();
+    window.addEventListener("resize", updateViewportSize);
+    return () => window.removeEventListener("resize", updateViewportSize);
+  }, [draft]);
 
   React.useEffect(() => {
     if (onPreviewChange) {
@@ -88,21 +104,21 @@ export default function AvatarUploadField({
 
   const baseScale = React.useMemo(() => {
     if (!draft) return 1;
-    return Math.max(VIEWPORT_SIZE / draft.imageWidth, VIEWPORT_SIZE / draft.imageHeight);
-  }, [draft]);
+    return Math.max(viewportSize / draft.imageWidth, viewportSize / draft.imageHeight);
+  }, [draft, viewportSize]);
 
   const renderedWidth = React.useMemo(() => {
-    if (!draft) return VIEWPORT_SIZE;
+    if (!draft) return viewportSize;
     return draft.imageWidth * baseScale * zoom;
-  }, [baseScale, draft, zoom]);
+  }, [baseScale, draft, viewportSize, zoom]);
 
   const renderedHeight = React.useMemo(() => {
-    if (!draft) return VIEWPORT_SIZE;
+    if (!draft) return viewportSize;
     return draft.imageHeight * baseScale * zoom;
-  }, [baseScale, draft, zoom]);
+  }, [baseScale, draft, viewportSize, zoom]);
 
-  const maxOffsetX = Math.max(0, (renderedWidth - VIEWPORT_SIZE) / 2);
-  const maxOffsetY = Math.max(0, (renderedHeight - VIEWPORT_SIZE) / 2);
+  const maxOffsetX = Math.max(0, (renderedWidth - viewportSize) / 2);
+  const maxOffsetY = Math.max(0, (renderedHeight - viewportSize) / 2);
 
   React.useEffect(() => {
     setOffsetX((current) => clamp(current, -maxOffsetX, maxOffsetX));
@@ -184,6 +200,7 @@ export default function AvatarUploadField({
           setOffsetX(0);
           setOffsetY(0);
           isDraggingRef.current = false;
+          setViewportSize(getCropViewportSize());
           setDraft({
             objectUrl: imageMeta.objectUrl,
             fileName: file.name,
@@ -213,7 +230,7 @@ export default function AvatarUploadField({
     });
 
     const scale = baseScale * zoom;
-    const sourceSize = VIEWPORT_SIZE / scale;
+    const sourceSize = viewportSize / scale;
     const rawSourceX = draft.imageWidth / 2 - sourceSize / 2 - offsetX / scale;
     const rawSourceY = draft.imageHeight / 2 - sourceSize / 2 - offsetY / scale;
     const sourceX = clamp(rawSourceX, 0, draft.imageWidth - sourceSize);
@@ -259,7 +276,17 @@ export default function AvatarUploadField({
     // Don't upload immediately, just prepare the file
     closeCropModal();
     await uploadFile(croppedFile);
-  }, [baseScale, closeCropModal, draft, offsetX, offsetY, uploadFile, zoom]);
+  }, [baseScale, closeCropModal, draft, offsetX, offsetY, uploadFile, viewportSize, zoom]);
+
+  const applyDragOffset = React.useCallback(
+    (clientX: number, clientY: number) => {
+      const newOffsetX = clientX - dragStartRef.current.x;
+      const newOffsetY = clientY - dragStartRef.current.y;
+      setOffsetX(clamp(newOffsetX, -maxOffsetX, maxOffsetX));
+      setOffsetY(clamp(newOffsetY, -maxOffsetY, maxOffsetY));
+    },
+    [maxOffsetX, maxOffsetY]
+  );
 
   const handleMouseDown = React.useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -270,13 +297,29 @@ export default function AvatarUploadField({
   const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
     if (!isDraggingRef.current) return;
     e.preventDefault();
-    const newOffsetX = e.clientX - dragStartRef.current.x;
-    const newOffsetY = e.clientY - dragStartRef.current.y;
-    setOffsetX(clamp(newOffsetX, -maxOffsetX, maxOffsetX));
-    setOffsetY(clamp(newOffsetY, -maxOffsetY, maxOffsetY));
-  }, [maxOffsetX, maxOffsetY]);
+    applyDragOffset(e.clientX, e.clientY);
+  }, [applyDragOffset]);
 
   const handleMouseUp = React.useCallback(() => {
+    isDraggingRef.current = false;
+  }, []);
+
+  const handleTouchStart = React.useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+    isDraggingRef.current = true;
+    dragStartRef.current = { x: touch.clientX - offsetX, y: touch.clientY - offsetY };
+  }, [offsetX, offsetY]);
+
+  const handleTouchMove = React.useCallback((e: React.TouchEvent) => {
+    if (!isDraggingRef.current) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    e.preventDefault();
+    applyDragOffset(touch.clientX, touch.clientY);
+  }, [applyDragOffset]);
+
+  const handleTouchEnd = React.useCallback(() => {
     isDraggingRef.current = false;
   }, []);
 
@@ -285,33 +328,46 @@ export default function AvatarUploadField({
     
     const handleGlobalMouseMove = (e: MouseEvent) => {
       if (!isDraggingRef.current) return;
-      const newOffsetX = e.clientX - dragStartRef.current.x;
-      const newOffsetY = e.clientY - dragStartRef.current.y;
-      setOffsetX(clamp(newOffsetX, -maxOffsetX, maxOffsetX));
-      setOffsetY(clamp(newOffsetY, -maxOffsetY, maxOffsetY));
+      applyDragOffset(e.clientX, e.clientY);
+    };
+
+    const handleGlobalTouchMove = (e: TouchEvent) => {
+      if (!isDraggingRef.current) return;
+      const touch = e.touches[0];
+      if (!touch) return;
+      e.preventDefault();
+      applyDragOffset(touch.clientX, touch.clientY);
     };
     
     const handleGlobalMouseUp = () => {
       isDraggingRef.current = false;
     };
+
+    const handleGlobalTouchEnd = () => {
+      isDraggingRef.current = false;
+    };
     
-    document.addEventListener('mousemove', handleGlobalMouseMove);
-    document.addEventListener('mouseup', handleGlobalMouseUp);
+    document.addEventListener("mousemove", handleGlobalMouseMove);
+    document.addEventListener("mouseup", handleGlobalMouseUp);
+    document.addEventListener("touchmove", handleGlobalTouchMove, { passive: false });
+    document.addEventListener("touchend", handleGlobalTouchEnd);
     
     return () => {
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener("mousemove", handleGlobalMouseMove);
+      document.removeEventListener("mouseup", handleGlobalMouseUp);
+      document.removeEventListener("touchmove", handleGlobalTouchMove);
+      document.removeEventListener("touchend", handleGlobalTouchEnd);
     };
-  }, [draft, maxOffsetX, maxOffsetY]);
+  }, [applyDragOffset, draft]);
 
   return (
     <>
       <div className="space-y-3">
-        <div className="flex items-center gap-4">
-          <Avatar src={previewUrl || value} name={name} className="h-20 w-20 shrink-0 aspect-square rounded-3xl" textClassName="text-2xl font-black" />
-          <div className="space-y-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <Avatar src={previewUrl || value} name={name} className="mx-auto h-20 w-20 shrink-0 aspect-square rounded-3xl sm:mx-0" textClassName="text-2xl font-black" />
+          <div className="min-w-0 space-y-2 text-center sm:text-left">
             <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{label}</div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
@@ -368,7 +424,7 @@ export default function AvatarUploadField({
       </div>
 
       {mounted && draft ? createPortal(
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center overflow-y-auto p-3 sm:p-4">
           <div
             onClick={closeCropModal}
             style={{ 
@@ -376,10 +432,10 @@ export default function AvatarUploadField({
               backdropFilter: "blur(6px)", 
               WebkitBackdropFilter: "blur(6px)" 
             }}
-            className="absolute inset-0"
+            className="fixed inset-0"
           />
           <div 
-            className="relative w-full max-w-3xl overflow-hidden rounded-[2.5rem]"
+            className="relative mx-auto my-auto w-full min-w-0 max-w-3xl max-h-[92dvh] overflow-y-auto rounded-2xl sm:rounded-[2.5rem]"
             style={{ 
               background: "rgba(255,255,255,0.08)", 
               backdropFilter: "blur(20px)", 
@@ -390,20 +446,20 @@ export default function AvatarUploadField({
             }}
           >
             <div 
-              className="flex items-start justify-between gap-3 px-6 py-5"
+              className="flex items-start justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5"
               style={{ background: "rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.1)" }}
             >
-              <div>
-                <div className="text-lg font-bold text-white/95">Căn chỉnh ảnh đại diện 1:1</div>
-                <div className="mt-1 text-sm text-white/70">
-                  Kéo ảnh bằng chuột để di chuyển, dùng thanh trượt để phóng to.
+              <div className="min-w-0 pr-2">
+                <div className="text-base font-bold text-white/95 sm:text-lg">Căn chỉnh ảnh đại diện 1:1</div>
+                <div className="mt-1 text-xs text-white/70 sm:text-sm">
+                  Kéo ảnh để di chuyển, dùng thanh trượt để phóng to.
                 </div>
               </div>
               <button
                 type="button"
                 onClick={closeCropModal}
                 style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-white/70 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-white/70 shadow-sm transition hover:-translate-y-0.5 active:translate-y-0"
               >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 6L6 18" />
@@ -412,22 +468,29 @@ export default function AvatarUploadField({
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+            <div className="space-y-4 p-4 sm:space-y-6 sm:p-6">
+              <div className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
               <div 
-                className="flex items-center justify-center rounded-[2rem] p-4"
+                className="flex w-full min-w-0 items-center justify-center rounded-[1.5rem] p-2 sm:rounded-[2rem] sm:p-4"
                 style={{ background: "rgba(255,255,255,0.06)" }}
               >
                 <div
-                  className="relative overflow-hidden rounded-[2rem] select-none"
+                  className="relative mx-auto overflow-hidden rounded-[1.5rem] select-none touch-none sm:rounded-[2rem]"
                   style={{ 
-                    width: VIEWPORT_SIZE, 
-                    height: VIEWPORT_SIZE, 
+                    width: viewportSize, 
+                    height: viewportSize, 
+                    maxWidth: "100%",
                     cursor: 'grab',
                     background: "rgba(255,255,255,0.08)", 
                     border: "1px solid rgba(255,255,255,0.12)"
                   }}
                   onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
                 >
                   <img
                     src={draft.objectUrl}
@@ -445,21 +508,21 @@ export default function AvatarUploadField({
                 </div>
               </div>
 
-              <div className="space-y-5">
+              <div className="min-w-0 space-y-4 sm:space-y-5">
                 <div 
-                  className="rounded-3xl p-4"
+                  className="rounded-2xl p-3 sm:rounded-3xl sm:p-4"
                   style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
                 >
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white/90">
-                    <Move className="h-4 w-4" />
+                    <Move className="h-4 w-4 shrink-0" />
                     Căn chỉnh vùng ảnh
                   </div>
                   <div className="space-y-4">
                     <div 
-                      className="rounded-2xl px-3 py-2 text-xs"
+                      className="rounded-2xl px-3 py-2 text-xs leading-relaxed"
                       style={{ background: "rgba(56,189,248,0.15)", color: "rgb(125,211,252)" }}
                     >
-                      💡 <strong>Kéo thả ảnh</strong> bên trái để di chuyển, dùng thanh trượt để phóng to/thu nhỏ
+                      💡 <strong>Kéo thả ảnh</strong> phía trên để di chuyển, dùng thanh trượt để phóng to/thu nhỏ
                     </div>
 
                     <label className="block">
@@ -473,26 +536,26 @@ export default function AvatarUploadField({
                         onChange={(event) => setZoom(Number(event.target.value))}
                         className="w-full"
                       />
-                      <div className="mt-1 text-[10px] text-white/50 text-center">{Math.round(zoom * 100)}%</div>
+                      <div className="mt-1 text-center text-[10px] text-white/50">{Math.round(zoom * 100)}%</div>
                     </label>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <div 
-                    className="rounded-3xl p-4 text-xs"
+                    className="rounded-2xl p-3 text-xs sm:rounded-3xl sm:p-4"
                     style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }}
                   >
-                    <div className="font-semibold mb-2 text-white/85">📐 Hướng dẫn:</div>
+                    <div className="mb-2 font-semibold text-white/85">📐 Hướng dẫn:</div>
                     <ul className="space-y-1 pl-4">
-                      <li>• <strong>Kéo ảnh:</strong> Click và giữ chuột trên ảnh để di chuyển</li>
+                      <li>• <strong>Kéo ảnh:</strong> Chạm và giữ trên ảnh để di chuyển</li>
                       <li>• <strong>Phóng to:</strong> Kéo thanh trượt để zoom in/out</li>
                       <li>• <strong>Khung vuông:</strong> Chỉ vùng bên trong khung sẽ được lưu</li>
                     </ul>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
                   <button
                     type="button"
                     onClick={closeCropModal}

@@ -453,11 +453,14 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
 
             {/* Chat Window */}
             {isOpen && (
-                <>
-                    {/* Overlay mờ nền - chỉ hiện trên mobile */}
-                    <div className="fixed inset-0 bg-black/50 z-40 sm:hidden" onClick={toggleOpen} />
-
-                    <div className="fixed inset-x-0 bottom-0 mx-auto w-[calc(100vw-1rem)] max-w-[384px] h-[85dvh] left-1/2 -translate-x-1/2 sm:bottom-6 sm:right-6 sm:left-auto sm:translate-x-0 sm:w-96 sm:h-[600px] bg-white rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden border-2 border-gray-300">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                    onClick={toggleOpen}
+                >
+                    <div
+                        className="w-full max-w-sm h-[85dvh] bg-white rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border-2 border-gray-300"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                     {/* Header */}
                     <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-3 flex flex-col gap-1 rounded-t-3xl shadow-lg flex-shrink-0">
                         {/* Row 1: các nút */}
@@ -615,7 +618,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
 
                             {/* Input Area */}
                             <div className="p-4 bg-white/100 border-t-2 border-gray-300 rounded-b-3xl shadow-inner flex-shrink-0">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
                                     <input 
                                         ref={fileInputRef}
                                         type="file" 
@@ -627,10 +630,10 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={isUploading || !!imagePreview}
-                                        className="bg-gray-100 text-gray-700 p-3 rounded-xl hover:bg-gray-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex-shrink-0"
+                                        className="bg-gray-100 text-gray-700 p-2.5 rounded-xl hover:bg-gray-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex-shrink-0"
                                         title="Gửi hình ảnh"
                                     >
-                                        <ImageIcon className="w-5 h-5" />
+                                        <ImageIcon className="w-4 h-4" />
                                     </button>
                                     <input
                                         type="text"
@@ -638,21 +641,21 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                                         onChange={(e) => setInputMessage(e.target.value)}
                                         onKeyPress={handleKeyPress}
                                         placeholder={isUploading ? "Đang tải ảnh..." : "Nhập tin nhắn..."}
-                                        className="flex-1 border-2 border-gray-300 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                                        className="flex-1 min-w-0 border-2 border-gray-300 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
                                         disabled={isUploading || !!imagePreview}
                                     />
                                     <button
                                         onClick={sendMessage}
                                         disabled={!inputMessage.trim() || isUploading || !!imagePreview}
-                                        className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-md flex-shrink-0"
+                                        className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-2.5 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-md flex-shrink-0"
                                         aria-label="Gửi tin nhắn"
                                     >
                                         <Send className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
+                    </div>
                 </div>
-                </>
             )}
             
             {/* Confirm Dialog */}

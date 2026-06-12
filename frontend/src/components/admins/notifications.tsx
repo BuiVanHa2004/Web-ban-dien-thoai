@@ -186,23 +186,24 @@ export default function NotificationsDropdown({ variant = "header" }: Notificati
           />
           <div
             className="
-              z-[220] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl
+              z-[220] flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl
               dark:border-white/10 dark:bg-slate-950/95 dark:shadow-2xl dark:shadow-black/40
-              max-sm:fixed max-sm:right-3 max-sm:top-[calc(env(safe-area-inset-top,0px)+3.5rem)]
-              max-sm:w-80 max-sm:mt-0 max-sm:max-h-[min(55dvh,22rem)]
+              max-sm:fixed max-sm:inset-x-3 max-sm:top-[calc(env(safe-area-inset-top,0px)+5.25rem)]
+              max-sm:max-h-[min(calc(100dvh-6rem),28rem)] max-sm:w-auto
               sm:absolute sm:right-0 sm:mt-2 sm:w-96 sm:max-h-[min(70vh,32rem)]
             "
           >
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-white/10">
-            <h3 className="shrink-0 font-semibold text-slate-900 dark:text-slate-100">Thông báo</h3>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-3 py-3 dark:border-white/10 sm:px-4">
+            <h3 className="shrink-0 text-sm font-semibold text-slate-900 dark:text-slate-100 sm:text-base">Thông báo</h3>
+            <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               {unreadCount > 0 && (
                 <button
                   type="button"
                   onClick={markAllAsRead}
-                  className="shrink-0 text-right text-xs font-medium leading-snug text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                  className="min-w-0 shrink text-right text-[10px] font-medium leading-snug text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors sm:text-xs"
                 >
-                  Đánh dấu tất cả đã đọc
+                  <span className="sm:hidden">Đọc hết</span>
+                  <span className="hidden sm:inline">Đánh dấu tất cả đã đọc</span>
                 </button>
               )}
               <button
@@ -217,7 +218,7 @@ export default function NotificationsDropdown({ variant = "header" }: Notificati
               </button>
             </div>
           </div>
-          <div className="max-h-[min(45dvh,18rem)] overflow-y-auto sm:max-h-[min(60vh,28rem)]">
+          <div className="min-h-0 flex-1 overflow-y-auto max-sm:max-h-[min(calc(100dvh-10rem),24rem)] sm:max-h-[min(60vh,28rem)]">
               {notifications.length === 0 ? (
                 <div className="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
                   Không có thông báo nào.
@@ -229,19 +230,19 @@ export default function NotificationsDropdown({ variant = "header" }: Notificati
                       key={notif.notificationId}
                       type="button"
                       onClick={() => handleNotificationClick(notif)}
-                      className={`flex cursor-pointer flex-col gap-1 border-b border-slate-100 p-4 text-left transition last:border-0 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5 ${
+                      className={`flex min-w-0 cursor-pointer flex-col gap-1 border-b border-slate-100 p-3 text-left transition last:border-0 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5 sm:p-4 ${
                         !notif.isRead ? "bg-indigo-50/50 dark:bg-indigo-900/20" : "bg-white dark:bg-slate-950"
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className={`text-sm font-medium ${!notif.isRead ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
+                      <div className="flex min-w-0 items-start justify-between gap-2">
+                        <span className={`min-w-0 break-words text-sm font-medium ${!notif.isRead ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
                           {notif.title}
                         </span>
                         {!notif.isRead && (
                           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />
                         )}
                       </div>
-                      <p className={`text-sm ${!notif.isRead ? "text-slate-700 dark:text-slate-300" : "text-slate-500 dark:text-slate-400"}`}>
+                      <p className={`min-w-0 break-words text-sm ${!notif.isRead ? "text-slate-700 dark:text-slate-300" : "text-slate-500 dark:text-slate-400"}`}>
                         {notif.message}
                       </p>
                       <span className="text-xs text-slate-400 dark:text-slate-500">

@@ -260,14 +260,28 @@ public class MinioStorageService {
     }
 
     public void deleteByUrl(String url) {
+        String objectName = extractObjectNameFromUrl(url);
+        if (objectName != null) {
+            deleteObjectIfExists(objectName);
+        }
+    }
+
+    public String extractObjectNameFromUrl(String url) {
         if (url == null || url.isBlank()) {
-            return;
+            return null;
+        }
+        String marker = "/api/files/";
+        int idx = url.indexOf(marker);
+        if (idx >= 0) {
+            String objectName = url.substring(idx + marker.length());
+            return objectName.isBlank() ? null : objectName;
         }
         String prefix = minIOConfig.getUrlPrefix().replaceAll("/+$", "") + "/";
         if (url.startsWith(prefix)) {
             String objectName = url.substring(prefix.length());
-            deleteObjectIfExists(objectName);
+            return objectName.isBlank() ? null : objectName;
         }
+        return null;
     }
 
     public boolean objectExists(String objectName) {
