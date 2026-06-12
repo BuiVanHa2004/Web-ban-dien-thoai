@@ -36,3 +36,9 @@ backend/.github/
 *.doc
 DatabaseDATN.sql
 DATN-*
+*.md 
+*.sql 
+*.doc 
+*.docx 
+*.pdf 
+*.bat 
