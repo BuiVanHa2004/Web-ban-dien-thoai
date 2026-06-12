@@ -42,28 +42,35 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       const res = await authService.login({ usernameOrEmail, password });
-      if (typeof window !== "undefined") {
-        localStorage.setItem("token", res.token);
-        localStorage.setItem("user", JSON.stringify(res.user));
-      }
       if (res.user.userType === "admin") {
         const adminDomain = process.env.NEXT_PUBLIC_ADMIN_DOMAIN;
         if (adminDomain && typeof window !== "undefined" && !window.location.hostname.includes("admin")) {
-          // Pass token via URL so admin domain can store it in its own localStorage
+          // Redirect to admin domain with token — do NOT save to this domain's localStorage
           const params = new URLSearchParams({
             token: res.token,
             user: JSON.stringify(res.user),
           });
           window.location.href = `https://${adminDomain}/auth-transfer?${params.toString()}`;
         } else {
+          // Already on admin domain — save and go
+          localStorage.setItem("token", res.token);
+          localStorage.setItem("user", JSON.stringify(res.user));
           router.push("/statistical");
         }
       } else {
-        // Customer account: if on admin domain, redirect to customer domain
         const customerDomain = process.env.NEXT_PUBLIC_CUSTOMER_DOMAIN;
         if (customerDomain && typeof window !== "undefined" && window.location.hostname !== customerDomain) {
-          window.location.href = `https://${customerDomain}/home`;
+          // On admin domain but customer account — redirect to customer domain with token
+          const params = new URLSearchParams({
+            token: res.token,
+            user: JSON.stringify(res.user),
+            redirect: "/home",
+          });
+          window.location.href = `https://${customerDomain}/auth-transfer?${params.toString()}`;
         } else {
+          // Already on customer domain — save and go
+          localStorage.setItem("token", res.token);
+          localStorage.setItem("user", JSON.stringify(res.user));
           router.push("/home");
         }
       }

@@ -11,12 +11,13 @@ function AuthTransferContent() {
     try {
       const token = searchParams.get("token");
       const user = searchParams.get("user");
+      const redirect = searchParams.get("redirect") || "/statistical";
 
       if (token && user) {
         localStorage.setItem("token", token);
         localStorage.setItem("user", user);
-        window.history.replaceState({}, "", "/statistical");
-        router.replace("/statistical");
+        window.history.replaceState({}, "", redirect);
+        router.replace(redirect);
       } else {
         router.replace("/login");
       }
