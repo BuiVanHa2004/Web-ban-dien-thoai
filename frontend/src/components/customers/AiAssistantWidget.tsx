@@ -513,10 +513,10 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
       {/* ---- Chat panel ---- */}
       {open && (
         <div
-          className="fixed bottom-6 right-6 z-[1000] flex flex-col overflow-hidden rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-300"
+          className="fixed bottom-0 left-0 right-0 mx-auto sm:bottom-6 sm:right-6 sm:left-auto sm:mx-0 z-[1000] flex flex-col overflow-hidden rounded-t-[2rem] sm:rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all duration-300"
           style={{
-            width: "min(420px, calc(100vw - 2rem))",
-            height: "min(650px, calc(100vh - 3rem))",
+            width: "min(420px, 100vw)",
+            height: "min(650px, calc(100dvh - 0rem))",
             border: "1px solid rgba(255,255,255,0.1)",
             background: "linear-gradient(165deg, #0f172a 0%, #1e1b4b 100%)",
             boxShadow: "0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.5)",
