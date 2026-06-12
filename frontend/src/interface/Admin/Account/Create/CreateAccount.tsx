@@ -219,7 +219,7 @@ export default function CreateAccount() {
                 <div className="flex items-start gap-3">
                   <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                     {(avatarPreviewUrl || avatarUrl) ? (
-                      <img src={avatarPreviewUrl || avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                      <img src={avatarPreviewUrl || avatarUrl || ''} alt="Avatar" className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-base font-semibold text-slate-700 dark:text-slate-100">
                         {(fullName.trim() || username.trim() || "?").slice(0, 1).toUpperCase()}
