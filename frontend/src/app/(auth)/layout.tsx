@@ -23,12 +23,25 @@ export default function AuthLayout({
 
       if (!token || !user || !user.userType) return;
 
-      const next = user.userType === "admin" ? "/statistical" : "/";
-      router.replace(next);
+      if (user.userType === "admin") {
+        const adminDomain = process.env.NEXT_PUBLIC_ADMIN_DOMAIN;
+        if (adminDomain && window.location.hostname !== adminDomain) {
+          window.location.href = `https://${adminDomain}/statistical`;
+        } else {
+          router.replace("/statistical");
+        }
+      } else {
+        const customerDomain = process.env.NEXT_PUBLIC_CUSTOMER_DOMAIN;
+        if (customerDomain && window.location.hostname !== customerDomain) {
+          window.location.href = `https://${customerDomain}/home`;
+        } else {
+          router.replace("/home");
+        }
+      }
     } catch {
       // ignore
     }
-  }, [router]);
+  }, [pathname, router]);
 
   return (
     <main className="relative min-h-dvh w-full overflow-x-hidden overflow-y-auto bg-[#0f172a] selection:bg-blue-100 selection:text-blue-900 supports-[min-height:100dvh]:min-h-dvh">
