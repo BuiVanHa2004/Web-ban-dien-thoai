@@ -186,7 +186,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
             }
         } catch (error) {
             console.error('❌ [ChatBox] Failed to initialize chat:', error);
-            alert('Không thể kết nối đến hệ thống chat. Vui lòng thử lại sau.');
+            // Silently fail - don't show alert to user on page load
         } finally {
             setIsLoading(false);
         }
