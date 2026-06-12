@@ -453,7 +453,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white/100 rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden border-2 border-gray-300">
+                <div className="fixed bottom-0 right-0 w-full h-[100dvh] sm:bottom-6 sm:right-6 sm:w-96 sm:h-[600px] bg-white/100 sm:rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden border-2 border-gray-300">
                     {/* Header */}
                     <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-4 flex items-center justify-between rounded-t-3xl shadow-lg flex-shrink-0">
                         <div className="flex items-center gap-3">
