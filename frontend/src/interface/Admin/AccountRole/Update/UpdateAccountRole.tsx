@@ -121,7 +121,9 @@ function UpdateAccountRole() {
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [address, setAddress] = React.useState("");
+  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = React.useState<string | null>(null);
 
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -288,7 +290,10 @@ function UpdateAccountRole() {
               helperText="Ảnh đại diện (tối đa 2MB, định dạng JPG/PNG/WebP)"
               disabled={formDisabled}
               cropMode="square-required"
-              onChange={setAvatarUrl}
+              onChange={(file) => {
+                setAvatarFile(file);
+              }}
+              onPreviewChange={setAvatarPreviewUrl}
             />
 
             <div className="grid gap-4 md:grid-cols-2">
