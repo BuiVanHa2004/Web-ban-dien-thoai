@@ -61,7 +61,10 @@ export function middleware(req: NextRequest) {
 
   // Only apply logic when domains are configured (production)
   if (!CUSTOMER_DOMAIN || !ADMIN_DOMAIN) {
-    return NextResponse.next();
+    // Add header so we can debug in browser DevTools → Network tab
+    const res = NextResponse.next();
+    res.headers.set("x-middleware-debug", `no-domain-config|host=${hostname}`);
+    return res;
   }
 
   const isAdminDomain = hostname === ADMIN_DOMAIN;
