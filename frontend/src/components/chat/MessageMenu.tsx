@@ -126,39 +126,39 @@ export default function MessageMenu({
             </button>
 
             {showMenu && (
-                <div className="absolute right-0 bottom-full mb-2 bg-gray-900/95 backdrop-blur-xl rounded-full shadow-2xl border border-gray-700 px-2 py-2 flex gap-2 z-20">
-                    {/* EDIT - Only for TEXT messages and not recalled AND own message */}
+                <div className="absolute right-0 bottom-full mb-2 bg-gray-900/95 backdrop-blur-xl rounded-full shadow-2xl border border-gray-700 px-1.5 py-1.5 flex gap-1 z-20">
+                    {/* EDIT */}
                     {messageType === 'TEXT' && !recalled && isOwnMessage && (
                         <button
                             onClick={() => {
                                 setIsEditing(true);
                                 setShowMenu(false);
                             }}
-                            className="w-9 h-9 rounded-full text-white bg-blue-500/20 hover:bg-blue-500 flex items-center justify-center transition-colors"
+                            className="w-7 h-7 rounded-full text-white bg-blue-500/20 hover:bg-blue-500 flex items-center justify-center transition-colors"
                             title="Chỉnh sửa"
                         >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-3 h-3" />
                         </button>
                     )}
 
-                    {/* RECALL - For TEXT and IMAGE, only if not recalled yet AND own message */}
+                    {/* RECALL */}
                     {!recalled && isOwnMessage && (
                         <button
                             onClick={handleRecall}
-                            className="w-9 h-9 rounded-full text-white bg-orange-500/20 hover:bg-orange-500 flex items-center justify-center transition-colors"
+                            className="w-7 h-7 rounded-full text-white bg-orange-500/20 hover:bg-orange-500 flex items-center justify-center transition-colors"
                             title="Thu hồi"
                         >
-                            <RotateCcw className="w-4 h-4" />
+                            <RotateCcw className="w-3 h-3" />
                         </button>
                     )}
 
-                    {/* DELETE - Always available for ALL messages (own and others) */}
+                    {/* DELETE */}
                     <button
                         onClick={handleDelete}
-                        className="w-9 h-9 rounded-full text-white bg-red-500/20 hover:bg-red-500 flex items-center justify-center transition-colors"
+                        className="w-7 h-7 rounded-full text-white bg-red-500/20 hover:bg-red-500 flex items-center justify-center transition-colors"
                         title="Xóa"
                     >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3" />
                     </button>
                 </div>
             )}

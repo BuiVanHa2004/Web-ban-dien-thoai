@@ -16,6 +16,7 @@ type AdminLayoutProps = {
 
 export default function AdminLayout({ children, userName }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
   const [adminUser, setAdminUser] = React.useState<{ id: number; fullName: string; username: string } | null>(null);
   const [adminToken, setAdminToken] = React.useState<string | null>(null);
   const router = useRouter();
@@ -32,7 +33,6 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
         return;
       }
 
-      // Set admin user và token cho ChatBox
       setAdminUser(user as any);
       setAdminToken(token);
 
@@ -78,11 +78,29 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
       </div>
 
       <div className="relative z-10 flex min-h-dvh">
-        <Sidebar collapsed={collapsed} />
+        {/* Overlay mobile - z-index thấp hơn sidebar */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/60 sm:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+        <Sidebar
+          collapsed={collapsed}
+          mobileOpen={mobileOpen}
+          onMobileClose={() => setMobileOpen(false)}
+        />
         <div className="min-w-0 flex-1">
           <Topbar
             userName={userName}
-            onToggleSidebar={() => setCollapsed((v) => !v)}
+            onToggleSidebar={() => {
+              // mobile: mở drawer, desktop: collapse
+              if (window.innerWidth < 640) {
+                setMobileOpen((v) => !v);
+              } else {
+                setCollapsed((v) => !v);
+              }
+            }}
             onLogout={() => {
               try {
                 localStorage.removeItem("token");
@@ -100,7 +118,6 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
         </div>
       </div>
       
-      {/* Admin Chat Box - Hiển thị khi admin đã đăng nhập */}
       {adminUser && adminToken && (
         <AdminChatBox
           adminId={adminUser.id}

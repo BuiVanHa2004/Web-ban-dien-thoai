@@ -22,6 +22,8 @@ import { Logo } from "@/components/customers/Logo";
 
 type SidebarProps = {
   collapsed: boolean;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 };
 
 type NavItem = {
@@ -61,7 +63,7 @@ const COLOR_SCHEMES: Record<string, string> = {
   black: "bg-slate-900 text-slate-100 ring-slate-800 dark:bg-white dark:text-slate-900",
 };
 
-export default function Sidebar({ collapsed }: SidebarProps) {
+export default function Sidebar({ collapsed, mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname() || "/";
   const [role, setRole] = useState<string>("ADMIN");
 
@@ -104,9 +106,13 @@ export default function Sidebar({ collapsed }: SidebarProps) {
   return (
     <aside
       aria-label="Admin Sidebar"
-      className={`sticky top-0 z-40 h-screen shrink-0 border-r border-zinc-500/60 bg-[#2a2a2e]/98 shadow-sm shadow-black/15 backdrop-blur-sm transition-[width] duration-500 ease-in-out transform-gpu ${
-        collapsed ? "w-[80px]" : "w-[280px]"
-      }`}
+      className={`
+      fixed inset-y-0 left-0 z-50 h-screen shrink-0 border-r border-zinc-500/60 bg-[#2a2a2e]/98 shadow-sm shadow-black/15 backdrop-blur-sm transition-all duration-300 ease-in-out transform-gpu
+        ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+        sm:relative sm:translate-x-0 sm:sticky sm:top-0
+        ${collapsed ? "sm:w-[80px]" : "sm:w-[280px]"}
+        w-[280px]
+      `}
     >
       <div className="flex h-full flex-col">
         {/* Branding */}
@@ -137,6 +143,7 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={onMobileClose}
                   aria-current={active ? "page" : undefined}
                   className={`group relative flex items-center transition-all duration-300 ${
                     collapsed ? "h-14 w-14 justify-center rounded-full p-0" : "gap-3 rounded-2xl p-2"

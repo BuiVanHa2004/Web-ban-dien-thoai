@@ -453,36 +453,42 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
 
             {/* Chat Window */}
             {isOpen && (
-                <div className="fixed bottom-0 right-0 w-full h-[100dvh] sm:bottom-6 sm:right-6 sm:w-96 sm:h-[600px] bg-white/100 sm:rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden border-2 border-gray-300">
+                <>
+                    {/* Overlay mờ nền - chỉ hiện trên mobile */}
+                    <div className="fixed inset-0 bg-black/50 z-40 sm:hidden" onClick={toggleOpen} />
+
+                    <div className="fixed inset-x-0 bottom-0 mx-auto w-[calc(100vw-1rem)] max-w-[384px] h-[85dvh] left-1/2 -translate-x-1/2 sm:bottom-6 sm:right-6 sm:left-auto sm:translate-x-0 sm:w-96 sm:h-[600px] bg-white rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden border-2 border-gray-300">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-4 flex items-center justify-between rounded-t-3xl shadow-lg flex-shrink-0">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white/30 rounded-full flex items-center justify-center shadow-lg">
-                                <MessageCircle className="w-5 h-5" />
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-3 flex flex-col gap-1 rounded-t-3xl shadow-lg flex-shrink-0">
+                        {/* Row 1: các nút */}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center shadow-lg">
+                                    <MessageCircle className="w-4 h-4" />
+                                </div>
+                                <span className="font-bold text-sm text-white">Hỗ trợ khách hàng</span>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-base text-white">Hỗ trợ khách hàng</h3>
-                                <p className="text-xs text-white font-medium">Chúng tôi luôn sẵn sàng giúp bạn</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {messages.length > 0 && (
+                            <div className="flex items-center gap-1">
+                                {messages.length > 0 && (
+                                    <button
+                                        onClick={deleteAllMessages}
+                                        className="hover:bg-white/20 p-1.5 rounded-lg transition-colors"
+                                        title="Xóa toàn bộ đoạn chat"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                )}
                                 <button
-                                    onClick={deleteAllMessages}
+                                    onClick={toggleOpen}
                                     className="hover:bg-white/20 p-1.5 rounded-lg transition-colors"
-                                    title="Xóa toàn bộ đoạn chat"
+                                    aria-label="Đóng chat"
                                 >
-                                    <Trash2 className="w-5 h-5" />
+                                    <X className="w-5 h-5" />
                                 </button>
-                            )}
-                            <button
-                                onClick={toggleOpen}
-                                className="hover:bg-white/20 p-1.5 rounded-lg transition-colors"
-                                aria-label="Đóng chat"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+                            </div>
                         </div>
+                        {/* Row 2: subtitle */}
+                        <p className="text-xs text-white/80">Chúng tôi luôn sẵn sàng giúp bạn</p>
                     </div>
 
                     {/* Messages Area */}
@@ -646,6 +652,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                                 </div>
                             </div>
                 </div>
+                </>
             )}
             
             {/* Confirm Dialog */}
