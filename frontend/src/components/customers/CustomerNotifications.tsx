@@ -200,72 +200,86 @@ export default function CustomerNotifications({ variant = "default" }: CustomerN
           />
           <div
             className="
-              z-[220] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl
-              dark:border-white/10 dark:bg-slate-950/95 dark:shadow-2xl dark:shadow-black/40
-              max-sm:fixed max-sm:right-3 max-sm:top-[calc(env(safe-area-inset-top,0px)+3.5rem)]
-              max-sm:w-80 max-sm:mt-0 max-sm:max-h-[min(55dvh,22rem)]
+              z-[220] flex flex-col overflow-hidden rounded-2xl shadow-xl
+              border border-zinc-700/60 bg-[#1e1e22]
+              shadow-2xl shadow-black/40
+              max-sm:fixed max-sm:inset-x-3 max-sm:top-[calc(env(safe-area-inset-top,0px)+3.5rem)]
+              max-sm:max-h-[min(calc(100dvh-5rem),28rem)] max-sm:w-auto
               sm:absolute sm:right-0 sm:mt-2 sm:w-96 sm:max-h-[min(70vh,32rem)]
             "
           >
-          <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-white/10">
-            <h3 className="shrink-0 font-semibold text-slate-900 dark:text-slate-100">Thông báo của bạn</h3>
-            <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
+            {/* Header */}
+            <div className="flex items-center justify-between gap-2 border-b border-zinc-700/60 px-3 py-3 sm:px-4">
+              <div className="flex items-center gap-2">
+                <h3 className="shrink-0 text-sm font-semibold text-zinc-100 sm:text-base">Thông báo</h3>
+                {unreadCount > 0 && (
+                  <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400 sm:text-xs">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    {unreadCount} chưa đọc
+                  </span>
+                )}
+              </div>
+              <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={markAllAsRead}
+                    className="min-w-0 shrink text-right text-[10px] font-medium leading-snug text-indigo-400 hover:text-indigo-300 transition-colors sm:text-xs"
+                  >
+                    <span className="sm:hidden">Đọc hết</span>
+                    <span className="hidden sm:inline">Đánh dấu tất cả đã đọc</span>
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={markAllAsRead}
-                  className="shrink-0 text-right text-xs font-medium leading-snug text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                  onClick={() => setOpen(false)}
+                  className="flex h-6 w-6 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-700/60 hover:text-zinc-300 transition-colors"
+                  aria-label="Đóng thông báo"
                 >
-                  Đánh dấu tất cả đã đọc
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
+              </div>
+            </div>
+
+            {/* List */}
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="p-4 text-center text-sm text-zinc-500">
+                  Không có thông báo nào.
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  {notifications.map((notif) => (
+                    <button
+                      key={notif.notificationId}
+                      type="button"
+                      onClick={() => handleNotificationClick(notif)}
+                      className={`flex min-w-0 cursor-pointer flex-col gap-1 border-b border-zinc-700/50 p-3 text-left transition last:border-0 hover:bg-zinc-700/40 sm:p-4 ${
+                        !notif.isRead ? "bg-zinc-800/60" : "bg-transparent"
+                      }`}
+                    >
+                      <div className="flex min-w-0 items-start justify-between gap-2">
+                        <span className={`min-w-0 break-words text-sm font-semibold ${!notif.isRead ? "text-zinc-100" : "text-zinc-300"}`}>
+                          {notif.title}
+                        </span>
+                        {!notif.isRead && (
+                          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-400" />
+                        )}
+                      </div>
+                      <p className={`min-w-0 break-words text-sm leading-snug ${!notif.isRead ? "text-zinc-300" : "text-zinc-500"}`}>
+                        {translateMessage(notif.message)}
+                      </p>
+                      <span className="text-[11px] font-medium text-indigo-400/80">
+                        {new Date(notif.createdAt).toLocaleString("vi-VN")}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               )}
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-slate-300 transition-colors"
-                aria-label="Đóng thông báo"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
             </div>
           </div>
-          <div className="max-h-[min(45dvh,18rem)] overflow-y-auto sm:max-h-[min(60vh,28rem)]">
-            {notifications.length === 0 ? (
-              <div className="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                Không có thông báo nào.
-              </div>
-            ) : (
-              <div className="flex flex-col">
-                {notifications.map((notif) => (
-                  <button
-                    key={notif.notificationId}
-                    onClick={() => handleNotificationClick(notif)}
-                    className={`flex cursor-pointer flex-col gap-1 border-b border-slate-100 p-4 text-left transition last:border-0 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5 ${
-                      !notif.isRead ? "bg-indigo-50/50 dark:bg-indigo-900/20" : "bg-white dark:bg-slate-950"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className={`text-sm font-medium ${!notif.isRead ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
-                        {notif.title}
-                      </span>
-                      {!notif.isRead && (
-                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />
-                      )}
-                    </div>
-                    <p className={`text-sm ${!notif.isRead ? "text-slate-700 dark:text-slate-300" : "text-slate-500 dark:text-slate-400"}`}>
-                      {translateMessage(notif.message)}
-                    </p>
-                    <span className="text-xs text-slate-400 dark:text-slate-500">
-                      {new Date(notif.createdAt).toLocaleString("vi-VN")}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
         </>
       )}
     </div>

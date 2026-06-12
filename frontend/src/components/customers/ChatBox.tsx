@@ -434,10 +434,10 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
             {!isOpen && (
                 <button
                     onClick={toggleOpen}
-                    className="fixed bottom-6 right-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full p-4 shadow-2xl hover:shadow-green-400/50 transition-all duration-300 z-50 group hover:scale-110"
+                    className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full p-3 sm:p-4 shadow-2xl hover:shadow-green-400/50 transition-all duration-300 z-50 group hover:scale-110"
                     aria-label="Mở chat hỗ trợ"
                 >
-                    <MessageCircle className="w-6 h-6" />
+                    <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                     {unreadCount > 0 && (
                         <span 
                             className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center font-bold animate-pulse shadow-lg"

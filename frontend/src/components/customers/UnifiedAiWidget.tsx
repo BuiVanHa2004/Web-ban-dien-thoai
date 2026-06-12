@@ -13,6 +13,7 @@ export default function UnifiedAiWidget() {
 
   const drag = useDraggableEdge({
     storageKey: "unified-ai-widget-pos",
+    margin: typeof window !== "undefined" && window.innerWidth < 640 ? 16 : 24,
   });
 
   const safariFixStyle = {
@@ -79,7 +80,7 @@ export default function UnifiedAiWidget() {
                 setShowMenu(true);
               }
             }}
-            className="group relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 sm:h-14 sm:w-auto sm:gap-3 sm:px-5 sm:shadow-2xl sm:hover:pr-6 dark:bg-slate-900"
+            className="group relative flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 sm:h-14 sm:w-auto sm:gap-3 sm:px-5 sm:shadow-2xl sm:hover:pr-6 dark:bg-slate-900"
             style={{
               boxShadow: "0 8px 24px -8px rgba(139,92,246,0.45)",
               WebkitTapHighlightColor: "transparent",
@@ -88,8 +89,8 @@ export default function UnifiedAiWidget() {
           >
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 opacity-10 transition-opacity group-hover:opacity-20" />
 
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-white shadow-md ring-2 ring-white/20 sm:h-11 sm:w-11">
-              <Sparkles className="h-[18px] w-[18px] drop-shadow-md sm:h-[22px] sm:w-[22px]" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-white shadow-md ring-2 ring-white/20 sm:h-11 sm:w-11">
+              <Sparkles className="h-4 w-4 drop-shadow-md sm:h-[22px] sm:w-[22px]" />
             </div>
 
             <div className="hidden flex-col items-start pr-1 text-left whitespace-nowrap sm:flex">
