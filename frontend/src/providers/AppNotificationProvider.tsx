@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle, CheckCircle2, Info } from "lucide-react";
 import ConfirmModal from "@/components/admins/ConfirmModal";
@@ -132,59 +133,69 @@ export default function AppNotificationProvider({
     <AppNotificationContext.Provider value={value}>
       {children}
 
-      <AnimatePresence>
-        {toast && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm"
-              onClick={() => setToast(null)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
-              animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
-              exit={{ opacity: 0, scale: 0.9, x: "-50%", y: "-50%" }}
-              className="fixed left-1/2 top-1/2 z-[9999] w-[min(90vw,22rem)] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/10 dark:bg-slate-900 dark:ring-white/10"
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {toast && (
+            <div
+              className="fixed inset-0 flex items-center justify-center p-4"
+              style={{ zIndex: 99999 }}
             >
-              {/* Icon + message */}
-              <div className="flex flex-col items-center gap-3 px-6 pt-6 pb-4 text-center">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setToast(null)}
+                className="absolute inset-0"
+                style={{
+                  backgroundColor: "rgba(15, 23, 42, 0.7)",
+                  backdropFilter: "blur(6px)",
+                  WebkitBackdropFilter: "blur(6px)",
+                }}
+              />
+              {/* Modal */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white p-8 text-center shadow-2xl dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-800"
+              >
+                {/* Icon */}
+                <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full ${
                   toast.type === "success"
-                    ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10"
+                    ? "bg-emerald-50 dark:bg-emerald-900/20"
                     : toast.type === "error"
-                      ? "bg-rose-50 text-rose-500 dark:bg-rose-500/10"
-                      : "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300"
+                      ? "bg-rose-50 dark:bg-rose-900/20"
+                      : "bg-indigo-50 dark:bg-indigo-900/20"
                 }`}>
-                  {toast.type === "success" && <CheckCircle2 className="h-7 w-7" />}
-                  {toast.type === "error" && <AlertCircle className="h-7 w-7" />}
-                  {toast.type === "info" && <Info className="h-7 w-7" />}
+                  {toast.type === "success" && <CheckCircle2 className="h-12 w-12 text-emerald-500" />}
+                  {toast.type === "error" && <AlertCircle className="h-12 w-12 text-rose-500" />}
+                  {toast.type === "info" && <Info className="h-12 w-12 text-indigo-500" />}
                 </div>
-                <p className="text-sm font-semibold leading-snug text-slate-700 dark:text-slate-200">
+                {/* Message */}
+                <p className="mb-8 text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
                   {toast.message}
                 </p>
-              </div>
-              {/* Button */}
-              <div className="border-t border-slate-100 px-6 py-3 dark:border-white/10">
+                {/* Button */}
                 <button
                   type="button"
                   onClick={() => setToast(null)}
-                  className={`w-full rounded-xl py-2.5 text-sm font-bold text-white transition active:scale-95 ${
+                  className={`w-full rounded-2xl py-4 text-sm font-black text-white transition-all active:scale-[0.98] shadow-xl ${
                     toast.type === "success"
                       ? "bg-emerald-500 hover:bg-emerald-600"
                       : toast.type === "error"
                         ? "bg-rose-500 hover:bg-rose-600"
-                        : "bg-slate-800 hover:bg-slate-700"
+                        : "bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-700"
                   }`}
                 >
-                  Đã hiểu
+                  ĐÓNG
                 </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <StatusModal
         isOpen={statusModal.isOpen}
