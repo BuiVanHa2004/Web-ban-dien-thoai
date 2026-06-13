@@ -94,6 +94,7 @@ export default function Profile() {
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
   const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = React.useState<string | null>(null);
+  const [avatarFieldKey, setAvatarFieldKey] = React.useState(0);
 
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -188,8 +189,9 @@ export default function Profile() {
       );
       setAccount(updated);
       setAvatarUrl(updated.avatarUrl || null);
-      setAvatarFile(null); // Clear file after successful save
-      setAvatarPreview(null); // Clear preview after successful save
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      setAvatarFieldKey((k) => k + 1); // reset AvatarUploadField
       showToast("Cập nhật thông tin thành công.", "success");
 
       try {
@@ -323,7 +325,7 @@ export default function Profile() {
           <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
             <div className="flex flex-col items-center text-center">
               <Avatar
-                src={avatarPreview || avatarUrl}
+                src={avatarUrl}
                 name={fullName || account?.username}
                 className="h-24 w-24 rounded-3xl"
                 textClassName="text-3xl font-black"
@@ -360,7 +362,7 @@ export default function Profile() {
               <form onSubmit={onSaveInfo} className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                 <div className="mb-5">
                   <AvatarUploadField
-                    key={`avatar-${account?.accountId || 'new'}`}
+                    key={`avatar-${account?.accountId || 'new'}-${avatarFieldKey}`}
                     label="Ảnh đại diện"
                     value={avatarUrl}
                     name={fullName || account?.username}
@@ -369,6 +371,19 @@ export default function Profile() {
                     onPreviewChange={setAvatarPreview}
                     cropMode="square-required"
                   />
+                  {avatarPreview && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarFile(null);
+                        setAvatarPreview(null);
+                        setAvatarFieldKey((k) => k + 1);
+                      }}
+                      className="mt-2 text-xs text-slate-500 underline hover:text-rose-500 dark:text-slate-400"
+                    >
+                      Hủy ảnh vừa chọn
+                    </button>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>

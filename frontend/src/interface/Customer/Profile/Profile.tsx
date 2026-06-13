@@ -67,6 +67,7 @@ export default function ProfileInterface() {
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFieldKey, setAvatarFieldKey] = useState(0);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -142,8 +143,9 @@ export default function ProfileInterface() {
       });
       setProfile(updated);
       setFormData(prev => ({...prev, avatarUrl: updated.avatarUrl || ""}));
-      setAvatarFile(null); // Clear file after successful save
-      setAvatarPreview(null); // Clear preview after successful save
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      setAvatarFieldKey((k) => k + 1); // reset AvatarUploadField
       setEditing(false);
       
       // Update local storage name and avatar if changed
@@ -238,9 +240,9 @@ export default function ProfileInterface() {
               <div className="relative z-10 flex flex-col items-center">
                 <div className="relative mb-6">
                   <div className="h-28 w-28 overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 to-indigo-700 p-1 shadow-2xl transition-transform">
-                    {(avatarPreview || profile?.avatarUrl) ? (
+                    {profile?.avatarUrl ? (
                       <img 
-                        src={avatarPreview || resolveImageUrl(profile?.avatarUrl)} 
+                        src={resolveImageUrl(profile?.avatarUrl)} 
                         alt={profile?.fullName} 
                         className="h-full w-full rounded-[1.4rem] object-cover"
                       />
@@ -395,6 +397,7 @@ export default function ProfileInterface() {
                             setEditing(false);
                             setAvatarFile(null);
                             setAvatarPreview(null);
+                            setAvatarFieldKey((k) => k + 1);
                             // Reset form data to original profile data
                             if (profile) {
                               setFormData({
@@ -419,7 +422,7 @@ export default function ProfileInterface() {
                     {/* Avatar Upload Section */}
                     <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-950/70">
                       <AvatarUploadField
-                        key={editing ? 'editing' : 'view'}
+                        key={`${editing ? 'editing' : 'view'}-${avatarFieldKey}`}
                         label="Ảnh đại diện"
                         value={formData.avatarUrl}
                         name={formData.fullName}
