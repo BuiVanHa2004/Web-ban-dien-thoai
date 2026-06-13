@@ -21,6 +21,7 @@ import {
 import { customerAccountService, type CustomerAccountDto, type CustomerAccountCreateUpdatePayload } from "@/services/customerAccountService";
 import type { User as AuthUser } from "@/common/types/auth";
 import AvatarUploadField from "@/components/avatar/AvatarUploadField";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 export default function ProfileInterface() {
   const [mounted, setMounted] = useState(false);
@@ -238,7 +239,7 @@ export default function ProfileInterface() {
                   <div className="h-28 w-28 overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 to-indigo-700 p-1 shadow-2xl transition-transform">
                     {profile?.avatarUrl ? (
                       <img 
-                        src={profile.avatarUrl} 
+                        src={resolveImageUrl(profile.avatarUrl)} 
                         alt={profile.fullName} 
                         className="h-full w-full rounded-[1.4rem] object-cover"
                       />

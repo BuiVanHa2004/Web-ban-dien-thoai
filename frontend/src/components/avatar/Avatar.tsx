@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type AvatarProps = {
   src?: string | null;
@@ -23,11 +24,13 @@ export default function Avatar({
     setImgError(false);
   }, [src]);
 
-  if (src && !imgError) {
+  const resolvedSrc = resolveImageUrl(src);
+
+  if (resolvedSrc && !imgError) {
     return (
       <div className={`overflow-hidden bg-slate-100 ring-1 ring-black/5 dark:bg-white/5 dark:ring-white/10 ${className}`}>
         <img
-          src={src}
+          src={resolvedSrc}
           alt={name || "Avatar"}
           className="h-full w-full object-cover aspect-square"
           onError={() => setImgError(true)}
