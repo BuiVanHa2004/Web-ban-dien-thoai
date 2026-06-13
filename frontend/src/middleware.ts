@@ -77,7 +77,9 @@ export function middleware(req: NextRequest) {
 
   if (isAdminDomain) {
     // On admin domain: redirect customer-only paths to admin home
-    const isCustomerOnly = CUSTOMER_ROUTES.some((r) => pathname.startsWith(r));
+    const isCustomerOnly = CUSTOMER_ROUTES.some(
+      (r) => pathname === r || pathname.startsWith(r + "/")
+    );
     if (isCustomerOnly) {
       return NextResponse.redirect(new URL("/statistical", req.url));
     }
@@ -86,7 +88,9 @@ export function middleware(req: NextRequest) {
 
   if (isCustomerDomain) {
     // On customer domain: redirect admin-only paths to customer home
-    const isAdminOnly = ADMIN_ROUTES.some((r) => pathname.startsWith(r));
+    const isAdminOnly = ADMIN_ROUTES.some(
+      (r) => pathname === r || pathname.startsWith(r + "/")
+    );
     if (isAdminOnly) {
       return NextResponse.redirect(new URL("/home", req.url));
     }
