@@ -82,6 +82,7 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
   const [productNames, setProductNames] = React.useState<Record<number, string>>({});
   const [quotaHint, setQuotaHint] = React.useState<string | null>(null);
   const [chatSessionId, setChatSessionId] = React.useState<number | null>(null);
+  const [recommendMap, setRecommendMap] = React.useState<Record<number, number[]>>({}); // msgIndex -> productIds
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const isLoggedIn = typeof window !== "undefined" && 
@@ -352,8 +353,15 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
         answer = answer.replace(safeRegex, `[${p.name}](/product/${p.id})`);
       }
 
-      const content = `${answer}${links ? `\n\nShop gợi ý:\n${links}` : ""}`;
-      setMessages((prev) => [...prev, { role: "assistant", content }]);
+      const content = answer;
+      setMessages((prev) => {
+        const nextIndex = prev.length;
+        // Lưu recommended IDs theo index message
+        if (recIds.length > 0) {
+          setRecommendMap((m) => ({ ...m, [nextIndex]: recIds }));
+        }
+        return [...prev, { role: "assistant", content }];
+      });
       setQuotaHint(null);
     } catch (e) {
       const rawError = e instanceof Error ? e.message : "Có lỗi xảy ra";
@@ -546,6 +554,7 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
                   onClick={() => {
                     setMessages([{ role: "assistant", content: OPENING_GREETING }]);
                     setChatSessionId(null);
+                    setRecommendMap({});
                   }}
                   className="rounded-lg p-1.5 text-white/70 hover:bg-white/10 hover:text-white"
                   title="Xoá hội thoại"
@@ -598,17 +607,59 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
             )}
 
             {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed"
-                  style={
-                    m.role === "user"
-                      ? { background: "linear-gradient(135deg,#6366f1,#7c3aed)", color: "#fff", borderBottomRightRadius: 4 }
-                      : { background: "#1e1e2e", color: "#e2e8f0", borderBottomLeftRadius: 4 }
-                  }
-                >
-                  {renderMd(m.content)}
+              <div key={i} className="flex flex-col gap-2">
+                <div className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed"
+                    style={
+                      m.role === "user"
+                        ? { background: "linear-gradient(135deg,#6366f1,#7c3aed)", color: "#fff", borderBottomRightRadius: 4 }
+                        : { background: "#1e1e2e", color: "#e2e8f0", borderBottomLeftRadius: 4 }
+                    }
+                  >
+                    {renderMd(m.content)}
+                  </div>
                 </div>
+
+                {/* Card gợi ý sản phẩm — chỉ hiện cho assistant message có recommends */}
+                {m.role === "assistant" && recommendMap[i] && recommendMap[i].length > 0 && (
+                  <div className="ml-1 space-y-1.5">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">
+                      🛍 Shop gợi ý
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {recommendMap[i]
+                        .filter((id) => productNames[id])
+                        .map((id) => {
+                          const imgUrl = productPreviews[id]?.imageUrl;
+                          const name = productNames[id];
+                          return (
+                            <Link
+                              key={id}
+                              href={`/product/${id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-3 rounded-xl p-2 transition-all hover:bg-white/10 ring-1 ring-white/10 hover:ring-indigo-500/50"
+                              style={{ background: "rgba(99,102,241,0.08)" }}
+                            >
+                              {imgUrl ? (
+                                <img
+                                  src={imgUrl}
+                                  alt={name}
+                                  className="h-14 w-10 rounded-lg object-cover shrink-0 ring-1 ring-white/10"
+                                />
+                              ) : (
+                                <div className="h-14 w-10 rounded-lg bg-white/10 shrink-0" />
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <div className="truncate text-[13px] font-bold text-white">{name}</div>
+                                <div className="mt-0.5 text-[10px] text-indigo-300">Xem sản phẩm →</div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
 

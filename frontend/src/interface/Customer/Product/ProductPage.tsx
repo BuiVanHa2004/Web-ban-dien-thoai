@@ -6,6 +6,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 
 import { categoryService, type CategoryDto } from "@/services/categoryService";
+import { brandService, type BrandDto } from "@/services/brandService";
 import { productService, type ProductDto } from "@/services/productService";
 import { addProductToCart, flyProductToCart } from "@/common/cartClient";
 import ProductVariantPickerModal from "@/components/customers/ProductVariantPickerModal";
@@ -35,14 +36,24 @@ function computeCurrentPrice(p: ProductDto): number {
 type Option = {
   id: number;
   name: string;
+  imageUrl?: string;
 };
 
 type CategoryOption = Option;
+type BrandOption = Option;
 
 function mapCategory(dto: CategoryDto): CategoryOption {
   return {
     id: dto.categoryId,
     name: dto.categoryName,
+  };
+}
+
+function mapBrand(dto: BrandDto): BrandOption {
+  return {
+    id: dto.brandId,
+    name: dto.brandName,
+    imageUrl: dto.brandImages?.[0],
   };
 }
 
@@ -112,8 +123,9 @@ export default function ProductPage() {
 
   const [products, setProducts] = React.useState<ProductDto[]>([]);
   const [categories, setCategories] = React.useState<CategoryOption[]>([]);
+  const [brands, setBrands] = React.useState<BrandOption[]>([]);
 
-  const [openDropdown, setOpenDropdown] = React.useState<"category" | null>(null);
+  const [openDropdown, setOpenDropdown] = React.useState<"category" | "brand" | null>(null);
   const [recentlyAddedProductIds, setRecentlyAddedProductIds] = React.useState<number[]>([]);
   const [selectedProductForCart, setSelectedProductForCart] = React.useState<ProductDto | null>(null);
   const [variantModalOpen, setVariantModalOpen] = React.useState(false);
@@ -126,12 +138,9 @@ export default function ProductPage() {
   const filters = React.useMemo(() => {
     const q = (searchParams.get("q") ?? "").trim();
     const categoryId = searchParams.get("categoryId") ? Number(searchParams.get("categoryId")) : null;
+    const brandId = searchParams.get("brandId") ? Number(searchParams.get("brandId")) : null;
     const sort = (searchParams.get("sort") ?? "category") as "category" | "name";
-    return {
-      q,
-      categoryId,
-      sort,
-    };
+    return { q, categoryId, brandId, sort };
   }, [searchParams]);
 
   const returnUrl = React.useMemo(() => {
@@ -140,6 +149,9 @@ export default function ProductPage() {
   }, [pathname, searchParams]);
 
   const [draftQ, setDraftQ] = React.useState("");
+  const [searchSuggestions, setSearchSuggestions] = React.useState<ProductDto[]>([]);
+  const [showSuggestions, setShowSuggestions] = React.useState(false);
+  const searchRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     let mounted = true;
@@ -147,9 +159,13 @@ export default function ProductPage() {
       setLoading(true);
       setError(null);
       try {
-        const c = await categoryService.getAll();
+        const [c, b] = await Promise.all([
+          categoryService.getAll(),
+          brandService.getAll(),
+        ]);
         if (!mounted) return;
         setCategories(c.map(mapCategory).sort((a, b) => a.id - b.id));
+        setBrands(b.map(mapBrand).sort((a, b) => a.name.localeCompare(b.name)));
       } catch (e) {
         if (!mounted) return;
         setError(e instanceof Error ? e.message : "Có lỗi xảy ra khi tải sản phẩm.");
@@ -157,9 +173,7 @@ export default function ProductPage() {
         if (mounted) setLoading(false);
       }
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   React.useEffect(() => {
@@ -186,9 +200,36 @@ export default function ProductPage() {
     };
   }, [filters.q, filters.categoryId]);
 
+  // Search suggestions — lọc client-side từ danh sách đã load
+  React.useEffect(() => {
+    const q = draftQ.trim().toLowerCase();
+    if (!q || q.length < 1) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const matched = products
+      .filter((p) => p.productName?.toLowerCase().includes(q))
+      .slice(0, 8);
+    setSearchSuggestions(matched);
+    setShowSuggestions(matched.length > 0);
+  }, [draftQ, products]);
+
+  // Click outside để đóng suggestions
+  React.useEffect(() => {
+    function onMouseDown(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, []);
+
   function setParam(next: {
     q?: string;
     categoryId?: number | null;
+    brandId?: number | null;
     sort?: string;
   }) {
     const params = new URLSearchParams(searchParams.toString());
@@ -202,6 +243,11 @@ export default function ProductPage() {
     if (next.categoryId !== undefined) {
       if (next.categoryId == null) params.delete("categoryId");
       else params.set("categoryId", String(next.categoryId));
+    }
+
+    if (next.brandId !== undefined) {
+      if (next.brandId == null) params.delete("brandId");
+      else params.set("brandId", String(next.brandId));
     }
 
     if (next.sort !== undefined) {
@@ -224,18 +270,23 @@ export default function ProductPage() {
 
     const orderItems = (items: ProductDto[]) => [...items].sort(filters.sort === "name" ? byName : byName);
 
+    // Áp dụng brand filter client-side
+    const filteredProducts = filters.brandId
+      ? products.filter((p) => p.brandId === filters.brandId)
+      : products;
+
     const categoriesSorted = [...categories].sort((a, b) => a.id - b.id);
 
     const sections: { key: string; title: string; items: ProductDto[] }[] = [];
 
     for (const cat of categoriesSorted) {
-      const items = products.filter((p) => p.categoryId === cat.id);
+      const items = filteredProducts.filter((p) => p.categoryId === cat.id);
       if (items.length === 0) continue;
       sections.push({ key: String(cat.id), title: cat.name, items: orderItems(items) });
     }
 
     const knownIds = new Set(categoriesSorted.map((c) => c.id));
-    const others = products.filter((p) => p.categoryId == null || !knownIds.has(p.categoryId));
+    const others = filteredProducts.filter((p) => p.categoryId == null || !knownIds.has(p.categoryId));
     if (others.length > 0) {
       sections.push({ key: "others", title: "Khác", items: orderItems(others) });
     }
@@ -267,80 +318,151 @@ export default function ProductPage() {
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">Sản phẩm</h1>
             <p className="mt-1 text-sm text-slate-400">
-              Hiển thị {products.length} sản phẩm
+              Hiển thị {filters.brandId ? products.filter(p => p.brandId === filters.brandId).length : products.length} sản phẩm
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="sm:col-span-2">
+            {/* Search với suggestions */}
+            <div className="sm:col-span-2 relative" ref={searchRef} onClick={(e) => e.stopPropagation()}>
               <div className="group flex overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 shadow-md shadow-black/20 backdrop-blur-md transition hover:shadow-lg sm:rounded-3xl">
                 <input
                   value={draftQ}
-                  onChange={(e) => setDraftQ(e.target.value)}
+                  onChange={(e) => { setDraftQ(e.target.value); }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") setParam({ q: draftQ });
+                    if (e.key === "Enter") { setParam({ q: draftQ }); setShowSuggestions(false); }
+                    if (e.key === "Escape") setShowSuggestions(false);
                   }}
+                  onFocus={() => { if (searchSuggestions.length > 0) setShowSuggestions(true); }}
                   placeholder="Tìm theo tên sản phẩm..."
                   className="h-11 w-full min-w-0 bg-transparent pl-4 pr-2 text-sm text-white outline-none placeholder:text-slate-500"
                 />
                 <button
                   type="button"
-                  onClick={() => setParam({ q: draftQ })}
-                  className="grid h-11 w-12 place-items-center text-cyan-700 transition hover:bg-cyan-50/70 dark:text-cyan-300 dark:hover:bg-white/10 cursor-pointer"
+                  onClick={() => { setParam({ q: draftQ }); setShowSuggestions(false); }}
+                  className="grid h-11 w-12 place-items-center text-cyan-300 transition hover:bg-white/10 cursor-pointer"
                   aria-label="Tìm kiếm"
                 >
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 21l-4.3-4.3" />
-                    <circle cx="11" cy="11" r="7" />
+                    <path d="M21 21l-4.3-4.3" /><circle cx="11" cy="11" r="7" />
                   </svg>
                 </button>
               </div>
+              {/* Suggestions dropdown */}
+              {showSuggestions && searchSuggestions.length > 0 && (
+                <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl shadow-black/40">
+                  {searchSuggestions.map((p) => {
+                    const img = resolveImageUrl(p.productMainImage || p.productImages?.[0]?.imageUrl || p.productColors?.[0]?.images?.[0]);
+                    return (
+                      <button
+                        key={p.productId}
+                        type="button"
+                        onClick={() => {
+                          setDraftQ(p.productName || "");
+                          setParam({ q: p.productName || "" });
+                          setShowSuggestions(false);
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-white transition hover:bg-white/10 cursor-pointer"
+                      >
+                        {img ? (
+                          <img src={img} alt="" className="h-9 w-7 rounded-lg object-cover shrink-0" />
+                        ) : (
+                          <div className="h-9 w-7 rounded-lg bg-white/10 shrink-0" />
+                        )}
+                        <span className="truncate">{p.productName}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
+            {/* Category dropdown */}
             <div className="relative" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
                 onClick={() => setOpenDropdown((v) => (v === "category" ? null : "category"))}
-                className="flex h-11 w-full items-center justify-between rounded-full border border-black/10 bg-white/75 px-4 text-sm font-medium text-slate-900 shadow-md shadow-black/5 backdrop-blur-md transition hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:text-white dark:shadow-black/30 cursor-pointer"
+                className="flex h-11 w-full items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 text-sm font-medium text-white shadow-md backdrop-blur-md transition hover:bg-white/10 cursor-pointer"
               >
                 <span className="truncate">{categories.find((c) => c.id === filters.categoryId)?.name || "Tất cả danh mục"}</span>
-                <svg viewBox="0 0 24 24" className="h-5 w-5 text-slate-900 dark:text-slate-900" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
-              {openDropdown === "category" ? (
-                <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-3xl border border-black/10 bg-white shadow-xl shadow-black/10 dark:border-white/10 dark:bg-slate-950">
+              {openDropdown === "category" && (
+                <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-xl">
                   <button
                     type="button"
-                    onClick={() => {
-                      setParam({ categoryId: null });
-                      closeDropdowns();
-                    }}
-                    className={`flex w-full items-center px-4 py-3 text-left text-sm transition hover:bg-cyan-50 dark:hover:bg-white/5 cursor-pointer ${filters.categoryId == null ? "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-200" : "text-slate-800 dark:text-slate-200"
-                      }`}
+                    onClick={() => { setParam({ categoryId: null }); closeDropdowns(); }}
+                    className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.categoryId == null ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
                   >
                     Tất cả danh mục
                   </button>
-                  <div className="max-h-72 overflow-auto">
+                  <div className="max-h-60 overflow-auto">
                     {categories.map((c) => (
                       <button
                         key={c.id}
                         type="button"
-                        onClick={() => {
-                          setParam({ categoryId: c.id });
-                          closeDropdowns();
-                        }}
-                        className={`flex w-full items-center px-4 py-3 text-left text-sm transition hover:bg-cyan-50 dark:hover:bg-white/5 cursor-pointer ${filters.categoryId === c.id
-                          ? "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-200"
-                          : "text-slate-800 dark:text-slate-200"
-                          }`}
+                        onClick={() => { setParam({ categoryId: c.id }); closeDropdowns(); }}
+                        className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.categoryId === c.id ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
                       >
                         {c.name}
                       </button>
                     ))}
                   </div>
                 </div>
-              ) : null}
+              )}
+            </div>
+
+            {/* Brand dropdown */}
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => setOpenDropdown((v) => (v === "brand" ? null : "brand"))}
+                className="flex h-11 w-full items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 text-sm font-medium text-white shadow-md backdrop-blur-md transition hover:bg-white/10 cursor-pointer"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  {filters.brandId && brands.find((b) => b.id === filters.brandId)?.imageUrl && (
+                    <img
+                      src={resolveImageUrl(brands.find((b) => b.id === filters.brandId)!.imageUrl) || ""}
+                      alt=""
+                      className="h-5 w-5 rounded-full object-cover shrink-0"
+                    />
+                  )}
+                  <span className="truncate">{brands.find((b) => b.id === filters.brandId)?.name || "Tất cả thương hiệu"}</span>
+                </div>
+                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {openDropdown === "brand" && (
+                <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-xl">
+                  <button
+                    type="button"
+                    onClick={() => { setParam({ brandId: null }); closeDropdowns(); }}
+                    className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.brandId == null ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
+                  >
+                    Tất cả thương hiệu
+                  </button>
+                  <div className="max-h-60 overflow-auto">
+                    {brands.map((b) => (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => { setParam({ brandId: b.id }); closeDropdowns(); }}
+                        className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.brandId === b.id ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
+                      >
+                        {b.imageUrl ? (
+                          <img src={resolveImageUrl(b.imageUrl) || ""} alt="" className="h-6 w-6 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <div className="h-6 w-6 rounded-full bg-white/10 shrink-0" />
+                        )}
+                        {b.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
