@@ -25,9 +25,11 @@ export default function MessageMenu({
     onDelete,
 }: MessageMenuProps) {
     const [showMenu, setShowMenu] = useState(false);
+    const [openUpward, setOpenUpward] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editedMessage, setEditedMessage] = useState(message);
     const menuRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -45,6 +47,16 @@ export default function MessageMenu({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [showMenu]);
+
+    const handleToggleMenu = () => {
+        if (!showMenu && buttonRef.current) {
+            // Tính xem có đủ chỗ mở lên trên không
+            const rect = buttonRef.current.getBoundingClientRect();
+            // Dropdown cao khoảng 44px, cần thêm 8px margin
+            setOpenUpward(rect.top > 60);
+        }
+        setShowMenu(!showMenu);
+    };
 
     const handleEditConfirm = () => {
         if (editedMessage.trim() && editedMessage !== message) {
@@ -70,6 +82,97 @@ export default function MessageMenu({
     };
 
     // If editing mode is active
+    if (isEditing) {
+        return (
+            <div className="mt-2 space-y-2">
+                <textarea
+                    value={editedMessage}
+                    onChange={(e) => setEditedMessage(e.target.value)}
+                    className="w-full p-2 border-2 border-blue-400 rounded-lg text-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={3}
+                    autoFocus
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleEditConfirm();
+                        }
+                        if (e.key === 'Escape') {
+                            handleEditCancel();
+                        }
+                    }}
+                />
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleEditConfirm}
+                        disabled={!editedMessage.trim() || editedMessage === message}
+                        className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                    >
+                        ✓ Lưu
+                    </button>
+                    <button
+                        onClick={handleEditCancel}
+                        className="px-4 py-2 bg-gray-500 text-white text-sm font-semibold rounded-lg hover:bg-gray-600 shadow-md"
+                    >
+                        ✕ Hủy
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div ref={menuRef} className="absolute -top-1 -right-1 z-10">
+            <button
+                ref={buttonRef}
+                onClick={handleToggleMenu}
+                className="bg-black/50 backdrop-blur-sm text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg hover:bg-black/70"
+                title="Thao tác"
+            >
+                <MoreVertical className="w-3.5 h-3.5" />
+            </button>
+
+            {showMenu && (
+                <div className={`absolute right-0 bg-gray-900/95 backdrop-blur-xl rounded-full shadow-2xl border border-gray-700 px-1.5 py-1.5 flex gap-1 z-20 ${
+                    openUpward ? 'bottom-full mb-2' : 'top-full mt-2'
+                }`}>
+                    {/* EDIT */}
+                    {messageType === 'TEXT' && !recalled && isOwnMessage && (
+                        <button
+                            onClick={() => {
+                                setIsEditing(true);
+                                setShowMenu(false);
+                            }}
+                            className="w-7 h-7 rounded-full text-white bg-blue-500/20 hover:bg-blue-500 flex items-center justify-center transition-colors"
+                            title="Chỉnh sửa"
+                        >
+                            <Edit className="w-3 h-3" />
+                        </button>
+                    )}
+
+                    {/* RECALL */}
+                    {!recalled && isOwnMessage && (
+                        <button
+                            onClick={handleRecall}
+                            className="w-7 h-7 rounded-full text-white bg-orange-500/20 hover:bg-orange-500 flex items-center justify-center transition-colors"
+                            title="Thu hồi"
+                        >
+                            <RotateCcw className="w-3 h-3" />
+                        </button>
+                    )}
+
+                    {/* DELETE */}
+                    <button
+                        onClick={handleDelete}
+                        className="w-7 h-7 rounded-full text-white bg-red-500/20 hover:bg-red-500 flex items-center justify-center transition-colors"
+                        title="Xóa"
+                    >
+                        <Trash2 className="w-3 h-3" />
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
     if (isEditing) {
         return (
             <div className="mt-2 space-y-2">
