@@ -296,7 +296,8 @@ export default function PaymentPage() {
       await adminManualPaymentService.lock(attemptId, currentAdminId);
       await fetchData(true);
       if (selectedAttempt && selectedAttempt.attemptId === attemptId) {
-        const updated = await adminManualPaymentService.getAttempts("WAITING_CONFIRM");
+        // Sau khi lock, status đổi sang PROCESSING — fetch không filter để tìm được
+        const updated = await adminManualPaymentService.getAttempts();
         const match = updated.find((a) => a.attemptId === attemptId);
         if (match) setSelectedAttempt(match);
       }
@@ -310,7 +311,8 @@ export default function PaymentPage() {
       await adminManualPaymentService.release(attemptId, currentAdminId);
       await fetchData(true);
       if (selectedAttempt && selectedAttempt.attemptId === attemptId) {
-        const updated = await adminManualPaymentService.getAttempts("WAITING_CONFIRM");
+        // Sau khi release, status trở về WAITING_CONFIRM — fetch không filter
+        const updated = await adminManualPaymentService.getAttempts();
         const match = updated.find((a) => a.attemptId === attemptId);
         if (match) setSelectedAttempt(match);
       }
@@ -758,6 +760,10 @@ export default function PaymentPage() {
                           (!selectedAttempt.lockExpiresAt ||
                             new Date(selectedAttempt.lockExpiresAt).getTime() > Date.now()) && (
                             <div className="space-y-3">
+                              {/* Timer hiển thị trong modal */}
+                              <div className="flex items-center justify-between">
+                                <LockStatus attempt={selectedAttempt} currentAdminId={currentAdminId} />
+                              </div>
                               <div className="text-[10px] font-black uppercase tracking-widest text-white/50">
                                 Ghi chú xử lý / Lý do từ chối
                               </div>
