@@ -148,7 +148,11 @@ export default function ProductPage() {
     return qs ? `${pathname}?${qs}` : pathname;
   }, [pathname, searchParams]);
 
-  const [draftQ, setDraftQ] = React.useState("");
+  const [draftQ, setDraftQ] = React.useState(filters.q);
+  // Sync draftQ khi URL thay đổi từ bên ngoài
+  React.useEffect(() => {
+    setDraftQ(filters.q);
+  }, [filters.q]);
   const [searchSuggestions, setSearchSuggestions] = React.useState<ProductDto[]>([]);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const searchRef = React.useRef<HTMLDivElement>(null);
@@ -159,13 +163,15 @@ export default function ProductPage() {
       setLoading(true);
       setError(null);
       try {
-        const [c, b] = await Promise.all([
+        const [c, b, p] = await Promise.all([
           categoryService.getAll(),
           brandService.getAll(),
+          productService.getAll(), // fetch tất cả, filter client-side
         ]);
         if (!mounted) return;
         setCategories(c.map(mapCategory).sort((a, b) => a.id - b.id));
         setBrands(b.map(mapBrand).sort((a, b) => a.name.localeCompare(b.name)));
+        setProducts(p);
       } catch (e) {
         if (!mounted) return;
         setError(e instanceof Error ? e.message : "Có lỗi xảy ra khi tải sản phẩm.");
@@ -175,30 +181,6 @@ export default function ProductPage() {
     })();
     return () => { mounted = false; };
   }, []);
-
-  React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const p = await productService.getAllFiltered({
-          q: filters.q || undefined,
-          categoryId: filters.categoryId,
-        });
-        if (!mounted) return;
-        setProducts(p);
-      } catch (e) {
-        if (!mounted) return;
-        setError(e instanceof Error ? e.message : "Có lỗi xảy ra khi tải sản phẩm.");
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [filters.q, filters.categoryId]);
 
   // Search suggestions — lọc client-side từ danh sách đã load
   React.useEffect(() => {
@@ -270,10 +252,16 @@ export default function ProductPage() {
 
     const orderItems = (items: ProductDto[]) => [...items].sort(filters.sort === "name" ? byName : byName);
 
-    // Áp dụng brand filter client-side
-    const filteredProducts = filters.brandId != null
-      ? products.filter((p) => Number(p.brandId) === Number(filters.brandId))
-      : products;
+    // Áp dụng tất cả filter client-side
+    const filteredProducts = products.filter((p) => {
+      if (filters.brandId != null && Number(p.brandId) !== Number(filters.brandId)) return false;
+      if (filters.categoryId != null && Number(p.categoryId) !== Number(filters.categoryId)) return false;
+      if (filters.q) {
+        const q = filters.q.toLowerCase();
+        if (!p.productName?.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
 
     const categoriesSorted = [...categories].sort((a, b) => a.id - b.id);
 
@@ -318,7 +306,12 @@ export default function ProductPage() {
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">Sản phẩm</h1>
             <p className="mt-1 text-sm text-slate-400">
-              Hiển thị {filters.brandId != null ? products.filter(p => Number(p.brandId) === Number(filters.brandId)).length : products.length} sản phẩm
+              Hiển thị {products.filter((p) => {
+                if (filters.brandId != null && Number(p.brandId) !== Number(filters.brandId)) return false;
+                if (filters.categoryId != null && Number(p.categoryId) !== Number(filters.categoryId)) return false;
+                if (filters.q && !p.productName?.toLowerCase().includes(filters.q.toLowerCase())) return false;
+                return true;
+              }).length} sản phẩm
             </p>
           </div>
 
