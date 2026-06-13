@@ -371,19 +371,6 @@ export default function Profile() {
                     onPreviewChange={setAvatarPreview}
                     cropMode="square-required"
                   />
-                  {avatarPreview && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAvatarFile(null);
-                        setAvatarPreview(null);
-                        setAvatarFieldKey((k) => k + 1);
-                      }}
-                      className="mt-2 text-xs text-slate-500 underline hover:text-rose-500 dark:text-slate-400"
-                    >
-                      Hủy ảnh vừa chọn
-                    </button>
-                  )}
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
@@ -427,7 +414,38 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex justify-end">
+                <div className="mt-4 flex justify-end gap-3">
+                  {(avatarFile || avatarPreview) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarFile(null);
+                        setAvatarPreview(null);
+                        setAvatarFieldKey((k) => k + 1);
+                      }}
+                      className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+                    >
+                      Hủy ảnh
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    disabled={savingInfo}
+                    onClick={() => {
+                      if (!account) return;
+                      setFullName(account.fullName || "");
+                      setEmail(account.email || "");
+                      setPhone(account.phone || "");
+                      setAddress(account.address || "");
+                      setAvatarUrl(account.avatarUrl || null);
+                      setAvatarFile(null);
+                      setAvatarPreview(null);
+                      setAvatarFieldKey((k) => k + 1);
+                    }}
+                    className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-60 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+                  >
+                    Hủy bỏ
+                  </button>
                   <button
                     type="submit"
                     disabled={savingInfo}
