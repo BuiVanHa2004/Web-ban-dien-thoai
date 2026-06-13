@@ -151,8 +151,9 @@ export default function ProfileInterface() {
       if (rawUser) {
         const u = JSON.parse(rawUser) as AuthUser;
         u.name = updated.fullName;
+        u.avatarUrl = updated.avatarUrl || null;
         localStorage.setItem("user", JSON.stringify(u));
-        window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new Event("userUpdated"));
       }
       
       showSuccess("Cập nhật thành công", "Thông tin cá nhân của bạn đã được lưu lại trên hệ thống.");
