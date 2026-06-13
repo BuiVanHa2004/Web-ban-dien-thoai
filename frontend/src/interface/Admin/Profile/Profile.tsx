@@ -323,7 +323,7 @@ export default function Profile() {
           <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
             <div className="flex flex-col items-center text-center">
               <Avatar
-                src={avatarUrl}
+                src={avatarPreview || avatarUrl}
                 name={fullName || account?.username}
                 className="h-24 w-24 rounded-3xl"
                 textClassName="text-3xl font-black"

@@ -238,10 +238,10 @@ export default function ProfileInterface() {
               <div className="relative z-10 flex flex-col items-center">
                 <div className="relative mb-6">
                   <div className="h-28 w-28 overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 to-indigo-700 p-1 shadow-2xl transition-transform">
-                    {profile?.avatarUrl ? (
+                    {(avatarPreview || profile?.avatarUrl) ? (
                       <img 
-                        src={resolveImageUrl(profile.avatarUrl)} 
-                        alt={profile.fullName} 
+                        src={avatarPreview || resolveImageUrl(profile?.avatarUrl)} 
+                        alt={profile?.fullName} 
                         className="h-full w-full rounded-[1.4rem] object-cover"
                       />
                     ) : (
