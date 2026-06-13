@@ -156,6 +156,7 @@ export default function ProductPage() {
   const [searchSuggestions, setSearchSuggestions] = React.useState<ProductDto[]>([]);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const searchRef = React.useRef<HTMLDivElement>(null);
+  const productsRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     let mounted = true;
@@ -239,6 +240,13 @@ export default function ProductPage() {
 
     const query = params.toString();
     router.replace(query ? `/product?${query}` : "/product");
+
+    // Scroll xuống khu vực sản phẩm khi lọc
+    if (next.categoryId !== undefined || next.brandId !== undefined || next.q !== undefined) {
+      setTimeout(() => {
+        productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
   }
 
   const productSections = React.useMemo(() => {
@@ -372,7 +380,9 @@ export default function ProductPage() {
                               <span className="text-[10px] text-slate-400">{p.categoryName}</span>
                             )}
                             {(() => {
-                              const colors = (p.productColors || []).map(c => c.colorName).filter(Boolean);
+                              // Chỉ lấy màu đầu tiên — màu ứng với ảnh preview đang hiển thị
+                              const firstColor = (p.productColors || [])[0];
+                              const colorName = firstColor?.colorName;
                               const rams = [...new Set((p.productColors || []).flatMap(c => (c.variants || []).map(v => v.ramGb).filter(Boolean)))].sort((a,b) => Number(a)-Number(b));
                               const storages = [...new Set((p.productColors || []).flatMap(c => (c.variants || []).map(v => v.storageGb).filter(Boolean)))].sort((a,b) => Number(a)-Number(b));
                               const totalQty = (p.productColors || []).reduce((sum, c) => {
@@ -383,10 +393,8 @@ export default function ProductPage() {
                               }, 0);
                               return (
                                 <>
-                                  {colors.length > 0 && (
-                                    <span className="text-[10px] text-pink-300">
-                                      {colors.slice(0, 3).join(" · ")}{colors.length > 3 ? ` +${colors.length - 3}` : ""}
-                                    </span>
+                                  {colorName && (
+                                    <span className="text-[10px] text-pink-300 font-medium">{colorName}</span>
                                   )}
                                   {rams.length > 0 && <span className="text-[10px] text-cyan-400">{rams[0]}GB RAM</span>}
                                   {storages.length > 0 && <span className="text-[10px] text-cyan-400">{storages[0]}GB</span>}
@@ -553,7 +561,7 @@ export default function ProductPage() {
         )}
 
         {loading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div ref={productsRef} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 scroll-mt-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
@@ -569,7 +577,7 @@ export default function ProductPage() {
             ))}
           </div>
         ) : (
-          <div className="space-y-12">
+          <div ref={productsRef} className="space-y-12 scroll-mt-4">
             {productSections.map((section) => (
               <section key={section.key} className="pt-8 first:pt-0">
                 <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white border-t border-black/10 dark:border-white/10 pt-8 mb-8 first:border-none first:pt-0">
