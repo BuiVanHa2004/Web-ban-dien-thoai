@@ -8,6 +8,7 @@ import React from "react";
 import { bannerService, BannerPosition, BannerDto } from "@/services/bannerService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
 import ValidationModal from "@/components/admins/ValidationModal";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type ImageItem = {
   id: string;
@@ -374,7 +375,7 @@ export default function UpdateBanner() {
                   {images.map((img) => (
                     <div key={img.id} className="relative overflow-hidden rounded-[1.5rem] bg-slate-100 p-3 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10 group">
                       <div className="aspect-video relative overflow-hidden rounded-xl border border-slate-200 dark:border-white/10 shadow-sm cursor-pointer">
-                        <Image src={img.preview} alt="Banner" fill className="object-cover transition-transform duration-500 hover:scale-110" unoptimized />
+                        <Image src={img.file ? img.preview : (resolveImageUrl(img.preview) || img.preview)} alt="Banner" fill className="object-cover transition-transform duration-500 hover:scale-110" unoptimized />
                         <button
                           type="button"
                           onClick={() => removeImage(img.id)}
@@ -434,7 +435,7 @@ export default function UpdateBanner() {
               <div className="p-4 sm:p-6">
                 <div className="group relative aspect-video overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-xl dark:border-white/10 dark:bg-white/5 cursor-pointer">
                   {images.length > 0 ? (
-                    <Image src={images[0].preview} alt="Preview" fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
+                    <Image src={images[0].file ? images[0].preview : (resolveImageUrl(images[0].preview) || images[0].preview)} alt="Preview" fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
                   ) : (
                     <div className="flex h-full w-full flex-col items-center justify-center text-slate-400 animate-pulse">
                       <svg viewBox="0 0 24 24" className="h-10 w-10 mb-2" fill="none" stroke="currentColor" strokeWidth="1.5">

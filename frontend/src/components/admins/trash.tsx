@@ -4,17 +4,7 @@
 import Image from "next/image";
 import React from "react";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
-
-const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
-
-function resolveImageUrl(input?: string | null): string {
-  const raw = (input ?? "").trim();
-  if (!raw) return "";
-  if (/^(https?:)?\/\//i.test(raw)) return raw;
-  if (/^(data:|blob:)/i.test(raw)) return raw;
-  if (raw.startsWith("/")) return `${API_URL}${raw}`;
-  return `${API_URL}/${raw}`;
-}
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 export type TrashItem = {
   id: string;

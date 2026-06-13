@@ -4,6 +4,7 @@ import React from "react";
 import { Bot, Send, X, MessageCircle, Sparkles, Trash2, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useDraggableEdge } from "@/hooks/useDraggableEdge";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 type ProductPreview = { imageUrl?: string };
@@ -23,17 +24,8 @@ const SUGGESTIONS = [
 
 const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
 
-function resolveImg(input?: string | null): string | undefined {
-  if (!input) return undefined;
-  const raw = input.trim();
-  if (!raw) return undefined;
-  if (/^(https?:)?\/\//i.test(raw)) return raw;
-  if (raw.startsWith("/")) return `${API_URL}${raw}`;
-  return `${API_URL}/${raw}`;
-}
-
 function pickPreviewImage(product: any): string | undefined {
-  return resolveImg(
+  return resolveImageUrl(
     product?.productMainImage ||
     product?.productImages?.[0]?.imageUrl ||
     product?.productColors?.[0]?.images?.[0]

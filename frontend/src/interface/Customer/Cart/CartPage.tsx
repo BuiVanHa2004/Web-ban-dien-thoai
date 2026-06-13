@@ -18,6 +18,7 @@ import {
   Truck,
   ArrowLeft
 } from "lucide-react";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 import { emitCartUpdated, getActiveCartStorageKey } from "@/common/cartClient";
 import { writeCheckoutDraft } from "@/common/checkoutDraft";
 import { cartService } from "@/services/cartService";
@@ -375,11 +376,11 @@ export default function CartPage() {
                         {it.imageUrl ? (
                           <button
                             type="button"
-                            onClick={() => setZoomImageUrl(it.imageUrl ?? null)}
+                            onClick={() => setZoomImageUrl(resolveImageUrl(it.imageUrl) ?? it.imageUrl ?? null)}
                             className="h-full w-full cursor-zoom-in"
                           >
                             <img
-                              src={it.imageUrl}
+                              src={resolveImageUrl(it.imageUrl) || it.imageUrl}
                               alt={it.productName}
                               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />

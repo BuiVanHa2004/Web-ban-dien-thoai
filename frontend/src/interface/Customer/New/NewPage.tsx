@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, ChevronRight, Search, Zap, ArrowRight, Home } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function formatDate(iso?: string | null) {
   if (!iso) return "";
@@ -19,7 +20,7 @@ function formatDate(iso?: string | null) {
 }
 
 function getCover(n: NewsDto) {
-  return n.newsImages?.[0] || "";
+  return resolveImageUrl(n.newsImages?.[0]) || "";
 }
 
 const SkeletonCard = () => (

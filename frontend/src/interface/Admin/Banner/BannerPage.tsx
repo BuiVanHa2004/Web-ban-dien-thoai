@@ -7,6 +7,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { bannerService, BannerDto } from "@/services/bannerService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type Banner = {
   id: string;
@@ -281,7 +282,7 @@ export default function BannerPage() {
                         <div className="flex justify-center">
                           <div className="relative h-12 w-24 overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                             <Image
-                              src={(b.bannerImages && b.bannerImages.length > 0) ? b.bannerImages[0].imageUrl : "https://dummyimage.com/240x120/e2e8f0/64748b&text=No+Image"}
+                              src={resolveImageUrl((b.bannerImages && b.bannerImages.length > 0) ? b.bannerImages[0].imageUrl : null) || "https://dummyimage.com/240x120/e2e8f0/64748b&text=No+Image"}
                               alt={b.bannerImages.length > 0 ? (b.bannerImages[0].title || "Banner") : "Banner"}
                               width={96}
                               height={48}
@@ -434,7 +435,7 @@ export default function BannerPage() {
                         style={{ border: "1px solid rgba(255,255,255,0.12)" }}
                       >
                         <Image
-                          src={img.imageUrl}
+                          src={resolveImageUrl(img.imageUrl) || "https://dummyimage.com/240x120/e2e8f0/64748b&text=No+Image"}
                           alt={`Banner image ${i + 1}`}
                           fill
                           unoptimized

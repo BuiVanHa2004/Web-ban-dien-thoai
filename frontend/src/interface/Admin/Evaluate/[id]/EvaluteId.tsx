@@ -8,19 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 
 import { evaluateService, type ProductEvaluateCommentDto, type ProductEvaluateDetailDto } from "@/services/evaluateService";
-
-type StarFilter = 0 | 1 | 2 | 3 | 4 | 5;
-
-const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
-
-function resolveImageUrl(input?: string | null | unknown): string | undefined {
-  const raw = typeof input === "string" ? input.trim() : "";
-  if (!raw) return undefined;
-  if (/^(https?:)?\/\//i.test(raw)) return raw;
-  if (/^(data:|blob:)/i.test(raw)) return raw;
-  if (raw.startsWith("/")) return `${API_URL}${raw}`;
-  return `${API_URL}/${raw}`;
-}
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function parseProductIdFromPathname(pathname: string) {
   const parts = pathname.split("/").filter(Boolean);

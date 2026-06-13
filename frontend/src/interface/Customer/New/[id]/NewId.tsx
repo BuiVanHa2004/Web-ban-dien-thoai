@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, Clock, Share2, Tag, ChevronLeft, ChevronRight, Hom
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import React from "react";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function formatDate(iso?: string | null) {
   if (!iso) return "";
@@ -51,7 +52,7 @@ export default function NewId() {
   const [activeImageIndex, setActiveImageIndex] = React.useState(0);
 
   const sections = splitSections(item?.newsDescribe);
-  const allImages = (item?.newsImages || []).filter(Boolean);
+  const allImages = (item?.newsImages || []).filter(Boolean).map(img => resolveImageUrl(img) || img);
 
   React.useEffect(() => {
     let mounted = true;
@@ -307,7 +308,7 @@ export default function NewId() {
                   <div className="relative aspect-square overflow-hidden">
                     {post.newsImages?.[0] ? (
                       <img
-                        src={post.newsImages[0]}
+                        src={resolveImageUrl(post.newsImages[0]) || post.newsImages[0]}
                         alt={post.newsTitle}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />

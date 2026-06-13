@@ -5,6 +5,7 @@ import { MessageCircle, X, Send, Trash2, Image as ImageIcon } from 'lucide-react
 import { chatService, ChatMessage, ChatRoom } from '@/services/chatService';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import MessageMenu from '@/components/chat/MessageMenu';
+import { resolveImageUrl } from '@/common/resolveImageUrl';
 
 interface ChatBoxProps {
     customerId: number;
@@ -546,10 +547,10 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                                                         {message.messageType === 'IMAGE' && message.attachmentUrl && !isRecalled ? (
                                                             <div className="space-y-1.5">
                                                                 <img 
-                                                                    src={message.attachmentUrl} 
+                                                                    src={resolveImageUrl(message.attachmentUrl) || message.attachmentUrl} 
                                                                     alt="Hình ảnh" 
                                                                     className="max-w-full rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
-                                                                    onClick={() => window.open(message.attachmentUrl, '_blank')}
+                                                                    onClick={() => window.open(resolveImageUrl(message.attachmentUrl) || message.attachmentUrl, '_blank')}
                                                                     loading="lazy"
                                                                 />
                                                                 {message.message && (

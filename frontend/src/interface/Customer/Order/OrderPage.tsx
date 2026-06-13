@@ -21,19 +21,12 @@ import {
 import { orderService, type OrderDto } from "@/services/orderService";
 import { productService, type ProductDto } from "@/services/productService";
 import { CancelOrderModal } from "@/components/customers/CancelOrderModal";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function normalizeText(txt: any): string | null {
   if (typeof txt !== "string") return null;
   const s = txt.trim();
   return s === "" ? null : s;
-}
-
-function resolveImageUrl(url?: string | null) {
-  if (!url || url === "") return null;
-  if (url.startsWith("http")) return url;
-  const base = (process.env.NEXT_PUBLIC_URL || "http://localhost:8080").replace(/\/$/, "");
-  const path = url.startsWith("/") ? url : `/${url}`;
-  return `${base}${path}`;
 }
 
 type User = {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { createPortal } from "react-dom";
 import { newsService, NewsDto } from "@/services/newsService";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type News = {
   id: string;
@@ -272,7 +273,7 @@ export default function NewPage() {
                         <div className="flex justify-center">
                           <div className="h-16 w-16 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                             <Image
-                              src={(n.newsImages && n.newsImages.length > 0) ? n.newsImages[0] : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"}
+                              src={resolveImageUrl((n.newsImages && n.newsImages.length > 0) ? n.newsImages[0] : null) || "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"}
                               alt={n.title}
                               width={64}
                               height={64}
@@ -389,9 +390,8 @@ export default function NewPage() {
                     <div className="group relative h-32 w-32 shrink-0 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/15">
                       <Image
                         src={
-                          selectedNews.newsImages && selectedNews.newsImages.length > 0
-                            ? selectedNews.newsImages[0]
-                            : "https://dummyimage.com/200x200/e2e8f0/64748b&text=News"
+                          resolveImageUrl(selectedNews.newsImages && selectedNews.newsImages.length > 0 ? selectedNews.newsImages[0] : null) ||
+                          "https://dummyimage.com/200x200/e2e8f0/64748b&text=News"
                         }
                         alt={selectedNews.title}
                         width={128}

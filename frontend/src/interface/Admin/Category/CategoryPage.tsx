@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 
 import { categoryService, CategoryDto } from "@/services/categoryService";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type Category = {
   id: string;
@@ -281,9 +282,8 @@ export default function CategoryPage() {
                           <div className="h-20 w-20 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                             <Image
                               src={
-                                (c.categoryImages && c.categoryImages.length > 0)
-                                  ? c.categoryImages[0]
-                                  : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
+                                resolveImageUrl((c.categoryImages && c.categoryImages.length > 0) ? c.categoryImages[0] : null) ||
+                                "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
                               }
                               alt={c.name}
                               width={80}
@@ -397,9 +397,8 @@ export default function CategoryPage() {
                       >
                         <Image
                           src={
-                            (selectedCategory.categoryImages && selectedCategory.categoryImages.length > 0)
-                              ? selectedCategory.categoryImages[0]
-                              : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
+                            resolveImageUrl((selectedCategory.categoryImages && selectedCategory.categoryImages.length > 0) ? selectedCategory.categoryImages[0] : null) ||
+                            "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
                           }
                           alt={selectedCategory.name}
                           width={128}

@@ -779,13 +779,13 @@ export default function ProductId() {
                         {rv.images.map((img) => (
                           <a
                             key={img.evaluateImageId}
-                            href={img.imageUrl}
+                            href={resolveImageUrl(img.imageUrl) || img.imageUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block overflow-hidden rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-xl border border-black/5 dark:border-white/10"
                           >
                             <img
-                              src={img.imageUrl}
+                              src={resolveImageUrl(img.imageUrl) || img.imageUrl}
                               alt="Review"
                               className="max-h-40 w-auto object-contain transition-transform duration-300"
                             />

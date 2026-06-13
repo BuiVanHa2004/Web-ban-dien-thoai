@@ -34,14 +34,7 @@ import { orderService, type OrderDto } from "@/services/orderService";
 import { bankTransferService } from "@/services/bankTransferService";
 import { productService, type ProductDto } from "@/services/productService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
-
-function resolveImageUrl(url?: string | null): string | undefined {
-  if (!url || url === "") return undefined;
-  if (url.startsWith("http")) return url;
-  const base = (process.env.NEXT_PUBLIC_URL || "http://localhost:8080").replace(/\/$/, "");
-  const path = url.startsWith("/") ? url : `/${url}`;
-  return `${base}${path}`;
-}
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type UserType = {
   id: string;

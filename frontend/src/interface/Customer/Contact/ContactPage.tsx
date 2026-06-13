@@ -26,15 +26,7 @@ import { customerAccountService } from "@/services/customerAccountService";
 import { contactService } from "@/services/contactService";
 import SocialQrContact from "@/components/customers/SocialQrContact";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
-
-const API_URL = (process.env.NEXT_PUBLIC_URL || "http://localhost:8080").replace(/\/$/, "");
-
-function resolveImageUrl(url?: string | null): string | undefined {
-  if (!url || url === "") return undefined;
-  if (url.startsWith("http")) return url;
-  const path = url.startsWith("/") ? url : `/${url}`;
-  return `${API_URL}${path}`;
-}
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type SubmitStatus =
   | { state: "idle" }

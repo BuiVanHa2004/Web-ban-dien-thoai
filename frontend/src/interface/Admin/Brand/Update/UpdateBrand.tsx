@@ -11,6 +11,7 @@ import ModalPortal from "@/components/admins/ModalPortal";
 import { brandService } from "@/services/brandService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
 import ValidationModal from "@/components/admins/ValidationModal";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 export default function UpdateBrand() {
   const router = useRouter();
@@ -222,7 +223,7 @@ export default function UpdateBrand() {
                     <div key={idx} className="relative group">
                       <div className="h-24 w-24 overflow-hidden rounded-full ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                         <Image
-                          src={item.url}
+                          src={item.file ? item.url : (resolveImageUrl(item.url) || item.url)}
                           alt={`Brand image ${idx + 1}`}
                           width={96}
                           height={96}
@@ -452,7 +453,7 @@ export default function UpdateBrand() {
                       alt="preview"
                       src={
                         imageItems.length > 0
-                          ? imageItems[0].url
+                          ? (imageItems[0].file ? imageItems[0].url : (resolveImageUrl(imageItems[0].url) || imageItems[0].url))
                           : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
                       }
                       width={70}

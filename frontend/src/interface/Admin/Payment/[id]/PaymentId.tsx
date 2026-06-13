@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import { translatePaymentStatus } from "@/services/paymentStatusLabels";
 import StatusModal, { type ModalType } from "@/components/admins/StatusModal";
 import ConfirmModal from "@/components/admins/ConfirmModal";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function formatVnd(value: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
@@ -24,14 +25,6 @@ function formatVnd(value: number) {
 function formatDate(iso?: string) {
   if (!iso) return "-";
   return new Date(iso).toLocaleString("vi-VN");
-}
-
-function resolveImageUrl(url?: string | null): string | undefined {
-  if (!url || url === "") return undefined;
-  if (url.startsWith("http")) return url;
-  const base = (process.env.NEXT_PUBLIC_URL || "http://localhost:8080").replace(/\/$/, "");
-  const path = url.startsWith("/") ? url : `/${url}`;
-  return `${base}${path}`;
 }
 
 export default function PaymentId() {

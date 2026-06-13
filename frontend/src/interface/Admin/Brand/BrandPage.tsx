@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 
 import { brandService, BrandDto } from "@/services/brandService";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type Brand = {
   id: string;
@@ -286,9 +287,8 @@ export default function BrandPage() {
                           <div className="h-20 w-20 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-white/5 dark:ring-white/10">
                             <Image
                               src={
-                                (b.brandImages && b.brandImages.length > 0)
-                                  ? b.brandImages[0]
-                                  : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
+                                resolveImageUrl((b.brandImages && b.brandImages.length > 0) ? b.brandImages[0] : null) ||
+                                "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
                               }
                               alt={b.name}
                               width={80}
@@ -423,9 +423,8 @@ export default function BrandPage() {
                     >
                       <Image
                         src={
-                          (selectedBrand.brandImages && selectedBrand.brandImages.length > 0)
-                            ? selectedBrand.brandImages[0]
-                            : "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
+                          resolveImageUrl((selectedBrand.brandImages && selectedBrand.brandImages.length > 0) ? selectedBrand.brandImages[0] : null) ||
+                          "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"
                         }
                         alt={selectedBrand.name}
                         width={128}

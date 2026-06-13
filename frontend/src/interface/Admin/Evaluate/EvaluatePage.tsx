@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 
 import { evaluateService, type ProductEvaluateStatDto } from "@/services/evaluateService";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type Row = {
   productId: string;
@@ -164,7 +165,7 @@ export default function EvaluatePage() {
                         {r.productImageUrl ? (
                           <div className="group relative inline-block overflow-hidden rounded-full">
                             <img
-                              src={r.productImageUrl}
+                              src={resolveImageUrl(r.productImageUrl) || ""}
                               alt={r.productName}
                               className="h-16 w-16 cursor-pointer rounded-full object-cover ring-1 ring-slate-200 transition-transform duration-300 ease-out group-hover:scale-125 dark:ring-white/10"
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}

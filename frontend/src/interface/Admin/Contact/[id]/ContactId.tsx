@@ -8,17 +8,7 @@ import { createPortal } from "react-dom";
 
 import { contactService, type ContactDto } from "@/services/contactService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
-
-const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
-
-function resolveImageUrl(input?: string | null | unknown): string {
-  const raw = typeof input === "string" ? input.trim() : "";
-  if (!raw) return "";
-  if (/^(https?:)?\/\//i.test(raw)) return raw;
-  if (/^(data:|blob:)/i.test(raw)) return raw;
-  if (raw.startsWith("/")) return `${API_URL}${raw}`;
-  return `${API_URL}/${raw}`;
-}
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function parseIdFromPathname(pathname: string) {
   const parts = pathname.split("/").filter(Boolean);

@@ -5,18 +5,9 @@ import { Scale, X, Sparkles, Loader2, Search, CheckCircle2, ChevronLeft } from "
 import Link from "next/link";
 import { productService, type ProductDto } from "@/services/productService";
 import { useDraggableEdge } from "@/hooks/useDraggableEdge";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
-const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
 const AI_MAINTENANCE_MESSAGE = "Hiện tại AI đang bảo trì. Bạn vui lòng thử lại sau nhé.";
-
-function resolveImg(input?: string | null): string | undefined {
-  if (!input) return undefined;
-  const raw = input.trim();
-  if (!raw) return undefined;
-  if (/^(https?:)?\/\//i.test(raw)) return raw;
-  if (raw.startsWith("/")) return `${API_URL}${raw}`;
-  return `${API_URL}/${raw}`;
-}
 
 function getProductPreviewImage(p: ProductDto): string | null {
   return (
@@ -396,7 +387,7 @@ export default function CompareWidget({ chatOpen, forceOpen, onClose }: { chatOp
                         >
                           <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
                             <img
-                              src={resolveImg(getProductPreviewImage(p))}
+                              src={resolveImageUrl(getProductPreviewImage(p)) ?? undefined}
                               alt={p.productName}
                               className="h-full w-full object-cover"
                             />
@@ -481,7 +472,7 @@ export default function CompareWidget({ chatOpen, forceOpen, onClose }: { chatOp
                           >
                             <div className="relative z-0 aspect-[9/16] w-full overflow-hidden rounded-2xl p-4">
                               <img
-                                src={resolveImg(getProductPreviewImage(p))}
+                                src={resolveImageUrl(getProductPreviewImage(p)) ?? undefined}
                                 alt={p.productName}
                                 className="h-full w-full rounded-2xl object-cover shadow-sm transform-none transition-none"
                               />

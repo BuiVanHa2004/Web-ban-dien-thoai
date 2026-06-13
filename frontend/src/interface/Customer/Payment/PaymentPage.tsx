@@ -26,12 +26,11 @@ import { cartService } from "@/services/cartService";
 import { customerAccountService } from "@/services/customerAccountService";
 import BankTransferQr from "@/components/customers/BankTransferQr";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
+import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 type User = {
   id: string;
 };
-
-function readCustomerId(): number | null {
   try {
     if (typeof window === "undefined") return null;
     const raw = localStorage.getItem("user");
@@ -51,14 +50,6 @@ function formatVnd(value: number) {
 function toNumberSafe(v: unknown): number {
   const n = typeof v === "string" ? Number(v) : typeof v === "number" ? v : NaN;
   return Number.isFinite(n) ? n : 0;
-}
-
-function resolveImageUrl(url?: string | null): string | undefined {
-  if (!url || url === "") return undefined;
-  if (url.startsWith("http")) return url;
-  const base = (process.env.NEXT_PUBLIC_URL || "http://localhost:8080").replace(/\/$/, "");
-  const path = url.startsWith("/") ? url : `/${url}`;
-  return `${base}${path}`;
 }
 
 function getDraftItemOriginalPrice(
