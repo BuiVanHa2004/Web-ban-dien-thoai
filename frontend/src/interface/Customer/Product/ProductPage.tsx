@@ -280,7 +280,7 @@ export default function ProductPage() {
     }
 
     return sections;
-  }, [products, filters.sort, categories]);
+  }, [products, filters.sort, filters.brandId, filters.categoryId, filters.q, categories]);
 
   function closeDropdowns() {
     setOpenDropdown(null);
