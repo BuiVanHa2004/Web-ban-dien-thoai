@@ -372,12 +372,25 @@ export default function ProductPage() {
                               <span className="text-[10px] text-slate-400">{p.categoryName}</span>
                             )}
                             {(() => {
+                              const colors = (p.productColors || []).map(c => c.colorName).filter(Boolean);
                               const rams = [...new Set((p.productColors || []).flatMap(c => (c.variants || []).map(v => v.ramGb).filter(Boolean)))].sort((a,b) => Number(a)-Number(b));
                               const storages = [...new Set((p.productColors || []).flatMap(c => (c.variants || []).map(v => v.storageGb).filter(Boolean)))].sort((a,b) => Number(a)-Number(b));
+                              const totalQty = (p.productColors || []).reduce((sum, c) => {
+                                const variants = c.variants || [];
+                                return sum + (variants.length > 0
+                                  ? variants.reduce((s, v) => s + (Number(v.quantity) || 0), 0)
+                                  : (Number(c.quantity) || 0));
+                              }, 0);
                               return (
                                 <>
+                                  {colors.length > 0 && (
+                                    <span className="text-[10px] text-pink-300">
+                                      {colors.slice(0, 3).join(" · ")}{colors.length > 3 ? ` +${colors.length - 3}` : ""}
+                                    </span>
+                                  )}
                                   {rams.length > 0 && <span className="text-[10px] text-cyan-400">{rams[0]}GB RAM</span>}
                                   {storages.length > 0 && <span className="text-[10px] text-cyan-400">{storages[0]}GB</span>}
+                                  <span className="text-[10px] text-slate-500">Kho: {totalQty}</span>
                                 </>
                               );
                             })()}
