@@ -10,6 +10,8 @@ import { createPortal } from "react-dom";
 import { evaluateService, type ProductEvaluateCommentDto, type ProductEvaluateDetailDto } from "@/services/evaluateService";
 import { resolveImageUrl } from "@/common/resolveImageUrl";
 
+type StarFilter = 0 | 1 | 2 | 3 | 4 | 5;
+
 function parseProductIdFromPathname(pathname: string) {
   const parts = pathname.split("/").filter(Boolean);
   const maybeId = parts[parts.length - 1] || "";
