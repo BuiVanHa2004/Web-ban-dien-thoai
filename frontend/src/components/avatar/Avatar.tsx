@@ -15,15 +15,22 @@ export default function Avatar({
   className = "h-12 w-12 rounded-full",
   textClassName = "text-base font-semibold",
 }: AvatarProps) {
+  const [imgError, setImgError] = React.useState(false);
   const initial = (name || "?").trim().charAt(0).toUpperCase() || "?";
 
-  if (src) {
+  // Reset error state when src changes
+  React.useEffect(() => {
+    setImgError(false);
+  }, [src]);
+
+  if (src && !imgError) {
     return (
       <div className={`overflow-hidden bg-slate-100 ring-1 ring-black/5 dark:bg-white/5 dark:ring-white/10 ${className}`}>
         <img
           src={src}
           alt={name || "Avatar"}
           className="h-full w-full object-cover aspect-square"
+          onError={() => setImgError(true)}
         />
       </div>
     );
