@@ -354,15 +354,32 @@ export default function ProductPage() {
                 <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl shadow-black/40">
                   {searchSuggestions.map((p) => {
                     const img = resolveImageUrl(p.productMainImage || p.productImages?.[0]?.imageUrl || p.productColors?.[0]?.images?.[0]);
+
+                    // Tất cả tên màu
+                    const colorNames = (p.productColors || []).map(c => c.colorName).filter(Boolean);
+
+                    // Tổng số lượng
+                    const totalQty = (p.productColors || []).reduce((sum, c) => {
+                      const variants = c.variants || [];
+                      return sum + (variants.length > 0
+                        ? variants.reduce((s, v) => s + (Number(v.quantity) || 0), 0)
+                        : (Number(c.quantity) || 0));
+                    }, 0);
+
+                    // Giá min - max từ tất cả variants (finalPrice > 0 ưu tiên, fallback originalPrice)
+                    const allPrices = (p.productColors || [])
+                      .flatMap(c => c.variants || [])
+                      .map(v => Number(v.finalPrice) > 0 ? Number(v.finalPrice) : Number(v.originalPrice))
+                      .filter(n => n > 0);
+                    const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : (p.currentPrice ?? p.basePrice ?? 0);
+                    const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : minPrice;
+                    const fmt = (n: number) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
+
                     return (
-                      <button
+                      <Link
                         key={p.productId}
-                        type="button"
-                        onClick={() => {
-                          setDraftQ(p.productName || "");
-                          setParam({ q: p.productName || "" });
-                          setShowSuggestions(false);
-                        }}
+                        href={`/product/${p.productId}`}
+                        onClick={() => setShowSuggestions(false)}
                         className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-white/10 cursor-pointer border-b border-white/5 last:border-0"
                       >
                         {img ? (
@@ -379,39 +396,26 @@ export default function ProductPage() {
                             {p.categoryName && (
                               <span className="text-[10px] text-slate-400">{p.categoryName}</span>
                             )}
-                            {(() => {
-                              // Chỉ lấy màu đầu tiên — màu ứng với ảnh preview đang hiển thị
-                              const firstColor = (p.productColors || [])[0];
-                              const colorName = firstColor?.colorName;
-                              const rams = [...new Set((p.productColors || []).flatMap(c => (c.variants || []).map(v => v.ramGb).filter(Boolean)))].sort((a,b) => Number(a)-Number(b));
-                              const storages = [...new Set((p.productColors || []).flatMap(c => (c.variants || []).map(v => v.storageGb).filter(Boolean)))].sort((a,b) => Number(a)-Number(b));
-                              const totalQty = (p.productColors || []).reduce((sum, c) => {
-                                const variants = c.variants || [];
-                                return sum + (variants.length > 0
-                                  ? variants.reduce((s, v) => s + (Number(v.quantity) || 0), 0)
-                                  : (Number(c.quantity) || 0));
-                              }, 0);
-                              return (
-                                <>
-                                  {colorName && (
-                                    <span className="text-[10px] text-pink-300 font-medium">{colorName}</span>
-                                  )}
-                                  {rams.length > 0 && <span className="text-[10px] text-cyan-400">{rams[0]}GB RAM</span>}
-                                  {storages.length > 0 && <span className="text-[10px] text-cyan-400">{storages[0]}GB</span>}
-                                  <span className="text-[10px] text-slate-500">Kho: {totalQty}</span>
-                                </>
-                              );
-                            })()}
+                            {colorNames.length > 0 && (
+                              <span className="text-[10px] text-pink-300">
+                                {colorNames.join(" · ")}
+                              </span>
+                            )}
+                            <span className="text-[10px] text-slate-500">Kho: {totalQty}</span>
                           </div>
-                          {p.basePrice > 0 && (
+                          {minPrice > 0 && (
                             <div className="mt-0.5 text-[11px] font-bold text-emerald-400">
-                              {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-                                p.currentPrice ?? p.basePrice
-                              )}
+                              {minPrice === maxPrice
+                                ? fmt(minPrice)
+                                : `${fmt(minPrice)} - ${fmt(maxPrice)}`}
                             </div>
                           )}
                         </div>
-                      </button>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
                     );
                   })}
                 </div>
