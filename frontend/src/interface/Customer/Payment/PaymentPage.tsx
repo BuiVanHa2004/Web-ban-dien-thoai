@@ -31,6 +31,8 @@ import { resolveImageUrl } from "@/common/resolveImageUrl";
 type User = {
   id: string;
 };
+
+function readCustomerId(): number | null {
   try {
     if (typeof window === "undefined") return null;
     const raw = localStorage.getItem("user");
