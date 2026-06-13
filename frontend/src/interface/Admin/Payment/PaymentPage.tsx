@@ -769,9 +769,7 @@ export default function PaymentPage() {
                         {(selectedAttempt.status === "WAITING_CONFIRM" ||
                           selectedAttempt.status === "PROCESSING") &&
                           selectedAttempt.processingByAdminId &&
-                          Number(selectedAttempt.processingByAdminId) === Number(currentAdminId) &&
-                          (!selectedAttempt.lockExpiresAt ||
-                            new Date(selectedAttempt.lockExpiresAt).getTime() > Date.now()) && (
+                          Number(selectedAttempt.processingByAdminId) === Number(currentAdminId) && (
                             <div className="space-y-3">
                               {/* Timer hiển thị trong modal */}
                               <div className="flex items-center justify-between">
@@ -828,9 +826,7 @@ export default function PaymentPage() {
                                 )}
 
                                 {selectedAttempt.processingByAdminId &&
-                                Number(selectedAttempt.processingByAdminId) === Number(currentAdminId) &&
-                                (!selectedAttempt.lockExpiresAt ||
-                                  new Date(selectedAttempt.lockExpiresAt).getTime() > Date.now()) ? (
+                                Number(selectedAttempt.processingByAdminId) === Number(currentAdminId) ? (
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                     <button
                                       onClick={handleApprove}
@@ -878,18 +874,19 @@ export default function PaymentPage() {
                                     disabled={
                                       processing ||
                                       isStaffRestricted ||
+                                      // Chỉ disable khi người KHÁC đang giữ lock còn hạn
                                       (selectedAttempt.processingByAdminId !== null &&
                                         Number(selectedAttempt.processingByAdminId) !== Number(currentAdminId) &&
-                                        (!selectedAttempt.lockExpiresAt ||
-                                          new Date(selectedAttempt.lockExpiresAt).getTime() > Date.now()))
+                                        selectedAttempt.lockExpiresAt !== null &&
+                                        new Date(selectedAttempt.lockExpiresAt).getTime() > Date.now())
                                     }
                                     className={`w-full h-14 sm:h-16 rounded-2xl font-black shadow-xl flex items-center justify-center gap-2 transition-all whitespace-nowrap text-sm sm:text-base ${
                                       isStaffRestricted
                                         ? "cursor-not-allowed opacity-50 text-rose-400"
                                         : selectedAttempt.processingByAdminId !== null &&
                                           Number(selectedAttempt.processingByAdminId) !== Number(currentAdminId) &&
-                                          (!selectedAttempt.lockExpiresAt ||
-                                            new Date(selectedAttempt.lockExpiresAt).getTime() > Date.now())
+                                          selectedAttempt.lockExpiresAt !== null &&
+                                          new Date(selectedAttempt.lockExpiresAt).getTime() > Date.now()
                                         ? "cursor-not-allowed opacity-50 text-white/50"
                                         : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-500/20"
                                     }`}
@@ -899,8 +896,8 @@ export default function PaymentPage() {
                                       ? "VƯỢT HẠN MỨC - YÊU CẦU QUYỀN ADMIN"
                                       : selectedAttempt.processingByAdminId !== null &&
                                         Number(selectedAttempt.processingByAdminId) !== Number(currentAdminId) &&
-                                        (!selectedAttempt.lockExpiresAt ||
-                                          new Date(selectedAttempt.lockExpiresAt).getTime() > Date.now())
+                                        selectedAttempt.lockExpiresAt !== null &&
+                                        new Date(selectedAttempt.lockExpiresAt).getTime() > Date.now()
                                       ? "ĐANG CÓ NGƯỜI XỬ LÝ"
                                       : "BẮT ĐẦU XỬ LÝ (KHÓA LẠI)"}
                                   </button>
