@@ -271,8 +271,8 @@ export default function ProductPage() {
     const orderItems = (items: ProductDto[]) => [...items].sort(filters.sort === "name" ? byName : byName);
 
     // Áp dụng brand filter client-side
-    const filteredProducts = filters.brandId
-      ? products.filter((p) => p.brandId === filters.brandId)
+    const filteredProducts = filters.brandId != null
+      ? products.filter((p) => Number(p.brandId) === Number(filters.brandId))
       : products;
 
     const categoriesSorted = [...categories].sort((a, b) => a.id - b.id);
@@ -318,7 +318,7 @@ export default function ProductPage() {
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">Sản phẩm</h1>
             <p className="mt-1 text-sm text-slate-400">
-              Hiển thị {filters.brandId ? products.filter(p => p.brandId === filters.brandId).length : products.length} sản phẩm
+              Hiển thị {filters.brandId != null ? products.filter(p => Number(p.brandId) === Number(filters.brandId)).length : products.length} sản phẩm
             </p>
           </div>
 
@@ -362,14 +362,41 @@ export default function ProductPage() {
                           setParam({ q: p.productName || "" });
                           setShowSuggestions(false);
                         }}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-white transition hover:bg-white/10 cursor-pointer"
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-white/10 cursor-pointer border-b border-white/5 last:border-0"
                       >
                         {img ? (
-                          <img src={img} alt="" className="h-9 w-7 rounded-lg object-cover shrink-0" />
+                          <img src={img} alt="" className="h-12 w-9 rounded-xl object-cover shrink-0 ring-1 ring-white/10" />
                         ) : (
-                          <div className="h-9 w-7 rounded-lg bg-white/10 shrink-0" />
+                          <div className="h-12 w-9 rounded-xl bg-white/10 shrink-0" />
                         )}
-                        <span className="truncate">{p.productName}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-semibold text-white">{p.productName}</div>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                            {p.brandName && (
+                              <span className="text-[10px] text-indigo-300 font-medium">{p.brandName}</span>
+                            )}
+                            {p.categoryName && (
+                              <span className="text-[10px] text-slate-400">{p.categoryName}</span>
+                            )}
+                            {(() => {
+                              const rams = [...new Set((p.productColors || []).flatMap(c => (c.variants || []).map(v => v.ramGb).filter(Boolean)))].sort((a,b) => Number(a)-Number(b));
+                              const storages = [...new Set((p.productColors || []).flatMap(c => (c.variants || []).map(v => v.storageGb).filter(Boolean)))].sort((a,b) => Number(a)-Number(b));
+                              return (
+                                <>
+                                  {rams.length > 0 && <span className="text-[10px] text-cyan-400">{rams[0]}GB RAM</span>}
+                                  {storages.length > 0 && <span className="text-[10px] text-cyan-400">{storages[0]}GB</span>}
+                                </>
+                              );
+                            })()}
+                          </div>
+                          {p.basePrice > 0 && (
+                            <div className="mt-0.5 text-[11px] font-bold text-emerald-400">
+                              {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
+                                p.currentPrice ?? p.basePrice
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
