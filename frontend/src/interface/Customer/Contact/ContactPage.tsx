@@ -28,6 +28,8 @@ import SocialQrContact from "@/components/customers/SocialQrContact";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
 import { resolveImageUrl } from "@/common/resolveImageUrl";
 
+const API_URL = (process.env.NEXT_PUBLIC_URL || "http://localhost:8080").replace(/\/$/, "");
+
 type SubmitStatus =
   | { state: "idle" }
   | { state: "submitting" }
