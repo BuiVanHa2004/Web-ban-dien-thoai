@@ -5,14 +5,17 @@ const B2_BUCKET_NAME = process.env.NEXT_PUBLIC_B2_BUCKET_NAME || "myphone-datn";
 
 /**
  * Resolves an image URL:
+ * - blob: URLs (local preview) → return as-is
  * - localhost URLs → replace với real backend URL
- * - Backblaze B2 direct URLs (f*.backblazeb2.com/file/<bucket>/<objectName>)
- *   → proxy qua backend /api/files/<objectName> vì bucket là private
+ * - Backblaze B2 direct URLs → proxy qua backend /api/files/ vì bucket là private
  * - relative paths → prepend API base URL
- * - already absolute with correct domain → return as-is
+ * - already absolute → return as-is
  */
 export function resolveImageUrl(url?: string | null): string | undefined {
   if (!url || url === "") return undefined;
+
+  // Blob URLs (local preview) — giữ nguyên
+  if (url.startsWith("blob:")) return url;
 
   // Replace any localhost references with the real backend URL
   if (url.includes("localhost:8080") || url.includes("localhost:9000")) {
