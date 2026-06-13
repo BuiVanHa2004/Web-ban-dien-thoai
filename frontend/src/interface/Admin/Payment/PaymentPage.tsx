@@ -51,21 +51,29 @@ const RiskBadge = ({ level }: { level?: string }) => {
 };
 
 const LockStatus = ({ attempt, currentAdminId }: { attempt: PaymentAttempt; currentAdminId: number }) => {
-  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const calcRemaining = () => {
+    if (!attempt.lockExpiresAt) return 0;
+    return Math.max(0, Math.floor((new Date(attempt.lockExpiresAt).getTime() - Date.now()) / 1000));
+  };
+
+  const [timeLeft, setTimeLeft] = useState<number>(calcRemaining);
 
   useEffect(() => {
     if (!attempt.lockExpiresAt) return;
+    // Set ngay lập tức khi mount/update
+    setTimeLeft(calcRemaining());
     const interval = setInterval(() => {
-      const remaining = Math.max(0, Math.floor((new Date(attempt.lockExpiresAt!).getTime() - Date.now()) / 1000));
+      const remaining = calcRemaining();
       setTimeLeft(remaining);
       if (remaining <= 0) clearInterval(interval);
     }, 1000);
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attempt.lockExpiresAt]);
 
   if (!attempt.processingByAdminId || timeLeft <= 0) return null;
 
-  const isMe = attempt.processingByAdminId === currentAdminId;
+  const isMe = Number(attempt.processingByAdminId) === Number(currentAdminId);
 
   return (
     <div className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl text-[10px] font-bold border ${
@@ -294,12 +302,16 @@ export default function PaymentPage() {
   const handleLock = async (attemptId: number) => {
     try {
       await adminManualPaymentService.lock(attemptId, currentAdminId);
-      await fetchData(true);
-      if (selectedAttempt && selectedAttempt.attemptId === attemptId) {
-        // Sau khi lock, status đổi sang PROCESSING — fetch không filter để tìm được
-        const updated = await adminManualPaymentService.getAttempts();
-        const match = updated.find((a) => a.attemptId === attemptId);
-        if (match) setSelectedAttempt(match);
+      // Fetch tất cả (không filter) để lấy cả PROCESSING status
+      const updated = await adminManualPaymentService.getAttempts();
+      setAttempts(updated);
+      // Cập nhật selectedAttempt ngay lập tức với data mới nhất
+      const match = updated.find((a) => a.attemptId === attemptId);
+      if (match) {
+        setSelectedAttempt(match);
+        // Reload logs
+        const logs = await adminManualPaymentService.getLogs(match.orderId);
+        setAttemptLogs(logs);
       }
     } catch (err: any) {
       showStatus("Lỗi", err.message, "error");
@@ -309,12 +321,13 @@ export default function PaymentPage() {
   const handleRelease = async (attemptId: number) => {
     try {
       await adminManualPaymentService.release(attemptId, currentAdminId);
-      await fetchData(true);
-      if (selectedAttempt && selectedAttempt.attemptId === attemptId) {
-        // Sau khi release, status trở về WAITING_CONFIRM — fetch không filter
-        const updated = await adminManualPaymentService.getAttempts();
-        const match = updated.find((a) => a.attemptId === attemptId);
-        if (match) setSelectedAttempt(match);
+      const updated = await adminManualPaymentService.getAttempts();
+      setAttempts(updated);
+      const match = updated.find((a) => a.attemptId === attemptId);
+      if (match) {
+        setSelectedAttempt(match);
+        const logs = await adminManualPaymentService.getLogs(match.orderId);
+        setAttemptLogs(logs);
       }
     } catch (err: any) {
       showStatus("Lỗi", err.message, "error");
