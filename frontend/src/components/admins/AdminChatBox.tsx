@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Users, Trash2, Image as ImageIcon } from 'lucide-react';
 import { chatService, ChatMessage, ChatRoom } from '@/services/chatService';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import { MessageWrapper, MessageActions } from '@/components/chat/MessageMenu';
 import { resolveImageUrl } from '@/common/resolveImageUrl';
 
 interface AdminChatBoxProps {
@@ -713,56 +712,32 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                                                     key={message.id}
                                                     className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
                                                 >
-                                                    <MessageActions
-                                                        messageId={message.id}
-                                                        messageType={message.messageType}
-                                                        message={message.message}
-                                                        recalled={isRecalled}
-                                                        isOwnMessage={isOwnMessage}
-                                                        onEdit={handleEditMessage}
-                                                        onRecall={handleRecallMessage}
-                                                        onDelete={handleDeleteMessage}
-                                                    >
-                                                        <div
-                                                            className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                                                                isOwnMessage
-                                                                    ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
-                                                                    : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
-                                                            } ${message.id < 0 ? 'opacity-60' : ''}`}
-                                                        >
-                                                            {!isOwnMessage && message.senderName && (
-                                                                <p className="text-xs font-semibold text-white mb-1">
-                                                                    {message.senderName}
-                                                                </p>
-                                                            )}
-                                                            {message.messageType === 'IMAGE' && message.attachmentUrl && !isRecalled ? (
-                                                                <div className="space-y-1.5">
-                                                                    <img
-                                                                        src={resolveImageUrl(message.attachmentUrl) || message.attachmentUrl}
-                                                                        alt="Hình ảnh"
-                                                                        className="max-w-full rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
-                                                                        onClick={() => window.open(resolveImageUrl(message.attachmentUrl) || message.attachmentUrl, '_blank')}
-                                                                        loading="lazy"
-                                                                    />
-                                                                    {message.message && (
-                                                                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                                                                            {message.message}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            ) : (
-                                                                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                                                                    {message.message}
-                                                                </p>
-                                                            )}
-                                                            {message.edited && !isRecalled && (
-                                                                <p className="text-xs mt-1 italic opacity-75">(đã chỉnh sửa)</p>
-                                                            )}
-                                                            <p className="text-xs mt-1 text-white">
-                                                                {new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                                                            </p>
-                                                        </div>
-                                                    </MessageActions>
+                                                    <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
+                                                        isOwnMessage
+                                                            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+                                                            : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
+                                                    } ${message.id < 0 ? 'opacity-60' : ''}`}>
+                                                        {!isOwnMessage && message.senderName && (
+                                                            <p className="text-xs font-semibold text-white mb-1">{message.senderName}</p>
+                                                        )}
+                                                        {message.messageType === 'IMAGE' && message.attachmentUrl && !isRecalled ? (
+                                                            <div className="space-y-1.5">
+                                                                <img src={resolveImageUrl(message.attachmentUrl) || message.attachmentUrl} alt="Hình ảnh"
+                                                                    className="max-w-full rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
+                                                                    onClick={() => window.open(resolveImageUrl(message.attachmentUrl) || message.attachmentUrl, '_blank')}
+                                                                    loading="lazy" />
+                                                                {message.message && (
+                                                                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.message}</p>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.message}</p>
+                                                        )}
+                                                        {message.edited && !isRecalled && (<p className="text-xs mt-1 italic opacity-75">(đã chỉnh sửa)</p>)}
+                                                        <p className="text-xs mt-1 text-white">
+                                                            {new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             );
                                         })}
