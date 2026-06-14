@@ -193,6 +193,63 @@ export default function MainPage() {
     return list;
   }, [banners]);
 
+  // Separate banners by position
+  const sliderBanners = useMemo(() => {
+    return banners
+      .filter((b) => b.position === 'SLIDER')
+      .flatMap((b) =>
+        (b.bannerImages || []).map((img) => ({
+          imageUrl: img.imageUrl,
+          title: img.title || "",
+          subtitle: img.subtitle,
+          linkUrl: img.linkUrl,
+          bannerId: b.bannerId,
+        }))
+      );
+  }, [banners]);
+
+  const topBanners = useMemo(() => {
+    return banners
+      .filter((b) => b.position === 'TOP')
+      .flatMap((b) =>
+        (b.bannerImages || []).map((img) => ({
+          imageUrl: img.imageUrl,
+          title: img.title || "",
+          subtitle: img.subtitle,
+          linkUrl: img.linkUrl,
+          bannerId: b.bannerId,
+        }))
+      );
+  }, [banners]);
+
+  const middleBanners = useMemo(() => {
+    return banners
+      .filter((b) => b.position === 'MIDDLE')
+      .flatMap((b) =>
+        (b.bannerImages || []).map((img) => ({
+          imageUrl: img.imageUrl,
+          title: img.title || "",
+          subtitle: img.subtitle,
+          linkUrl: img.linkUrl,
+          bannerId: b.bannerId,
+        }))
+      );
+  }, [banners]);
+
+  const bottomBanners = useMemo(() => {
+    return banners
+      .filter((b) => b.position === 'BOTTOM')
+      .flatMap((b) =>
+        (b.bannerImages || []).map((img) => ({
+          imageUrl: img.imageUrl,
+          title: img.title || "",
+          subtitle: img.subtitle,
+          linkUrl: img.linkUrl,
+          bannerId: b.bannerId,
+        }))
+      );
+  }, [banners]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hoveredBrandId, setHoveredBrandId] = useState<number | null>(null);
@@ -571,10 +628,17 @@ export default function MainPage() {
         </div>
       </ScrollRevealBody>
 
-      {/* Body 2: Banner */}
-      {flattenedBannerImages.length > 0 && (
+      {/* Body 2: Top Banner */}
+      {topBanners.length > 0 && (
         <ScrollRevealBody variant="banner">
-          <CustomerBannerCarousel slides={flattenedBannerImages} resolveImageUrl={resolveImageUrl} />
+          <CustomerBannerCarousel slides={topBanners} resolveImageUrl={resolveImageUrl} autoPlayMs={4000} />
+        </ScrollRevealBody>
+      )}
+
+      {/* Body 2.5: Main Slider Banner */}
+      {sliderBanners.length > 0 && (
+        <ScrollRevealBody variant="banner">
+          <CustomerBannerCarousel slides={sliderBanners} resolveImageUrl={resolveImageUrl} />
         </ScrollRevealBody>
       )}
 
@@ -707,6 +771,13 @@ export default function MainPage() {
         </div>
       </ScrollRevealBody>
 
+      {/* Body 4.5: Middle Banner */}
+      {middleBanners.length > 0 && (
+        <ScrollRevealBody variant="banner">
+          <CustomerBannerCarousel slides={middleBanners} resolveImageUrl={resolveImageUrl} autoPlayMs={5000} />
+        </ScrollRevealBody>
+      )}
+
       {/* Body 5: Sản phẩm */}
       <ScrollRevealBody id="products" variant="products" className="scroll-mt-24">
         <div className="mb-4 flex flex-col justify-between gap-4 sm:mb-8 sm:flex-row sm:items-end">
@@ -818,6 +889,13 @@ export default function MainPage() {
           }, 2000);
         }}
       />
+
+      {/* Body 5.5: Bottom Banner */}
+      {bottomBanners.length > 0 && (
+        <ScrollRevealBody variant="banner">
+          <CustomerBannerCarousel slides={bottomBanners} resolveImageUrl={resolveImageUrl} autoPlayMs={4500} />
+        </ScrollRevealBody>
+      )}
 
       {/* Body 6: Tin tức */}
       <ScrollRevealBody variant="news">
