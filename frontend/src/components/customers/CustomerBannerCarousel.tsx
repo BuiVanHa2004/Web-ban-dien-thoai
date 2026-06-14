@@ -64,7 +64,7 @@ export default function CustomerBannerCarousel({
   return (
     <section className="px-0 sm:px-2">
       <div
-        className="relative mx-auto max-w-7xl overflow-hidden rounded-2xl bg-zinc-900 shadow-none ring-0 sm:rounded-[2.5rem]"
+        className="group relative mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-2xl shadow-black/30 ring-1 ring-white/10 sm:rounded-[3rem]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocusCapture={() => setPaused(true)}
@@ -80,7 +80,7 @@ export default function CustomerBannerCarousel({
               <img
                 src={src}
                 alt={slide.title}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition-transform duration-[8000ms] ease-out group-hover:scale-105"
                 draggable={false}
                 decoding="async"
                 fetchPriority={idx === 0 ? "high" : "low"}
@@ -91,7 +91,7 @@ export default function CustomerBannerCarousel({
             return (
               <div
                 key={`${slide.bannerId}-${idx}`}
-                className={`customer-banner-slide absolute inset-0 overflow-hidden transition-opacity duration-700 ease-in-out ${
+                className={`customer-banner-slide absolute inset-0 overflow-hidden transition-opacity duration-1000 ease-in-out ${
                   isActive ? "z-10 opacity-100" : "z-0 opacity-0"
                 }`}
                 aria-hidden={!isActive}
@@ -103,51 +103,64 @@ export default function CustomerBannerCarousel({
                 ) : (
                   imageEl
                 )}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 text-white sm:p-8 lg:p-12">
+                {/* Gradient overlay - modern design với nhiều lớp */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-cyan-900/20" />
+                
+                {/* Content container */}
+                <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-6 sm:p-10 lg:p-16">
+                  {/* Title with modern styling */}
                   <h2 
-                    className={`text-lg font-bold tracking-tight sm:text-3xl lg:text-5xl transition-all duration-700 ${
+                    className={`text-2xl font-black tracking-tight sm:text-4xl lg:text-6xl xl:text-7xl text-white transition-all duration-700 leading-tight ${
                       isActive 
                         ? "opacity-100 translate-y-0 translate-x-0" 
                         : "opacity-0 -translate-y-8 translate-x-4"
                     }`}
                     style={{ 
-                      textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
-                      transitionDelay: isActive ? '200ms' : '0ms'
+                      textShadow: '0 4px 20px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.8)',
+                      transitionDelay: isActive ? '300ms' : '0ms',
+                      letterSpacing: '-0.02em'
                     }}
                   >
                     {slide.title}
                   </h2>
+                  
+                  {/* Subtitle with modern styling */}
                   {slide.subtitle && (
                     <p 
-                      className={`mt-1 line-clamp-2 text-xs text-slate-100 sm:mt-2 sm:text-base lg:text-lg transition-all duration-700 ${
+                      className={`mt-3 max-w-2xl text-sm font-semibold text-slate-100 sm:mt-4 sm:text-lg lg:text-xl transition-all duration-700 leading-relaxed ${
                         isActive 
                           ? "opacity-100 translate-y-0 translate-x-0" 
                           : "opacity-0 -translate-y-6 translate-x-8"
                       }`}
                       style={{ 
-                        textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 3px 15px rgba(0,0,0,0.6)',
-                        transitionDelay: isActive ? '400ms' : '0ms'
+                        textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.7)',
+                        transitionDelay: isActive ? '500ms' : '0ms'
                       }}
                     >
                       {slide.subtitle}
                     </p>
                   )}
+                  
+                  {/* CTA Button with modern styling */}
                   {slide.linkUrl && (
                     <div 
-                      className={`pointer-events-auto mt-3 sm:mt-6 transition-all duration-700 ${
+                      className={`pointer-events-auto mt-6 sm:mt-8 transition-all duration-700 ${
                         isActive 
                           ? "opacity-100 translate-y-0 scale-100" 
                           : "opacity-0 translate-y-4 scale-95"
                       }`}
-                      style={{ transitionDelay: isActive ? '600ms' : '0ms' }}
+                      style={{ transitionDelay: isActive ? '700ms' : '0ms' }}
                     >
                       <Link
                         href={slide.linkUrl}
                         tabIndex={isActive ? 0 : -1}
-                        className="keep-light inline-flex items-center justify-center rounded-xl bg-zinc-100 px-4 py-2 text-xs font-semibold text-zinc-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-white active:translate-y-0 sm:rounded-2xl sm:px-6 sm:py-2.5 sm:text-sm"
+                        className="group/btn inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-4 text-sm font-black uppercase tracking-wider text-white shadow-2xl shadow-purple-500/30 transition-all hover:from-purple-500 hover:to-purple-600 hover:shadow-purple-500/50 active:scale-95 sm:rounded-3xl sm:px-10 sm:py-5 sm:text-base"
                       >
-                        Khám phá ngay
+                        <span>Khám phá ngay</span>
+                        <svg className="h-5 w-5 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
                       </Link>
                     </div>
                   )}
@@ -157,39 +170,48 @@ export default function CustomerBannerCarousel({
           })}
         </div>
 
+        {/* Navigation dots - modern design */}
         {count > 1 && (
           <>
-            <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-1.5 sm:bottom-6 sm:gap-2">
+            <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2 sm:bottom-8">
               {slides.map((_, i) => (
                 <button
                   key={i}
                   type="button"
                   aria-label={`Slide ${i + 1}`}
                   onClick={() => goTo(i)}
-                  className={`h-1.5 rounded-full transition-[width,background-color] duration-300 ease-out ${
-                    activeIndex === i ? "w-8 bg-white" : "w-2 bg-white/40 hover:bg-white/60"
+                  className={`group/dot relative transition-all duration-300 ${
+                    activeIndex === i ? "w-12" : "w-3"
                   }`}
-                />
+                >
+                  <div className={`h-1.5 rounded-full backdrop-blur-sm transition-all duration-300 ${
+                    activeIndex === i 
+                      ? "bg-white shadow-lg shadow-white/50" 
+                      : "bg-white/30 group-hover/dot:bg-white/50"
+                  }`} />
+                </button>
               ))}
             </div>
+            
+            {/* Navigation arrows - modern design */}
             <button
               type="button"
               aria-label="Slide trước"
               onClick={goPrev}
-              className="absolute left-2 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl bg-black/30 text-white backdrop-blur-sm transition hover:bg-black/50 active:scale-95 sm:left-4 sm:h-12 sm:w-12 sm:rounded-2xl"
+              className="absolute left-4 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-black/40 text-white backdrop-blur-md transition-all hover:bg-black/60 hover:scale-110 active:scale-95 sm:left-6 sm:h-14 sm:w-14 sm:rounded-3xl"
             >
-              <svg viewBox="0 0 24 24" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M15 18l-6-6 6-6" />
+              <svg viewBox="0 0 24 24" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" stroke="currentColor" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               type="button"
               aria-label="Slide sau"
               onClick={goNext}
-              className="absolute right-2 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl bg-black/30 text-white backdrop-blur-sm transition hover:bg-black/50 active:scale-95 sm:right-4 sm:h-12 sm:w-12 sm:rounded-2xl"
+              className="absolute right-4 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-black/40 text-white backdrop-blur-md transition-all hover:bg-black/60 hover:scale-110 active:scale-95 sm:right-6 sm:h-14 sm:w-14 sm:rounded-3xl"
             >
-              <svg viewBox="0 0 24 24" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M9 18l6-6-6-6" />
+              <svg viewBox="0 0 24 24" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" stroke="currentColor" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </>

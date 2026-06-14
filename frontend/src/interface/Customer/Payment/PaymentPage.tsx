@@ -251,6 +251,10 @@ export default function PaymentPage() {
       await removeCheckedOutItemsFromCart(draft);
       clearCheckoutDraft();
       setSuccess("COD");
+      // Cuộn lên đầu trang sau khi thanh toán thành công
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Không thể thanh toán COD.");
     } finally {

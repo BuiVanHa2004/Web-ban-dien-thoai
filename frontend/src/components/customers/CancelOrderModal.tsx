@@ -87,8 +87,12 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
         reasonId: selectedReasonId,
         cancelNote: selectedReason?.allowInput ? cancelNote : undefined,
       });
-      onSuccess(updatedOrder);
+      // Đóng modal trước khi gọi onSuccess để không bị đè popup
       onClose();
+      // Delay một chút để animation đóng modal hoàn tất
+      setTimeout(() => {
+        onSuccess(updatedOrder);
+      }, 100);
     } catch (err: any) {
       setError(err.message || "Có lỗi xảy ra khi hủy đơn hàng.");
     } finally {
