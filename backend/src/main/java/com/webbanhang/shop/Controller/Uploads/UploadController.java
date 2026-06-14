@@ -80,6 +80,19 @@ public class UploadController {
         }
     }
 
+    @PostMapping(value = "/chat-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> uploadChatImage(@RequestParam("file") MultipartFile file) {
+        try {
+            MinioStorageService.UploadedObject uploaded = minioStorageService.uploadChatImage(file);
+            return ResponseEntity.ok(Map.of(
+                    "url", uploaded.url(),
+                    "objectName", uploaded.objectName()
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @PostMapping("/products/delete")
     public ResponseEntity<Map<String, String>> deleteProductImage(@RequestBody Map<String, String> request) {
         String url = request.get("url");

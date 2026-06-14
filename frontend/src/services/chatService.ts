@@ -108,7 +108,7 @@ class ChatService {
         const formData = new FormData();
         formData.append('file', file);
         
-        const response = await fetch(`${API_URL}/uploads/avatars`, {
+        const response = await fetch(`${API_URL}/uploads/chat-images`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
