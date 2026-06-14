@@ -113,11 +113,10 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
       
     } catch (err: any) {
       // Nếu có lỗi, hiện thông báo
-      showToast({
-        title: "Lỗi",
-        message: err.message || "Có lỗi xảy ra khi hủy đơn hàng.",
-        type: "error",
-      });
+      showToast(
+        err.message || "Có lỗi xảy ra khi hủy đơn hàng.",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
