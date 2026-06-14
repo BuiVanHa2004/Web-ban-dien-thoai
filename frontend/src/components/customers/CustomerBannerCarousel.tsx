@@ -91,7 +91,7 @@ export default function CustomerBannerCarousel({
             return (
               <div
                 key={`${slide.bannerId}-${idx}`}
-                className={`customer-banner-slide absolute inset-0 overflow-hidden ${
+                className={`customer-banner-slide absolute inset-0 overflow-hidden transition-opacity duration-700 ease-in-out ${
                   isActive ? "z-10 opacity-100" : "z-0 opacity-0"
                 }`}
                 aria-hidden={!isActive}
@@ -105,16 +105,43 @@ export default function CustomerBannerCarousel({
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 text-white sm:p-8 lg:p-12">
-                  <h2 className="text-lg font-bold tracking-tight sm:text-3xl lg:text-5xl" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)' }}>
+                  <h2 
+                    className={`text-lg font-bold tracking-tight sm:text-3xl lg:text-5xl transition-all duration-700 ${
+                      isActive 
+                        ? "opacity-100 translate-y-0 translate-x-0" 
+                        : "opacity-0 -translate-y-8 translate-x-4"
+                    }`}
+                    style={{ 
+                      textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)',
+                      transitionDelay: isActive ? '200ms' : '0ms'
+                    }}
+                  >
                     {slide.title}
                   </h2>
                   {slide.subtitle && (
-                    <p className="mt-1 line-clamp-2 text-xs text-slate-100 sm:mt-2 sm:text-base lg:text-lg" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 3px 15px rgba(0,0,0,0.6)' }}>
+                    <p 
+                      className={`mt-1 line-clamp-2 text-xs text-slate-100 sm:mt-2 sm:text-base lg:text-lg transition-all duration-700 ${
+                        isActive 
+                          ? "opacity-100 translate-y-0 translate-x-0" 
+                          : "opacity-0 -translate-y-6 translate-x-8"
+                      }`}
+                      style={{ 
+                        textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 3px 15px rgba(0,0,0,0.6)',
+                        transitionDelay: isActive ? '400ms' : '0ms'
+                      }}
+                    >
                       {slide.subtitle}
                     </p>
                   )}
                   {slide.linkUrl && (
-                    <div className="pointer-events-auto mt-3 sm:mt-6">
+                    <div 
+                      className={`pointer-events-auto mt-3 sm:mt-6 transition-all duration-700 ${
+                        isActive 
+                          ? "opacity-100 translate-y-0 scale-100" 
+                          : "opacity-0 translate-y-4 scale-95"
+                      }`}
+                      style={{ transitionDelay: isActive ? '600ms' : '0ms' }}
+                    >
                       <Link
                         href={slide.linkUrl}
                         tabIndex={isActive ? 0 : -1}

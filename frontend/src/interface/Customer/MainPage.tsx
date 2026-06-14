@@ -628,17 +628,10 @@ export default function MainPage() {
         </div>
       </ScrollRevealBody>
 
-      {/* Body 2: Main Slider Banner */}
-      {sliderBanners.length > 0 && (
+      {/* Body 2: Top Banner - trên Các thương hiệu nổi bật */}
+      {topBanners.length > 0 && (
         <ScrollRevealBody variant="banner">
-          <CustomerBannerCarousel slides={sliderBanners} resolveImageUrl={resolveImageUrl} />
-        </ScrollRevealBody>
-      )}
-
-      {/* Body 2.5: Middle Banner - trên Thương hiệu */}
-      {middleBanners.length > 0 && (
-        <ScrollRevealBody variant="banner">
-          <CustomerBannerCarousel slides={middleBanners} resolveImageUrl={resolveImageUrl} autoPlayMs={5000} />
+          <CustomerBannerCarousel slides={topBanners} resolveImageUrl={resolveImageUrl} autoPlayMs={4000} />
         </ScrollRevealBody>
       )}
 
@@ -723,10 +716,10 @@ export default function MainPage() {
         </div>
       </ScrollRevealBody>
 
-      {/* Body 4.5: Bottom Banner - trên Danh mục */}
-      {bottomBanners.length > 0 && (
+      {/* Body 3.5: Middle Banner - trên Các danh mục */}
+      {middleBanners.length > 0 && (
         <ScrollRevealBody variant="banner">
-          <CustomerBannerCarousel slides={bottomBanners} resolveImageUrl={resolveImageUrl} autoPlayMs={4500} />
+          <CustomerBannerCarousel slides={middleBanners} resolveImageUrl={resolveImageUrl} autoPlayMs={5000} />
         </ScrollRevealBody>
       )}
 
@@ -778,10 +771,10 @@ export default function MainPage() {
         </div>
       </ScrollRevealBody>
 
-      {/* Body 4.5: Top Banner - trên Sản phẩm */}
-      {topBanners.length > 0 && (
+      {/* Body 4.5: Bottom Banner - trên Sản phẩm */}
+      {bottomBanners.length > 0 && (
         <ScrollRevealBody variant="banner">
-          <CustomerBannerCarousel slides={topBanners} resolveImageUrl={resolveImageUrl} autoPlayMs={4000} />
+          <CustomerBannerCarousel slides={bottomBanners} resolveImageUrl={resolveImageUrl} autoPlayMs={4500} />
         </ScrollRevealBody>
       )}
 
@@ -896,6 +889,13 @@ export default function MainPage() {
           }, 2000);
         }}
       />
+
+      {/* Body 5.5: Main Slider Banner - trên Tin tức */}
+      {sliderBanners.length > 0 && (
+        <ScrollRevealBody variant="banner">
+          <CustomerBannerCarousel slides={sliderBanners} resolveImageUrl={resolveImageUrl} />
+        </ScrollRevealBody>
+      )}
 
       {/* Body 6: Tin tức */}
       <ScrollRevealBody variant="news">
