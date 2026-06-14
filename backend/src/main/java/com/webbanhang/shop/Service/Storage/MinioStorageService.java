@@ -356,10 +356,10 @@ public class MinioStorageService {
             throw new IllegalArgumentException("File is empty");
         }
 
-        // Validate file size (max 2MB)
-        long maxSize = 2 * 1024 * 1024; // 2MB
+        // Validate file size (max 10MB)
+        long maxSize = 10 * 1024 * 1024; // 10MB
         if (file.getSize() > maxSize) {
-            throw new IllegalArgumentException("File size exceeds maximum limit of 2MB");
+            throw new IllegalArgumentException("File size exceeds maximum limit of 10MB");
         }
 
         String original = Objects.toString(file.getOriginalFilename(), "");
@@ -370,8 +370,8 @@ public class MinioStorageService {
         }
 
         // Validate file format
-        if (!".jpg".equals(ext) && !".jpeg".equals(ext) && !".png".equals(ext) && !".webp".equals(ext)) {
-            throw new IllegalArgumentException("Unsupported file format. Only JPG, PNG, and WebP are allowed");
+        if (!".jpg".equals(ext) && !".jpeg".equals(ext) && !".png".equals(ext) && !".webp".equals(ext) && !".gif".equals(ext)) {
+            throw new IllegalArgumentException("Unsupported file format. Only JPG, PNG, WebP and GIF are allowed");
         }
 
         String objectName = "avatars/" + UUID.randomUUID() + ext;
@@ -384,6 +384,8 @@ public class MinioStorageService {
                 contentType = "image/jpeg";
             } else if (".webp".equals(ext)) {
                 contentType = "image/webp";
+            } else if (".gif".equals(ext)) {
+                contentType = "image/gif";
             } else {
                 contentType = "application/octet-stream";
             }

@@ -26,6 +26,8 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
     const selectedRoomRef = useRef<ChatRoom | null>(null);
     const isLoadingRoomsRef = useRef<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    // Cache messages theo roomId — tránh fetch lại khi quay lại room đã xem
+    const messagesCacheRef = useRef<Map<number, ChatMessage[]>>(new Map());
     
     // Menu & edit states cho từng message
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
@@ -122,13 +124,12 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                     // Check if message already exists (for recall events)
                     setMessages(prev => {
                         const existingIndex = prev.findIndex(m => m.id === message.id);
-                        
+                        let next: ChatMessage[];
                         if (existingIndex !== -1) {
                             // Message exists - UPDATE (for recall)
                             console.log('🔄 [AdminChatBox] Updating existing message:', message.id);
-                            const updated = [...prev];
-                            updated[existingIndex] = message;
-                            return updated;
+                            next = [...prev];
+                            next[existingIndex] = message;
                         } else {
                             // New message - thay thế optimistic nếu cùng nội dung + sender
                             const optimisticIndex = prev.findIndex(
@@ -137,12 +138,15 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                                     && m.message === message.message
                             );
                             if (optimisticIndex !== -1) {
-                                const updated = [...prev];
-                                updated[optimisticIndex] = message;
-                                return updated;
+                                next = [...prev];
+                                next[optimisticIndex] = message;
+                            } else {
+                                next = [...prev, message];
                             }
-                            return [...prev, message];
                         }
+                        // Cập nhật cache cùng lúc
+                        messagesCacheRef.current.set(message.chatRoomId, next);
+                        return next;
                     });
                     
                     if (message.senderType === 'CUSTOMER') {
@@ -267,9 +271,19 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
         }
     };
 
-    const loadMessages = async (chatRoomId: number) => {
+    const loadMessages = async (chatRoomId: number, forceReload = false) => {
+        // Dùng cache nếu đã có và không bắt buộc reload
+        if (!forceReload) {
+            const cached = messagesCacheRef.current.get(chatRoomId);
+            if (cached && cached.length > 0) {
+                setMessages(cached);
+                setTimeout(() => scrollToBottom(), 50);
+                return;
+            }
+        }
         try {
             const response = await chatService.getAdminMessages(chatRoomId, token, 0, 100);
+            messagesCacheRef.current.set(chatRoomId, response.content);
             setMessages(response.content);
             setTimeout(() => scrollToBottom(), 50);
         } catch (error) {
@@ -368,8 +382,10 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                     await chatService.deleteAdminChatRoom(selectedRoom.id, token);
                     
                     // Go back to list
+                    const deletedRoomId = selectedRoom.id;
                     setSelectedRoom(null);
                     setMessages([]);
+                    messagesCacheRef.current.delete(deletedRoomId); // xóa cache
                     
                     // Reload chat rooms
                     loadChatRooms();
@@ -446,9 +462,9 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
             return;
         }
 
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        const maxSize = 10 * 1024 * 1024; // 10MB
         if (file.size > maxSize) {
-            alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 5MB');
+            alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 10MB');
             return;
         }
 

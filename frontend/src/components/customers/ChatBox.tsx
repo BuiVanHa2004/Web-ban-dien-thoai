@@ -25,6 +25,8 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
     const isOpenRef = useRef<boolean>(false);
     const chatRoomRef = useRef<ChatRoom | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    // Cache: đã load messages rồi thì không fetch lại khi mở/đóng
+    const messagesLoadedRef = useRef<boolean>(false);
     
     // Menu & edit states cho từng message
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
@@ -210,13 +212,15 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
 
     const loadMessages = async () => {
         if (!chatRoom) return;
-
+        // Đã có tin nhắn trong cache → không fetch lại
+        if (messagesLoadedRef.current && messages.length > 0) {
+            setTimeout(() => scrollToBottom(), 50);
+            return;
+        }
         try {
-            // Tải nhanh hơn với size lớn hơn để ít request hơn
             const response = await chatService.getCustomerMessages(chatRoom.id, token, 0, 100);
             setMessages(response.content);
-            
-            // Auto scroll to bottom sau khi load messages
+            messagesLoadedRef.current = true;
             setTimeout(() => scrollToBottom(), 50);
         } catch (error) {
             console.error('Failed to load messages:', error);
@@ -316,6 +320,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                     // Close chat box and clear messages
                     setIsOpen(false);
                     setMessages([]);
+                    messagesLoadedRef.current = false; // reset cache
                     
                     // Log for debugging
                     console.log('✅ [ChatBox] Customer deleted chat at:', new Date().toISOString());
@@ -391,9 +396,9 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
             return;
         }
 
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        const maxSize = 10 * 1024 * 1024; // 10MB
         if (file.size > maxSize) {
-            alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 5MB');
+            alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 10MB');
             return;
         }
 
