@@ -103,12 +103,13 @@ export default function CustomerBannerCarousel({
                 ) : (
                   imageEl
                 )}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 text-white sm:p-8 lg:p-12">
-                  <h2 className="text-lg font-bold tracking-tight drop-shadow-lg sm:text-3xl lg:text-5xl">
+                  <h2 className="text-lg font-bold tracking-tight sm:text-3xl lg:text-5xl" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.5)' }}>
                     {slide.title}
                   </h2>
                   {slide.subtitle && (
-                    <p className="mt-1 line-clamp-2 text-xs text-slate-200 drop-shadow-md sm:mt-2 sm:text-base lg:text-lg">
+                    <p className="mt-1 line-clamp-2 text-xs text-slate-100 sm:mt-2 sm:text-base lg:text-lg" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 3px 15px rgba(0,0,0,0.6)' }}>
                       {slide.subtitle}
                     </p>
                   )}
