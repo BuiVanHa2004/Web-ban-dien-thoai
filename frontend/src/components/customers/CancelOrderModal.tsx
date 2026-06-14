@@ -38,9 +38,11 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
       // Lock scroll when modal is open
       document.body.style.overflow = "hidden";
     } else {
+      // Reset state khi đóng modal
       setSelectedReasonId(null);
       setCancelNote("");
       setError(null);
+      setLoading(false);
       document.body.style.overflow = "unset";
     }
     return () => {
@@ -71,31 +73,37 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
 
   const handleSubmit = async () => {
     if (!selectedReasonId) return;
+    
+    // Hiển thị popup xác nhận
     const ok = await confirm({
       title: "Hủy đơn hàng",
       message: "Bạn có chắc chắn muốn hủy đơn hàng này không?",
       type: "warning",
       confirmText: "HỦY ĐƠN",
     });
+    
     if (!ok) return;
 
     setLoading(true);
     setError(null);
+    
     try {
       const updatedOrder = await orderService.cancelOrder(orderId, {
         customerId,
         reasonId: selectedReasonId,
         cancelNote: selectedReason?.allowInput ? cancelNote : undefined,
       });
-      // Đóng modal trước khi gọi onSuccess để không bị đè popup
+      
+      // Đóng modal ngay lập tức
       onClose();
-      // Delay một chút để animation đóng modal hoàn tất
+      
+      // Gọi onSuccess sau khi modal đã đóng
       setTimeout(() => {
         onSuccess(updatedOrder);
-      }, 100);
+      }, 150);
+      
     } catch (err: any) {
       setError(err.message || "Có lỗi xảy ra khi hủy đơn hàng.");
-    } finally {
       setLoading(false);
     }
   };
