@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Users, Trash2, Image as ImageIcon } from 'lucide-react';
+import { MessageCircle, X, Send, Users, Trash2, Image as ImageIcon, MoreVertical, Edit, RotateCcw } from 'lucide-react';
 import { chatService, ChatMessage, ChatRoom } from '@/services/chatService';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { resolveImageUrl } from '@/common/resolveImageUrl';
@@ -26,6 +26,11 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
     const selectedRoomRef = useRef<ChatRoom | null>(null);
     const isLoadingRoomsRef = useRef<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    
+    // Menu & edit states cho từng message
+    const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editText, setEditText] = useState('');
     
     // Dialog states
     const [confirmDialog, setConfirmDialog] = useState<{
@@ -706,38 +711,134 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                                         {messages.map((message) => {
                                             const isRecalled = message.recalled || message.message === 'Tin nhắn đã được thu hồi';
                                             const isOwnMessage = message.senderType === 'ADMIN';
+                                            const isMenuOpen = openMenuId === message.id;
+                                            const isEditing = editingId === message.id;
 
                                             return (
-                                                <div
-                                                    key={message.id}
-                                                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-                                                >
-                                                    <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                                                        isOwnMessage
-                                                            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
-                                                            : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
-                                                    } ${message.id < 0 ? 'opacity-60' : ''}`}>
-                                                        {!isOwnMessage && message.senderName && (
-                                                            <p className="text-xs font-semibold text-white mb-1">{message.senderName}</p>
+                                                <div key={message.id}>
+                                                    {/* Hàng chính: bubble + nút 3 chấm */}
+                                                    <div className={`flex items-start gap-1.5 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                        {/* Nút 3 chấm bên trái bubble (cho tin nhắn bên phải) */}
+                                                        {isOwnMessage && (
+                                                            <button
+                                                                onClick={() => setOpenMenuId(isMenuOpen ? null : message.id)}
+                                                                className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center sm:opacity-0 sm:hover:opacity-100 transition-opacity shadow"
+                                                                title="Thao tác"
+                                                            >
+                                                                <MoreVertical className="w-3.5 h-3.5" />
+                                                            </button>
                                                         )}
-                                                        {message.messageType === 'IMAGE' && message.attachmentUrl && !isRecalled ? (
-                                                            <div className="space-y-1.5">
-                                                                <img src={resolveImageUrl(message.attachmentUrl) || message.attachmentUrl} alt="Hình ảnh"
-                                                                    className="max-w-full rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
-                                                                    onClick={() => window.open(resolveImageUrl(message.attachmentUrl) || message.attachmentUrl, '_blank')}
-                                                                    loading="lazy" />
-                                                                {message.message && (
-                                                                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.message}</p>
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.message}</p>
+                                                        
+                                                        {/* Bubble */}
+                                                        <div className={`max-w-[75%] rounded-3xl px-4 py-3 shadow-md ${
+                                                            isOwnMessage
+                                                                ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
+                                                                : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
+                                                        } ${message.id < 0 ? 'opacity-60' : ''}`}>
+                                                            {!isOwnMessage && message.senderName && (
+                                                                <p className="text-xs font-bold text-white mb-1.5">
+                                                                    {message.senderName}
+                                                                </p>
+                                                            )}
+                                                            {message.messageType === 'IMAGE' && message.attachmentUrl && !isRecalled ? (
+                                                                <div className="space-y-1.5">
+                                                                    <img src={resolveImageUrl(message.attachmentUrl) || message.attachmentUrl} alt="Hình ảnh"
+                                                                        className="max-w-full rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
+                                                                        onClick={() => window.open(resolveImageUrl(message.attachmentUrl) || message.attachmentUrl, '_blank')}
+                                                                        loading="lazy" />
+                                                                    {message.message && (
+                                                                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words font-medium">{message.message}</p>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words font-medium">{message.message}</p>
+                                                            )}
+                                                            {message.edited && !isRecalled && (<p className="text-xs mt-1 italic opacity-75">(đã chỉnh sửa)</p>)}
+                                                            <p className={`text-xs mt-1.5 font-medium ${isOwnMessage ? 'text-white' : 'text-white/95'}`}>
+                                                                {new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                                            </p>
+                                                        </div>
+
+                                                        {/* Nút 3 chấm bên phải bubble (cho tin nhắn bên trái) */}
+                                                        {!isOwnMessage && (
+                                                            <button
+                                                                onClick={() => setOpenMenuId(isMenuOpen ? null : message.id)}
+                                                                className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center sm:opacity-0 sm:hover:opacity-100 transition-opacity shadow"
+                                                                title="Thao tác"
+                                                            >
+                                                                <MoreVertical className="w-3.5 h-3.5" />
+                                                            </button>
                                                         )}
-                                                        {message.edited && !isRecalled && (<p className="text-xs mt-1 italic opacity-75">(đã chỉnh sửa)</p>)}
-                                                        <p className="text-xs mt-1 text-white">
-                                                            {new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                                                        </p>
                                                     </div>
+
+                                                    {/* Action bar — BÊN DƯỚI bubble, tạo khoảng trống */}
+                                                    {isMenuOpen && (
+                                                        <div className={`flex mt-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                            <div className="bg-gray-900/95 backdrop-blur-xl rounded-full shadow-2xl border border-gray-700 px-1.5 py-1.5 flex gap-1">
+                                                                {message.messageType === 'TEXT' && !isRecalled && isOwnMessage && (
+                                                                    <button
+                                                                        onClick={() => { setEditingId(message.id); setEditText(message.message); setOpenMenuId(null); }}
+                                                                        className="w-7 h-7 rounded-full text-white bg-blue-500/20 hover:bg-blue-500 flex items-center justify-center transition-colors"
+                                                                        title="Chỉnh sửa"
+                                                                    >
+                                                                        <Edit className="w-3 h-3" />
+                                                                    </button>
+                                                                )}
+                                                                {!isRecalled && isOwnMessage && (
+                                                                    <button
+                                                                        onClick={() => { handleRecallMessage(message.id); setOpenMenuId(null); }}
+                                                                        className="w-7 h-7 rounded-full text-white bg-orange-500/20 hover:bg-orange-500 flex items-center justify-center transition-colors"
+                                                                        title="Thu hồi"
+                                                                    >
+                                                                        <RotateCcw className="w-3 h-3" />
+                                                                    </button>
+                                                                )}
+                                                                <button
+                                                                    onClick={() => { handleDeleteMessage(message.id); setOpenMenuId(null); }}
+                                                                    className="w-7 h-7 rounded-full text-white bg-red-500/20 hover:bg-red-500 flex items-center justify-center transition-colors"
+                                                                    title="Xóa"
+                                                                >
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Edit inline */}
+                                                    {isEditing && (
+                                                        <div className={`flex mt-1 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                                                            <div className="w-full max-w-[80%] space-y-2">
+                                                                <textarea
+                                                                    value={editText}
+                                                                    onChange={e => setEditText(e.target.value)}
+                                                                    className="w-full p-2 border-2 border-blue-400 rounded-lg text-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    rows={3}
+                                                                    autoFocus
+                                                                    onKeyDown={e => {
+                                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                                            e.preventDefault();
+                                                                            if (editText.trim() && editText !== message.message) {
+                                                                                handleEditMessage(message.id, editText.trim());
+                                                                                setEditingId(null);
+                                                                            }
+                                                                        }
+                                                                        if (e.key === 'Escape') { setEditingId(null); }
+                                                                    }}
+                                                                />
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={() => { if (editText.trim() && editText !== message.message) { handleEditMessage(message.id, editText.trim()); setEditingId(null); } }}
+                                                                        disabled={!editText.trim() || editText === message.message}
+                                                                        className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-50 shadow-md">
+                                                                        ✓ Lưu
+                                                                    </button>
+                                                                    <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-500 text-white text-sm font-semibold rounded-lg hover:bg-gray-600 shadow-md">
+                                                                        ✕ Hủy
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             );
                                         })}
