@@ -703,7 +703,7 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                             ) : (
                                 <>
                                     {/* Messages Area */}
-                                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white min-h-0">
+                                    <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-white min-h-0">
                                         {messages.map((message) => {
                                             const isRecalled = message.recalled || message.message === 'Tin nhắn đã được thu hồi';
                                             const isOwnMessage = message.senderType === 'ADMIN';
@@ -725,7 +725,7 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                                                             isOwnMessage
                                                                 ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
                                                                 : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
-                                                        } ${message.id < 0 ? 'opacity-70' : ''}`}
+                                                        } ${message.id < 0 ? 'opacity-60' : ''}`}
                                                     >
                                                         {!isOwnMessage && message.senderName && (
                                                             <p className="text-xs font-semibold text-white mb-1">

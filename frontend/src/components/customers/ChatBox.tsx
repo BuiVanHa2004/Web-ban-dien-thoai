@@ -527,7 +527,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                     </div>
 
                     {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white min-h-0">
+                    <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-white min-h-0">
                                 {isLoading ? (
                                     <div className="flex items-center justify-center h-full">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
@@ -561,7 +561,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                                                             isOwnMessage
                                                                 ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
                                                                 : 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
-                                                        } ${message.id < 0 ? 'opacity-70' : ''}`}
+                                                        } ${message.id < 0 ? 'opacity-60' : ''}`}
                                                     >
                                                         {!isOwnMessage && message.senderName && (
                                                             <p className="text-xs font-bold text-white mb-1.5">
