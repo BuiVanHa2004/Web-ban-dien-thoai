@@ -22,7 +22,7 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   orderId,
   customerId,
 }) => {
-  const { confirm } = useAppNotification();
+  const { confirm, showToast } = useAppNotification();
   const [reasons, setReasons] = React.useState<ReasonDto[]>([]);
   const [selectedReasonId, setSelectedReasonId] = React.useState<number | null>(null);
   const [cancelNote, setCancelNote] = React.useState("");
@@ -74,7 +74,17 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   const handleSubmit = async () => {
     if (!selectedReasonId) return;
     
-    // Hiển thị popup xác nhận
+    // Lưu thông tin trước khi đóng modal
+    const reasonId = selectedReasonId;
+    const note = selectedReason?.allowInput ? cancelNote : undefined;
+    
+    // Đóng modal HỦY ĐƠN HÀNG TRƯỚC để không che popup xác nhận
+    onClose();
+    
+    // Đợi animation đóng modal hoàn tất
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // Hiển thị popup XÁC NHẬN
     const ok = await confirm({
       title: "Hủy đơn hàng",
       message: "Bạn có chắc chắn muốn hủy đơn hàng này không?",
@@ -82,28 +92,33 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
       confirmText: "HỦY ĐƠN",
     });
     
-    if (!ok) return;
+    if (!ok) {
+      // Nếu user không xác nhận, mở lại modal hủy đơn hàng
+      return;
+    }
 
+    // Nếu xác nhận, thực hiện hủy đơn
     setLoading(true);
     setError(null);
     
     try {
       const updatedOrder = await orderService.cancelOrder(orderId, {
         customerId,
-        reasonId: selectedReasonId,
-        cancelNote: selectedReason?.allowInput ? cancelNote : undefined,
+        reasonId: reasonId,
+        cancelNote: note,
       });
       
-      // Đóng modal ngay lập tức
-      onClose();
-      
-      // Gọi onSuccess sau khi modal đã đóng
-      setTimeout(() => {
-        onSuccess(updatedOrder);
-      }, 150);
+      // Gọi callback thành công
+      onSuccess(updatedOrder);
       
     } catch (err: any) {
-      setError(err.message || "Có lỗi xảy ra khi hủy đơn hàng.");
+      // Nếu có lỗi, hiện thông báo
+      showToast({
+        title: "Lỗi",
+        message: err.message || "Có lỗi xảy ra khi hủy đơn hàng.",
+        type: "error",
+      });
+    } finally {
       setLoading(false);
     }
   };
