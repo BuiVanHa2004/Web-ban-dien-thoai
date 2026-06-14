@@ -25,11 +25,9 @@ export default function MessageMenu({
     onDelete,
 }: MessageMenuProps) {
     const [showMenu, setShowMenu] = useState(false);
-    const [openUpward, setOpenUpward] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editedMessage, setEditedMessage] = useState(message);
     const menuRef = useRef<HTMLDivElement>(null);
-    const buttonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -44,16 +42,6 @@ export default function MessageMenu({
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [showMenu]);
-
-    const handleToggleMenu = () => {
-        if (!showMenu && buttonRef.current) {
-            const rect = buttonRef.current.getBoundingClientRect();
-            // Mở lên nếu không đủ chỗ bên dưới (cần ~60px), ngược lại mở xuống
-            const spaceBelow = window.innerHeight - rect.bottom;
-            setOpenUpward(spaceBelow < 80);
-        }
-        setShowMenu(!showMenu);
-    };
 
     const handleEditConfirm = () => {
         if (editedMessage.trim() && editedMessage !== message) {
@@ -116,21 +104,108 @@ export default function MessageMenu({
         );
     }
 
-    return (
-        <div ref={menuRef} className="absolute -top-1 -right-1 z-10">
-            <button
-                ref={buttonRef}
-                onClick={handleToggleMenu}
-                className="bg-black/50 backdrop-blur-sm text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg hover:bg-black/70"
-                title="Thao tác"
-            >
-                <MoreVertical className="w-3.5 h-3.5" />
-            </button>
+    /* Nút 3 chấm + actions nằm NGOÀI bubble, render dưới dạng wrapper bọc bên ngoài.
+       Component này trả về null — việc render nút & menu được thực hiện bởi
+       MessageWrapper ở ChatBox/AdminChatBox để tránh đè lên tin nhắn. */
+    return null;
+}
 
+/* ------------------------------------------------------------------ */
+/* MessageWrapper: bọc ngoài bubble, tự quản lý nút 3 chấm + action   */
+/* ------------------------------------------------------------------ */
+interface MessageWrapperProps {
+    messageId: number;
+    messageType: 'TEXT' | 'IMAGE' | 'FILE' | 'SYSTEM';
+    message: string;
+    recalled: boolean;
+    isOwnMessage: boolean;
+    onEdit: (messageId: number, newMessage: string) => void;
+    onRecall: (messageId: number) => void;
+    onDelete: (messageId: number) => void;
+    children: React.ReactNode;
+}
+
+export function MessageWrapper({
+    messageId,
+    messageType,
+    message,
+    recalled,
+    isOwnMessage,
+    onEdit,
+    onRecall,
+    onDelete,
+    children,
+}: MessageWrapperProps) {
+    const [showMenu, setShowMenu] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedMessage, setEditedMessage] = useState(message);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setShowMenu(false);
+            }
+        };
+        if (showMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showMenu]);
+
+    const handleEditConfirm = () => {
+        if (editedMessage.trim() && editedMessage !== message) {
+            onEdit(messageId, editedMessage.trim());
+            setIsEditing(false);
+            setShowMenu(false);
+        }
+    };
+
+    const handleEditCancel = () => {
+        setEditedMessage(message);
+        setIsEditing(false);
+    };
+
+    const handleRecall = () => {
+        onRecall(messageId);
+        setShowMenu(false);
+    };
+
+    const handleDelete = () => {
+        onDelete(messageId);
+        setShowMenu(false);
+    };
+
+    return (
+        <div
+            ref={wrapperRef}
+            className={`flex flex-col gap-1 ${isOwnMessage ? 'items-end' : 'items-start'}`}
+        >
+            {/* Bubble */}
+            <div className="relative group">
+                {/* Nút 3 chấm – nằm ngoài bubble, phía góc trên */}
+                <button
+                    onClick={() => setShowMenu((v) => !v)}
+                    className={`absolute -top-2 z-10 bg-black/50 backdrop-blur-sm text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg hover:bg-black/70 ${
+                        isOwnMessage ? '-left-7' : '-right-7'
+                    }`}
+                    title="Thao tác"
+                >
+                    <MoreVertical className="w-3.5 h-3.5" />
+                </button>
+
+                {children}
+            </div>
+
+            {/* Action bar – hiển thị BÊN DƯỚI bubble, không đè */}
             {showMenu && (
-                <div className={`absolute right-0 bg-gray-900/95 backdrop-blur-xl rounded-full shadow-2xl border border-gray-700 px-1.5 py-1.5 flex gap-1 z-20 ${
-                    openUpward ? 'bottom-full mb-2' : 'top-full mt-2'
-                }`}>
+                <div
+                    className={`bg-gray-900/95 backdrop-blur-xl rounded-full shadow-2xl border border-gray-700 px-1.5 py-1.5 flex gap-1 ${
+                        isOwnMessage ? 'mr-1' : 'ml-1'
+                    }`}
+                >
                     {messageType === 'TEXT' && !recalled && isOwnMessage && (
                         <button
                             onClick={() => {
@@ -161,6 +236,43 @@ export default function MessageMenu({
                     >
                         <Trash2 className="w-3 h-3" />
                     </button>
+                </div>
+            )}
+
+            {/* Edit inline */}
+            {isEditing && (
+                <div className="w-full max-w-[80%] space-y-2 px-1">
+                    <textarea
+                        value={editedMessage}
+                        onChange={(e) => setEditedMessage(e.target.value)}
+                        className="w-full p-2 border-2 border-blue-400 rounded-lg text-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows={3}
+                        autoFocus
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleEditConfirm();
+                            }
+                            if (e.key === 'Escape') {
+                                handleEditCancel();
+                            }
+                        }}
+                    />
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleEditConfirm}
+                            disabled={!editedMessage.trim() || editedMessage === message}
+                            className="px-4 py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                        >
+                            ✓ Lưu
+                        </button>
+                        <button
+                            onClick={handleEditCancel}
+                            className="px-4 py-2 bg-gray-500 text-white text-sm font-semibold rounded-lg hover:bg-gray-600 shadow-md"
+                        >
+                            ✕ Hủy
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

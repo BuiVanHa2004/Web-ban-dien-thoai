@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Trash2, Image as ImageIcon } from 'lucide-react';
 import { chatService, ChatMessage, ChatRoom } from '@/services/chatService';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import MessageMenu from '@/components/chat/MessageMenu';
+import { MessageWrapper } from '@/components/chat/MessageMenu';
 import { resolveImageUrl } from '@/common/resolveImageUrl';
 
 interface ChatBoxProps {
@@ -94,7 +94,18 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                         updated[existingIndex] = message;
                         return updated;
                     } else {
-                        // New message - ADD
+                        // New message - ADD (thay thế optimistic nếu cùng nội dung + sender)
+                        const optimisticIndex = prev.findIndex(
+                            m => m.id < 0
+                                && m.senderType === message.senderType
+                                && m.message === message.message
+                        );
+                        if (optimisticIndex !== -1) {
+                            console.log('✅ [ChatBox] Replacing optimistic message with real:', message.id);
+                            const updated = [...prev];
+                            updated[optimisticIndex] = message;
+                            return updated;
+                        }
                         console.log('📩 [ChatBox] Adding new message to list');
                         return [...prev, message];
                     }
@@ -197,11 +208,12 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
         if (!chatRoom) return;
 
         try {
-            const response = await chatService.getCustomerMessages(chatRoom.id, token);
+            // Tải nhanh hơn với size lớn hơn để ít request hơn
+            const response = await chatService.getCustomerMessages(chatRoom.id, token, 0, 100);
             setMessages(response.content);
             
             // Auto scroll to bottom sau khi load messages
-            setTimeout(() => scrollToBottom(), 100);
+            setTimeout(() => scrollToBottom(), 50);
         } catch (error) {
             console.error('Failed to load messages:', error);
         }
@@ -331,8 +343,21 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
         const text = inputMessage.trim();
         if (!text || !chatRoom) return;
 
-        // Optimistic update: xóa input ngay lập tức để cảm giác gửi nhanh
+        // Optimistic update: xóa input + thêm tin nhắn ngay lập tức
         setInputMessage('');
+        const tempId = Date.now() * -1; // ID âm để phân biệt với ID thật
+        const optimisticMsg: ChatMessage = {
+            id: tempId,
+            chatRoomId: chatRoom.id,
+            senderType: 'CUSTOMER',
+            senderId: customerId,
+            senderName: customerName,
+            message: text,
+            messageType: 'TEXT',
+            isRead: false,
+            createdAt: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, optimisticMsg]);
 
         try {
             const request = {
@@ -342,11 +367,12 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                 message: text,
                 messageType: 'TEXT' as const,
             };
-
             await chatService.sendCustomerMessage(request, token);
+            // WebSocket sẽ trả về message thật và replace optimistic message
         } catch (error) {
             console.error('Failed to send message:', error);
-            // Khôi phục lại input nếu gửi thất bại
+            // Xóa optimistic message nếu lỗi, khôi phục input
+            setMessages(prev => prev.filter(m => m.id !== tempId));
             setInputMessage(text);
         }
     };
@@ -519,29 +545,24 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                                             const isOwnMessage = message.senderType === 'CUSTOMER';
 
                                             return (
-                                                <div
+                                                <MessageWrapper
                                                     key={message.id}
-                                                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                                                    messageId={message.id}
+                                                    messageType={message.messageType}
+                                                    message={message.message}
+                                                    recalled={isRecalled}
+                                                    isOwnMessage={isOwnMessage}
+                                                    onEdit={handleEditMessage}
+                                                    onRecall={handleRecallMessage}
+                                                    onDelete={handleDeleteMessage}
                                                 >
                                                     <div
-                                                        className={`max-w-[75%] rounded-3xl px-4 py-3 shadow-md group relative ${
+                                                        className={`max-w-[75%] rounded-3xl px-4 py-3 shadow-md ${
                                                             isOwnMessage
                                                                 ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
                                                                 : 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
-                                                        }`}
+                                                        } ${message.id < 0 ? 'opacity-70' : ''}`}
                                                     >
-                                                        {/* MESSAGE MENU - Thay thế nút X */}
-                                                        <MessageMenu
-                                                            messageId={message.id}
-                                                            messageType={message.messageType}
-                                                            message={message.message}
-                                                            recalled={isRecalled}
-                                                            isOwnMessage={isOwnMessage}
-                                                            onEdit={handleEditMessage}
-                                                            onRecall={handleRecallMessage}
-                                                            onDelete={handleDeleteMessage}
-                                                        />
-                                                        
                                                         {!isOwnMessage && message.senderName && (
                                                             <p className="text-xs font-bold text-white mb-1.5">
                                                                 {message.senderName || 'Nhân viên hỗ trợ'}
@@ -584,7 +605,7 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                                                             })}
                                                         </p>
                                                     </div>
-                                                </div>
+                                                </MessageWrapper>
                                             );
                                         })}
                                     

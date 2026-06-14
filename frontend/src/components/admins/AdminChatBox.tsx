@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Users, Trash2, Image as ImageIcon } from 'lucide-react';
 import { chatService, ChatMessage, ChatRoom } from '@/services/chatService';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import MessageMenu from '@/components/chat/MessageMenu';
+import { MessageWrapper } from '@/components/chat/MessageMenu';
 import { resolveImageUrl } from '@/common/resolveImageUrl';
 
 interface AdminChatBoxProps {
@@ -126,7 +126,17 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                             updated[existingIndex] = message;
                             return updated;
                         } else {
-                            // New message - ADD
+                            // New message - thay thế optimistic nếu cùng nội dung + sender
+                            const optimisticIndex = prev.findIndex(
+                                m => m.id < 0
+                                    && m.senderType === message.senderType
+                                    && m.message === message.message
+                            );
+                            if (optimisticIndex !== -1) {
+                                const updated = [...prev];
+                                updated[optimisticIndex] = message;
+                                return updated;
+                            }
                             return [...prev, message];
                         }
                     });
@@ -255,14 +265,9 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
 
     const loadMessages = async (chatRoomId: number) => {
         try {
-            const response = await chatService.getAdminMessages(chatRoomId, token);
+            const response = await chatService.getAdminMessages(chatRoomId, token, 0, 100);
             setMessages(response.content);
-            
-            // Không cần mark as read ở đây nữa vì đã mark ở selectRoom
-            // await chatService.markCustomerMessagesAsRead(chatRoomId, token);
-            
-            // Auto scroll to bottom sau khi load messages
-            setTimeout(() => scrollToBottom(), 100);
+            setTimeout(() => scrollToBottom(), 50);
         } catch (error) {
             console.error('Failed to load messages:', error);
         }
@@ -394,8 +399,21 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
         const text = inputMessage.trim();
         if (!text || !selectedRoom) return;
 
-        // Optimistic update: xóa input ngay lập tức để cảm giác gửi nhanh
+        // Optimistic update: xóa input + thêm tin nhắn ngay lập tức
         setInputMessage('');
+        const tempId = Date.now() * -1;
+        const optimisticMsg: ChatMessage = {
+            id: tempId,
+            chatRoomId: selectedRoom.id,
+            senderType: 'ADMIN',
+            senderId: adminId,
+            senderName: adminName,
+            message: text,
+            messageType: 'TEXT',
+            isRead: false,
+            createdAt: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, optimisticMsg]);
 
         try {
             const request = {
@@ -405,11 +423,12 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                 message: text,
                 messageType: 'TEXT' as const,
             };
-
             await chatService.sendAdminMessage(request, token);
+            // WebSocket sẽ trả về message thật và replace optimistic message
         } catch (error) {
             console.error('Failed to send message:', error);
-            // Khôi phục lại input nếu gửi thất bại
+            // Xóa optimistic message nếu lỗi, khôi phục input
+            setMessages(prev => prev.filter(m => m.id !== tempId));
             setInputMessage(text);
         }
     };
@@ -690,29 +709,24 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                                             const isOwnMessage = message.senderType === 'ADMIN';
 
                                             return (
-                                                <div
+                                                <MessageWrapper
                                                     key={message.id}
-                                                    className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                                                    messageId={message.id}
+                                                    messageType={message.messageType}
+                                                    message={message.message}
+                                                    recalled={isRecalled}
+                                                    isOwnMessage={isOwnMessage}
+                                                    onEdit={handleEditMessage}
+                                                    onRecall={handleRecallMessage}
+                                                    onDelete={handleDeleteMessage}
                                                 >
                                                     <div
-                                                        className={`max-w-[75%] rounded-2xl px-4 py-2.5 group relative ${
+                                                        className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
                                                             isOwnMessage
                                                                 ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white'
                                                                 : 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
-                                                        }`}
+                                                        } ${message.id < 0 ? 'opacity-70' : ''}`}
                                                     >
-                                                        {/* MESSAGE MENU - Thay thế nút X */}
-                                                        <MessageMenu
-                                                            messageId={message.id}
-                                                            messageType={message.messageType}
-                                                            message={message.message}
-                                                            recalled={isRecalled}
-                                                            isOwnMessage={isOwnMessage}
-                                                            onEdit={handleEditMessage}
-                                                            onRecall={handleRecallMessage}
-                                                            onDelete={handleDeleteMessage}
-                                                        />
-                                                        
                                                         {!isOwnMessage && message.senderName && (
                                                             <p className="text-xs font-semibold text-white mb-1">
                                                                 {message.senderName}
@@ -745,16 +759,14 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                                                             <p className="text-xs mt-1 italic opacity-75">(đã chỉnh sửa)</p>
                                                         )}
                                                         
-                                                        <p className={`text-xs mt-1 ${
-                                                            isOwnMessage ? 'text-white' : 'text-white'
-                                                        }`}>
+                                                        <p className="text-xs mt-1 text-white">
                                                             {new Date(message.createdAt).toLocaleTimeString('vi-VN', {
                                                                 hour: '2-digit',
                                                                 minute: '2-digit',
                                                             })}
                                                         </p>
                                                     </div>
-                                                </div>
+                                                </MessageWrapper>
                                             );
                                         })}
                                         

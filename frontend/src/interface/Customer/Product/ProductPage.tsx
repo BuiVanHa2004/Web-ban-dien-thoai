@@ -211,19 +211,28 @@ export default function ProductPage() {
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, []);
 
-  // Click outside để đóng brand dropdown (portal)
+  // Click outside để đóng brand dropdown (portal) — dùng click thay mousedown
   React.useEffect(() => {
-    function onMouseDown(e: MouseEvent) {
+    function onClick(e: MouseEvent) {
       const target = e.target as Node;
       const isBrandButton = brandButtonRef.current?.contains(target);
-      if (!isBrandButton && openDropdown === "brand") {
+      // Kiểm tra xem click có nằm trong portal dropdown không
+      const portalEl = document.getElementById('brand-dropdown-portal');
+      const isInPortal = portalEl?.contains(target);
+      if (!isBrandButton && !isInPortal && openDropdown === "brand") {
         closeDropdowns();
       }
     }
     if (openDropdown === "brand") {
-      document.addEventListener("mousedown", onMouseDown);
+      // Dùng setTimeout để tránh đóng ngay khi mở
+      const timer = setTimeout(() => {
+        document.addEventListener("click", onClick);
+      }, 0);
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener("click", onClick);
+      };
     }
-    return () => document.removeEventListener("mousedown", onMouseDown);
   }, [openDropdown]);
 
   function setParam(next: {
@@ -487,8 +496,8 @@ export default function ProductPage() {
                     if (brandButtonRef.current) {
                       const rect = brandButtonRef.current.getBoundingClientRect();
                       setBrandDropdownPos({
-                        top: rect.bottom + window.scrollY + 8,
-                        left: rect.left + window.scrollX,
+                        top: rect.bottom + 8,   // fixed: không cộng scrollY
+                        left: rect.left,
                         width: rect.width,
                       });
                     }
@@ -512,8 +521,9 @@ export default function ProductPage() {
               </button>
               {openDropdown === "brand" && brandDropdownPos && typeof window !== "undefined" && createPortal(
                 <div
+                  id="brand-dropdown-portal"
                   style={{
-                    position: "absolute",
+                    position: "fixed",
                     top: brandDropdownPos.top,
                     left: brandDropdownPos.left,
                     width: Math.max(brandDropdownPos.width, 200),
