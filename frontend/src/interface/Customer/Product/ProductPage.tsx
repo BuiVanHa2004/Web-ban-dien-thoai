@@ -126,6 +126,8 @@ export default function ProductPage() {
   const [brands, setBrands] = React.useState<BrandOption[]>([]);
 
   const [openDropdown, setOpenDropdown] = React.useState<"category" | "brand" | null>(null);
+  const brandButtonRef = React.useRef<HTMLButtonElement>(null);
+  const [brandDropdownPos, setBrandDropdownPos] = React.useState<{ top: number; left: number; width: number } | null>(null);
   const [recentlyAddedProductIds, setRecentlyAddedProductIds] = React.useState<number[]>([]);
   const [selectedProductForCart, setSelectedProductForCart] = React.useState<ProductDto | null>(null);
   const [variantModalOpen, setVariantModalOpen] = React.useState(false);
@@ -208,6 +210,21 @@ export default function ProductPage() {
     document.addEventListener("mousedown", onMouseDown);
     return () => document.removeEventListener("mousedown", onMouseDown);
   }, []);
+
+  // Click outside để đóng brand dropdown (portal)
+  React.useEffect(() => {
+    function onMouseDown(e: MouseEvent) {
+      const target = e.target as Node;
+      const isBrandButton = brandButtonRef.current?.contains(target);
+      if (!isBrandButton && openDropdown === "brand") {
+        closeDropdowns();
+      }
+    }
+    if (openDropdown === "brand") {
+      document.addEventListener("mousedown", onMouseDown);
+    }
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [openDropdown]);
 
   function setParam(next: {
     q?: string;
@@ -292,6 +309,7 @@ export default function ProductPage() {
 
   function closeDropdowns() {
     setOpenDropdown(null);
+    setBrandDropdownPos(null);
   }
 
   async function handleAddToCart(product: ProductDto, sourceEl?: HTMLElement) {
@@ -459,7 +477,23 @@ export default function ProductPage() {
             <div className="relative" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
-                onClick={() => setOpenDropdown((v) => (v === "brand" ? null : "brand"))}
+                ref={brandButtonRef}
+                onClick={() => {
+                  if (openDropdown === "brand") {
+                    setOpenDropdown(null);
+                    setBrandDropdownPos(null);
+                  } else {
+                    setOpenDropdown("brand");
+                    if (brandButtonRef.current) {
+                      const rect = brandButtonRef.current.getBoundingClientRect();
+                      setBrandDropdownPos({
+                        top: rect.bottom + window.scrollY + 8,
+                        left: rect.left + window.scrollX,
+                        width: rect.width,
+                      });
+                    }
+                  }
+                }}
                 className="flex h-11 w-full items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 text-sm font-medium text-white shadow-md backdrop-blur-md transition hover:bg-white/10 cursor-pointer"
               >
                 <div className="flex min-w-0 items-center gap-2">
@@ -476,33 +510,45 @@ export default function ProductPage() {
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
-              {openDropdown === "brand" && (
-                <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-xl">
-                  <button
-                    type="button"
-                    onClick={() => { setParam({ brandId: null }); closeDropdowns(); }}
-                    className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.brandId == null ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
-                  >
-                    Tất cả thương hiệu
-                  </button>
-                  <div className="max-h-60 overflow-auto">
-                    {brands.map((b) => (
-                      <button
-                        key={b.id}
-                        type="button"
-                        onClick={() => { setParam({ brandId: b.id }); closeDropdowns(); }}
-                        className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.brandId === b.id ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
-                      >
-                        {b.imageUrl ? (
-                          <img src={resolveImageUrl(b.imageUrl) || ""} alt="" className="h-6 w-6 rounded-full object-cover shrink-0" />
-                        ) : (
-                          <div className="h-6 w-6 rounded-full bg-white/10 shrink-0" />
-                        )}
-                        {b.name}
-                      </button>
-                    ))}
+              {openDropdown === "brand" && brandDropdownPos && typeof window !== "undefined" && createPortal(
+                <div
+                  style={{
+                    position: "absolute",
+                    top: brandDropdownPos.top,
+                    left: brandDropdownPos.left,
+                    width: Math.max(brandDropdownPos.width, 200),
+                    zIndex: 9999,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-xl">
+                    <button
+                      type="button"
+                      onClick={() => { setParam({ brandId: null }); closeDropdowns(); setBrandDropdownPos(null); }}
+                      className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.brandId == null ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
+                    >
+                      Tất cả thương hiệu
+                    </button>
+                    <div className="max-h-60 overflow-y-auto">
+                      {brands.map((b) => (
+                        <button
+                          key={b.id}
+                          type="button"
+                          onClick={() => { setParam({ brandId: b.id }); closeDropdowns(); setBrandDropdownPos(null); }}
+                          className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.brandId === b.id ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
+                        >
+                          {b.imageUrl ? (
+                            <img src={resolveImageUrl(b.imageUrl) || ""} alt="" className="h-6 w-6 rounded-full object-cover shrink-0" />
+                          ) : (
+                            <div className="h-6 w-6 rounded-full bg-white/10 shrink-0" />
+                          )}
+                          {b.name}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
           </div>

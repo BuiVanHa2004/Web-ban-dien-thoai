@@ -391,21 +391,26 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
     };
 
     const sendMessage = async () => {
-        if (!inputMessage.trim() || !selectedRoom) return;
+        const text = inputMessage.trim();
+        if (!text || !selectedRoom) return;
+
+        // Optimistic update: xóa input ngay lập tức để cảm giác gửi nhanh
+        setInputMessage('');
 
         try {
             const request = {
                 chatRoomId: selectedRoom.id,
                 senderType: 'ADMIN' as const,
                 senderId: adminId,
-                message: inputMessage.trim(),
+                message: text,
                 messageType: 'TEXT' as const,
             };
 
             await chatService.sendAdminMessage(request, token);
-            setInputMessage('');
         } catch (error) {
             console.error('Failed to send message:', error);
+            // Khôi phục lại input nếu gửi thất bại
+            setInputMessage(text);
         }
     };
 

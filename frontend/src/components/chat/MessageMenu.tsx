@@ -48,7 +48,9 @@ export default function MessageMenu({
     const handleToggleMenu = () => {
         if (!showMenu && buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
-            setOpenUpward(rect.top > 60);
+            // Mở lên nếu không đủ chỗ bên dưới (cần ~60px), ngược lại mở xuống
+            const spaceBelow = window.innerHeight - rect.bottom;
+            setOpenUpward(spaceBelow < 80);
         }
         setShowMenu(!showMenu);
     };
