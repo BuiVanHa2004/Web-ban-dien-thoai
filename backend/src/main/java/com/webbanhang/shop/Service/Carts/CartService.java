@@ -204,6 +204,9 @@ public class CartService {
         Integer ramGb = null;
         Integer storageGb = null;
         BigDecimal price = BigDecimal.ZERO;
+        BigDecimal originalPrice = BigDecimal.ZERO;
+        String discountType = "NONE";
+        BigDecimal discountValue = BigDecimal.ZERO;
 
         if (ci.getProductColorId() != null) {
             try {
@@ -229,6 +232,13 @@ public class CartService {
                     ramGb = v.getRamGb();
                     storageGb = v.getStorageGb();
                     price = v.getFinalPrice() != null ? v.getFinalPrice() : BigDecimal.ZERO;
+                    originalPrice = v.getOriginalPrice() != null ? v.getOriginalPrice() : price;
+                    
+                    // Lấy thông tin giảm giá
+                    if (v.getDiscountType() != null) {
+                        discountType = v.getDiscountType().name();
+                        discountValue = v.getDiscountValue() != null ? v.getDiscountValue() : BigDecimal.ZERO;
+                    }
                 }
             } catch (Exception ignored) {
             }
@@ -237,7 +247,10 @@ public class CartService {
         return new CartItemDto(
                 p != null ? p.getProductId() : null,
                 p != null ? p.getProductName() : null,
-                price,
+                price,                  // Giá sau giảm
+                originalPrice,          // Giá gốc
+                discountType,           // Loại giảm giá
+                discountValue,          // Giá trị giảm
                 ci.getQuantity(),
                 ci.getProductColorId(),
                 ci.getProductVariantId(),
