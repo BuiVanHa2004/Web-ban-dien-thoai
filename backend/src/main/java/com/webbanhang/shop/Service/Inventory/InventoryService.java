@@ -237,6 +237,7 @@ public class InventoryService {
 
     /**
      * Log mọi thay đổi về inventory vào audit trail
+     * Note: orderId có thể null nếu order chưa được save
      */
     private void logStockChange(
             Integer orderId,
@@ -252,25 +253,20 @@ public class InventoryService {
             int newSold,
             String note
     ) {
-        try {
-            OrderStockLog log = new OrderStockLog();
-            log.setOrderId(orderId);
-            log.setOrderCode(orderCode);
-            log.setVariantId(variant.getVariantId());
-            log.setQuantity(quantity);
-            log.setAction(action);
-            log.setPreviousTotal(prevTotal);
-            log.setPreviousReserved(prevReserved);
-            log.setPreviousSold(prevSold);
-            log.setNewTotal(newTotal);
-            log.setNewReserved(newReserved);
-            log.setNewSold(newSold);
-            log.setNote(note);
-            stockLogRepository.save(log);
-        } catch (Exception e) {
-            System.err.println("[INVENTORY] Failed to log stock change: " + e.getMessage());
-            // Don't throw - logging failure shouldn't break inventory operations
-        }
+        OrderStockLog log = new OrderStockLog();
+        log.setOrderId(orderId); // Có thể null nếu order chưa được persist
+        log.setOrderCode(orderCode);
+        log.setVariantId(variant.getVariantId());
+        log.setQuantity(quantity);
+        log.setAction(action);
+        log.setPreviousTotal(prevTotal);
+        log.setPreviousReserved(prevReserved);
+        log.setPreviousSold(prevSold);
+        log.setNewTotal(newTotal);
+        log.setNewReserved(newReserved);
+        log.setNewSold(newSold);
+        log.setNote(note);
+        stockLogRepository.save(log);
     }
 
     /**

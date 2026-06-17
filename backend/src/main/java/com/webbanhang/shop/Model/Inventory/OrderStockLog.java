@@ -20,7 +20,7 @@ public class OrderStockLog {
     @Column(name = "log_id")
     private Integer logId;
 
-    @Column(name = "order_id")
+    @Column(name = "order_id", nullable = true)
     private Integer orderId;
 
     @Column(name = "order_code", length = 50)
