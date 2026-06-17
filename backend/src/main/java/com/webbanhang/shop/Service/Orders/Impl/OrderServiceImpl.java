@@ -44,7 +44,6 @@ import java.util.UUID;
 import java.util.ArrayList;
 
 @Service
-@Transactional(noRollbackFor = Exception.class)
 @SuppressWarnings("null")
 public class OrderServiceImpl implements OrderService {
 
@@ -116,6 +115,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public Order createOrder(
             Integer customerId,
             String receiverName,
@@ -211,21 +211,16 @@ public class OrderServiceImpl implements OrderService {
         paymentRepository.save(payment);
 
         // Reserve stock for ALL orders (both COD and BANK_TRANSFER)
-        try {
-            List<InventoryService.StockReservation> reservations = new ArrayList<>();
-            for (OrderItem item : savedOrder.getItems()) {
-                if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
-                    reservations.add(new InventoryService.StockReservation(item.getVariantId(), item.getQuantity()));
-                }
+        List<InventoryService.StockReservation> reservations = new ArrayList<>();
+        for (OrderItem item : savedOrder.getItems()) {
+            if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                reservations.add(new InventoryService.StockReservation(item.getVariantId(), item.getQuantity()));
             }
-            if (!reservations.isEmpty()) {
-                inventoryService.batchReserveStock(reservations);
-                System.out.println("[ORDER] Reserved stock for order " + savedOrder.getOrderCode());
-            }
-        } catch (Exception e) {
-            // Rollback order if reservation fails
-            orderRepository.delete(savedOrder);
-            throw new IllegalStateException("Không đủ hàng trong kho: " + e.getMessage(), e);
+        }
+        if (!reservations.isEmpty()) {
+            // Nếu reserve stock fail, transaction sẽ tự động rollback toàn bộ (bao gồm order và payment)
+            inventoryService.batchReserveStock(reservations);
+            System.out.println("[ORDER] Reserved stock for order " + savedOrder.getOrderCode());
         }
 
         // Create notification
