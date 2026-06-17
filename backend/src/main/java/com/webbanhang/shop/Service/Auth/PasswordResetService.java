@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ public class PasswordResetService {
     private final AdminAccountRepository adminAccountRepository;
     private final PasswordResetCodeRepository passwordResetCodeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder otpEncoder; // Encoder riêng cho OTP với cost thấp hơn
     private final JavaMailSender mailSender;
     private final String mailFrom;
     private final String mailUsername;
@@ -55,6 +58,8 @@ public class PasswordResetService {
         this.adminAccountRepository = adminAccountRepository;
         this.passwordResetCodeRepository = passwordResetCodeRepository;
         this.passwordEncoder = passwordEncoder;
+        // OTP chỉ sống 10 phút nên dùng cost=4 thay vì 10 (mặc định) để nhanh hơn ~64 lần
+        this.otpEncoder = new BCryptPasswordEncoder(4);
         this.mailSender = mailSender;
         this.mailFrom = mailFrom;
         this.mailUsername = mailUsername;
@@ -124,16 +129,12 @@ public class PasswordResetService {
 
         PasswordResetCode entity = new PasswordResetCode();
         entity.setEmail(emailLower);
-        entity.setCodeHash(passwordEncoder.encode(code));
+        entity.setCodeHash(otpEncoder.encode(code)); // Dùng otpEncoder thay vì passwordEncoder
         entity.setExpiresAt(now.plus(CODE_TTL));
         passwordResetCodeRepository.save(entity);
 
-        try {
-            sendOtpEmail(email, code);
-        } catch (MailException ex) {
-            log.error("Failed to send password reset OTP email to {}", emailLower, ex);
-            throw new IllegalArgumentException("Không thể gửi email. Vui lòng kiểm tra cấu hình email và thử lại sau.");
-        }
+        // Gửi email bất đồng bộ để không block request
+        sendOtpEmailAsync(email, code);
     }
 
     public void verifyCode(String usernameOrEmail, String code) {
@@ -158,7 +159,7 @@ public class PasswordResetService {
                 .findFirstByEmailAndUsedAtIsNullAndExpiresAtAfterOrderByCreatedAtDesc(emailLower, Instant.now())
                 .orElseThrow(() -> new IllegalArgumentException("Mã xác thực không hợp lệ hoặc đã hết hạn."));
 
-        if (!passwordEncoder.matches(otp, prc.getCodeHash())) {
+        if (!otpEncoder.matches(otp, prc.getCodeHash())) {
             throw new IllegalArgumentException("Mã xác thực không hợp lệ.");
         }
 
@@ -197,7 +198,7 @@ public class PasswordResetService {
                 .findFirstByEmailAndUsedAtIsNullAndExpiresAtAfterOrderByCreatedAtDesc(emailLower, Instant.now())
                 .orElseThrow(() -> new IllegalArgumentException("Mã xác thực không hợp lệ hoặc đã hết hạn."));
 
-        if (!passwordEncoder.matches(otp, prc.getCodeHash())) {
+        if (!otpEncoder.matches(otp, prc.getCodeHash())) {
             throw new IllegalArgumentException("Mã xác thực không hợp lệ.");
         }
 
@@ -256,20 +257,27 @@ public class PasswordResetService {
         return String.valueOf(n);
     }
 
-    private void sendOtpEmail(String to, String code) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        if (mailFrom != null && !mailFrom.isBlank()) {
-            message.setFrom(mailFrom);
-        }
-        message.setTo(to);
-        message.setSubject("MyPhone Store - Mã xác thực đặt lại mật khẩu");
-        message.setText(
-                "Bạn vừa yêu cầu đặt lại mật khẩu.\n\n" +
-                        "Mã xác thực của bạn là: " + code + "\n\n" +
-                        "Mã có hiệu lực trong " + CODE_TTL.toMinutes() + " phút.\n" +
-                        "Nếu bạn không yêu cầu, hãy bỏ qua email này."
-        );
+    @Async
+    private void sendOtpEmailAsync(String to, String code) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            if (mailFrom != null && !mailFrom.isBlank()) {
+                message.setFrom(mailFrom);
+            }
+            message.setTo(to);
+            message.setSubject("MyPhone Store - Mã xác thực đặt lại mật khẩu");
+            message.setText(
+                    "Bạn vừa yêu cầu đặt lại mật khẩu.\n\n" +
+                            "Mã xác thực của bạn là: " + code + "\n\n" +
+                            "Mã có hiệu lực trong " + CODE_TTL.toMinutes() + " phút.\n" +
+                            "Nếu bạn không yêu cầu, hãy bỏ qua email này."
+            );
 
-        mailSender.send(message);
+            mailSender.send(message);
+            log.info("Sent password reset OTP to {}", to);
+        } catch (MailException ex) {
+            log.error("Failed to send password reset OTP email to {}", to, ex);
+            // Không throw exception vì đây là async - chỉ log lỗi
+        }
     }
 }
