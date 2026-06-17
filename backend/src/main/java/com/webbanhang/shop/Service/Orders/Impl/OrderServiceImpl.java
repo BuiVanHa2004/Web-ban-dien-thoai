@@ -439,7 +439,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional(noRollbackFor = Exception.class)
+    @Transactional
     public Optional<Order> updateStatus(Integer id, OrderStatus status) {
         return orderRepository.findById(id).map(existing -> {
             OrderStatus previousStatus = existing.getOrderStatus();

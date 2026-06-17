@@ -1,0 +1,99 @@
+===============================================================
+SỬA LỖI: Transaction silently rolled back
+===============================================================
+
+## ROOT CAUSE:
+1. Class-level @Transactional(noRollbackFor = Exception.class) 
+   conflict với nested transactions
+2. Khi inventoryService.batchReserveStock() throw exception,
+   outer transaction bị mark rollback-only
+3. Code catch exception và cố delete order nhưng transaction
+   đã rollback → Lỗi "silently rolled back"
+
+## ĐÃ SỬA:
+
+### Fix 1: Xóa class-level @Transactional
+File: OrderServiceImpl.java
+Line: 58
+Before:
+  @Transactional(noRollbackFor = Exception.class)
+  public class OrderServiceImpl
+
+After:
+  public class OrderServiceImpl
+  
+### Fix 2: Thêm @Transactional vào createOrder()
+File: OrderServiceImpl.java  
+Line: 129
+Before:
+  public Order createOrder(...)
+  
+After:
+  @Transactional
+  public Order createOrder(...)
+
+### Fix 3: Xóa try-catch và delete trong createOrder()
+File: OrderServiceImpl.java
+Line: 251-260
+Before:
+  try {
+      inventoryService.batchReserveStock(reservations);
+  } catch (Exception e) {
+      orderRepository.delete(savedOrder); // ← XÓA DÒNG NÀY
+      throw new IllegalStateException(...);
+  }
+
+After:
+  inventoryService.batchReserveStock(reservations);
+  // Transaction tự động rollback nếu có exception
+
+## TẠI SAO SOLUTION NÀY ĐÚNG:
+
+1. Method-level @Transactional với default propagation (REQUIRED)
+2. Khi inventoryService.batchReserveStock() fail:
+   - Exception được throw ra ngoài
+   - Spring tự động rollback TOÀN BỘ transaction
+   - Order và Payment đã save sẽ bị rollback
+   - KHÔNG CẦN manually delete
+3. Frontend nhận exception message rõ ràng: "Không đủ hàng"
+
+===============================================================
+GIT COMMANDS
+===============================================================
+
+cd C:\Doantotnghiep
+
+git status
+
+git add backend/src/main/java/com/webbanhang/shop/Service/Orders/Impl/OrderServiceImpl.java
+
+git commit -m "fix: Resolve transaction rollback issue in order creation
+
+- Remove class-level @Transactional(noRollbackFor = Exception.class)
+- Add method-level @Transactional to createOrder()
+- Remove manual delete in catch block
+- Let Spring auto-rollback on exception
+- Fix 'Transaction silently rolled back' error"
+
+git push origin main
+
+===============================================================
+TEST SAU KHI DEPLOY
+===============================================================
+
+1. Đợi Render deploy xong (2-3 phút)
+
+2. Test case 1: Đặt hàng bình thường
+   → Kỳ vọng: Thành công
+
+3. Test case 2: Đặt hàng với số lượng > stock
+   → Kỳ vọng: 
+   - HTTP 500 với message rõ ràng
+   - Order KHÔNG được tạo trong database
+   - Reserved stock = 0 (không bị reserve)
+
+4. Kiểm tra database:
+   SELECT * FROM orders ORDER BY created_at DESC LIMIT 5;
+   SELECT * FROM order_stock_logs ORDER BY created_at DESC LIMIT 5;
+
+===============================================================
