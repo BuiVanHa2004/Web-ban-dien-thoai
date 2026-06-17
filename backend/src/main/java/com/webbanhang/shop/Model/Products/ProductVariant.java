@@ -43,6 +43,20 @@ public class ProductVariant {
     @Column(name = "quantity", nullable = false)
     private Integer quantity = 0;
 
+    // New inventory management columns
+    @Column(name = "total_stock", nullable = false)
+    private Integer totalStock = 0;
+
+    @Column(name = "reserved_stock", nullable = false)
+    private Integer reservedStock = 0;
+
+    @Column(name = "sold_stock", nullable = false)
+    private Integer soldStock = 0;
+
+    @jakarta.persistence.Version
+    @Column(name = "version", nullable = false)
+    private Integer version = 0;
+
     @Column(name = "original_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal originalPrice;
 

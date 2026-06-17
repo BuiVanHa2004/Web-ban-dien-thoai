@@ -13,8 +13,12 @@ public interface PaymentService {
     PaymentAttempt createPaymentAttempt(Integer orderId);
 
     PaymentQRResponse getPaymentQRInfo(Integer orderId);
+    
+    PaymentQRResponse getPaymentQRInfoByOrderCode(String orderCode);
 
     PaymentAttempt customerConfirmPayment(Integer orderId, String transferNote, MultipartFile billImage);
+    
+    void changeToCOD(String orderCode);
 
     void adminApprovePayment(Integer attemptId, Integer adminId, String adminNote);
 

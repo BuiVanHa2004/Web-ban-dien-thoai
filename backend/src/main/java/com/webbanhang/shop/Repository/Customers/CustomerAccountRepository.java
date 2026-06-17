@@ -20,4 +20,10 @@ public interface CustomerAccountRepository extends JpaRepository<CustomerAccount
     Optional<CustomerAccount> findByGoogleId(String googleId);
 
     Optional<CustomerAccount> findByPhone(String phone);
+    
+    boolean existsByPhone(String phone);
+    
+    boolean existsByUsername(String username);
+    
+    boolean existsByEmail(String email);
 }

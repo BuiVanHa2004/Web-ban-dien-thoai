@@ -31,6 +31,9 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     @EntityGraph(attributePaths = {"items"})
     Optional<Order> findByOrderId(Integer orderId);
+    
+    @EntityGraph(attributePaths = {"items"})
+    Optional<Order> findByOrderCode(String orderCode);
 
     List<Order> findByPaymentMethodAndPaymentStatusNot(String paymentMethod, com.webbanhang.shop.Model.Orders.PaymentStatus status);
     List<Order> findByPaymentMethodInAndPaymentStatusNot(List<String> paymentMethods, com.webbanhang.shop.Model.Orders.PaymentStatus status);

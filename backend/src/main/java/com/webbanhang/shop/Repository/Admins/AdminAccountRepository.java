@@ -32,4 +32,8 @@ public interface AdminAccountRepository extends JpaRepository<AdminAccount, Inte
     Optional<AdminAccount> findByEmail(String email);
 
     Optional<AdminAccount> findByPhone(String phone);
+    
+    boolean existsByPhone(String phone);
+    
+    boolean existsByEmail(String email);
 }

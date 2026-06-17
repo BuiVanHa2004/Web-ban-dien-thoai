@@ -35,6 +35,8 @@ import com.webbanhang.shop.Model.Settings.BankSetting;
 import com.webbanhang.shop.Model.Settings.Setting;
 import com.webbanhang.shop.Model.Orders.PaymentLog;
 import com.webbanhang.shop.Model.Roles.RoleName;
+import com.webbanhang.shop.Service.Inventory.InventoryService;
+import com.webbanhang.shop.Model.Orders.OrderItem;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -56,6 +58,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final AdminAccountRepository adminAccountRepository;
     private final BankTransactionRepository bankTransactionRepository;
     private final SettingRepository settingRepository;
+    private final InventoryService inventoryService;
 
     public PaymentServiceImpl(
             OrderRepository orderRepository,
@@ -69,7 +72,8 @@ public class PaymentServiceImpl implements PaymentService {
             PaymentNotificationService paymentNotificationService,
             AdminAccountRepository adminAccountRepository,
             BankTransactionRepository bankTransactionRepository,
-            SettingRepository settingRepository
+            SettingRepository settingRepository,
+            InventoryService inventoryService
     ) {
         this.orderRepository = orderRepository;
         this.paymentAttemptRepository = paymentAttemptRepository;
@@ -83,6 +87,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.adminAccountRepository = adminAccountRepository;
         this.bankTransactionRepository = bankTransactionRepository;
         this.settingRepository = settingRepository;
+        this.inventoryService = inventoryService;
     }
 
     private BigDecimal getApproveThreshold() {
@@ -324,7 +329,19 @@ public class PaymentServiceImpl implements PaymentService {
         order.setCancelNote(null);
         orderRepository.save(order);
 
-        // Deduct inventory
+        // Confirm sale: move from reserved to sold (for BANK_TRANSFER)
+        try {
+            for (OrderItem item : order.getItems()) {
+                if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                    inventoryService.confirmSale(item.getVariantId(), item.getQuantity());
+                }
+            }
+            System.out.println("[PAYMENT] Confirmed sale for BANK_TRANSFER order " + order.getOrderCode() + " on PAID");
+        } catch (Exception e) {
+            System.err.println("Failed to confirm sale: " + e.getMessage());
+        }
+
+        // Deduct inventory (legacy - keeping for backward compatibility but inventory already moved by confirmSale)
         orderService.deductInventory(order);
 
         // Update Payment
@@ -399,23 +416,12 @@ public class PaymentServiceImpl implements PaymentService {
         attempt.setRejectReason(adminNote);
         paymentAttemptRepository.save(attempt);
 
-        // Update Order
-        order.setPaymentStatus(PaymentStatus.FAILED);
-        order.setOrderStatus(OrderStatus.CANCELLED);
+        // Update Order - Cho phép khách upload lại bill
+        order.setPaymentStatus(PaymentStatus.UNPAID);
+        order.setOrderStatus(OrderStatus.PENDING_CONFIRM); // Trở về trạng thái chờ thanh toán
         order.setPaymentNote(adminNote);
         order.setPaymentNoteAuthor(adminName);
         order.setPaymentNoteDate(LocalDateTime.now());
-        
-        // Also set cancellation metadata for Order detail view (Source identification)
-        order.setCancelledAt(LocalDateTime.now());
-        order.setCancelledBy(com.webbanhang.shop.Model.Orders.CancelledBy.ADMIN);
-        order.setCancelledByAdminId(adminId);
-        order.setCancelledByName(adminName);
-        
-        // Clear previous cancellation reasons to prioritize payment rejection info
-        order.setCancelReasonId(null);
-        order.setCancelNote(null);
-        
         orderRepository.save(order);
 
         // Update Payment Record
@@ -580,6 +586,18 @@ public class PaymentServiceImpl implements PaymentService {
             order.setPaymentNoteDate(LocalDateTime.now());
             orderRepository.save(order);
 
+            // Confirm sale: move from reserved to sold
+            try {
+                for (OrderItem item : order.getItems()) {
+                    if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                        inventoryService.confirmSale(item.getVariantId(), item.getQuantity());
+                    }
+                }
+                System.out.println("[PAYMENT] Confirmed sale for auto-matched order " + order.getOrderCode());
+            } catch (Exception e) {
+                System.err.println("Failed to confirm sale: " + e.getMessage());
+            }
+
             orderService.deductInventory(order);
 
             Payment payment = paymentRepository.findTopByOrderIdOrderByCreatedAtDesc(order.getOrderId()).orElseGet(() -> {
@@ -697,5 +715,70 @@ public class PaymentServiceImpl implements PaymentService {
         order.setPaymentNoteAuthor(authorName);
         order.setPaymentNoteDate(LocalDateTime.now());
         orderRepository.save(order);
+    }
+
+    @Override
+    public PaymentQRResponse getPaymentQRInfoByOrderCode(String orderCode) {
+        Order order = orderRepository.findByOrderCode(orderCode)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderCode));
+        
+        BankSetting bankSetting = bankSettingRepository.findByIsActiveTrue()
+                .orElseThrow(() -> new IllegalStateException("Active bank setting not found"));
+        
+        String qrUrl = String.format("https://img.vietqr.io/image/%s-%s-compact2.jpg?amount=%s&addInfo=%s&accountName=%s",
+                bankSetting.getBankBin(), 
+                bankSetting.getAccountNumber(),
+                order.getTotalAmount().toBigInteger(),
+                order.getOrderCode(),
+                bankSetting.getAccountName().replace(" ", "%20"));
+                
+        return PaymentQRResponse.builder()
+                .qrUrl(qrUrl)
+                .orderCode(order.getOrderCode())
+                .amount(order.getTotalAmount())
+                .accountName(bankSetting.getAccountName())
+                .accountNumber(bankSetting.getAccountNumber())
+                .bankBin(bankSetting.getBankBin())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void changeToCOD(String orderCode) {
+        Order order = orderRepository.findByOrderCode(orderCode)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderCode));
+        
+        // Validate: Chỉ cho phép khi PENDING_CONFIRM và UNPAID
+        if (!order.getOrderStatus().equals(OrderStatus.PENDING_CONFIRM)) {
+            throw new IllegalStateException("Không thể đổi sang COD cho đơn hàng ở trạng thái: " + order.getOrderStatus());
+        }
+        
+        if (!order.getPaymentStatus().equals(PaymentStatus.UNPAID)) {
+            throw new IllegalStateException("Không thể đổi sang COD cho đơn hàng đã thanh toán");
+        }
+        
+        // Cập nhật Order
+        order.setPaymentMethod("COD");
+        order.setOrderStatus(OrderStatus.CONFIRMED);
+        // paymentStatus giữ nguyên UNPAID (sẽ thanh toán khi nhận hàng)
+        orderRepository.save(order);
+        
+        // Cập nhật Payment
+        Payment payment = paymentRepository.findTopByOrderIdOrderByCreatedAtDesc(order.getOrderId())
+                .orElseThrow(() -> new IllegalStateException("Payment record not found"));
+        payment.setPaymentMethod("COD");
+        // paymentStatus giữ nguyên UNPAID
+        paymentRepository.save(payment);
+        
+        // Trừ tồn kho vì đã chuyển sang CONFIRMED
+        try {
+            orderService.deductInventory(order);
+        } catch (Exception e) {
+            System.err.println("Failed to deduct inventory when changing to COD: " + e.getMessage());
+        }
+        
+        // Gửi notification cho khách hàng
+        notifyCustomer(order, NotificationAction.CONFIRM, 
+            "Đơn hàng " + order.getOrderCode() + " đã được chuyển sang thanh toán COD và đã được xác nhận.");
     }
 }

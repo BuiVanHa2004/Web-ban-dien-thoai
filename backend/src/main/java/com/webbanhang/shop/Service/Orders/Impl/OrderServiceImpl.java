@@ -32,6 +32,7 @@ import com.webbanhang.shop.Repository.Orders.BankTransactionRepository;
 import com.webbanhang.shop.Model.Orders.PaymentAttempt;
 import com.webbanhang.shop.Model.Orders.PaymentLog;
 import com.webbanhang.shop.Model.Orders.BankTransaction;
+import com.webbanhang.shop.Service.Inventory.InventoryService;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.ArrayList;
 
 @Service
 @Transactional(noRollbackFor = Exception.class)
@@ -65,6 +67,8 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentAttemptRepository paymentAttemptRepository;
     private final PaymentLogRepository paymentLogRepository;
     private final BankTransactionRepository bankTransactionRepository;
+    private final com.webbanhang.shop.Repository.Orders.PaymentRepository paymentRepository;
+    private final InventoryService inventoryService;
 
     public OrderServiceImpl(
             OrderRepository orderRepository,
@@ -77,7 +81,9 @@ public class OrderServiceImpl implements OrderService {
             com.webbanhang.shop.Repository.Admins.AdminAccountRepository adminAccountRepository,
             PaymentAttemptRepository paymentAttemptRepository,
             PaymentLogRepository paymentLogRepository,
-            BankTransactionRepository bankTransactionRepository
+            BankTransactionRepository bankTransactionRepository,
+            com.webbanhang.shop.Repository.Orders.PaymentRepository paymentRepository,
+            InventoryService inventoryService
     ) {
         this.orderRepository = orderRepository;
         this.customerAccountRepository = customerAccountRepository;
@@ -90,6 +96,8 @@ public class OrderServiceImpl implements OrderService {
         this.paymentAttemptRepository = paymentAttemptRepository;
         this.paymentLogRepository = paymentLogRepository;
         this.bankTransactionRepository = bankTransactionRepository;
+        this.paymentRepository = paymentRepository;
+        this.inventoryService = inventoryService;
     }
 
     @Override
@@ -143,16 +151,22 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("Tài khoản đã bị khóa.");
         }
 
+        // Normalize payment method
+        String normalizedPaymentMethod = paymentMethod != null ? paymentMethod : "COD";
+        
         Order order = new Order();
         order.setOrderId(null);
         order.setOrderCode(generateOrderCode());
         order.setCustomerId(customerId);
-        order.setOrderStatus(OrderStatus.PENDING_CONFIRM);
-        order.setPaymentMethod(paymentMethod != null ? paymentMethod : "COD");
-        if ("BANK_TRANSFER".equals(order.getPaymentMethod())) {
-            order.setPaymentStatus(PaymentStatus.WAITING_CONFIRM);
-        } else {
-            order.setPaymentStatus(PaymentStatus.UNPAID);
+        order.setPaymentMethod(normalizedPaymentMethod);
+        
+        // Set order status and payment status theo nghiệp vụ mới
+        if ("BANK_TRANSFER".equals(normalizedPaymentMethod)) {
+            order.setOrderStatus(OrderStatus.PENDING_CONFIRM);  // Chờ thanh toán
+            order.setPaymentStatus(PaymentStatus.UNPAID);        // Chưa thanh toán
+        } else { // COD
+            order.setOrderStatus(OrderStatus.CONFIRMED);         // Đã xác nhận luôn
+            order.setPaymentStatus(PaymentStatus.UNPAID);        // Sẽ thanh toán khi nhận hàng
         }
 
         // Snapshot customer info
@@ -167,6 +181,7 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
+        // Build order items
         for (int i = 0; i < items.size(); i++) {
             CreateOrderItemRequest reqItem = items.get(i);
             OrderLineBuild line = buildOrderLine(reqItem);
@@ -181,9 +196,39 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setTotalAmount(totalAmount);
+        
+        // Save order (cascade sẽ save order_items)
         Order savedOrder = orderRepository.save(order);
 
-        // create notification
+        // Luôn tạo Payment record
+        com.webbanhang.shop.Model.Orders.Payment payment = new com.webbanhang.shop.Model.Orders.Payment();
+        payment.setOrderId(savedOrder.getOrderId());
+        payment.setOrderCode(savedOrder.getOrderCode());
+        payment.setCustomerId(savedOrder.getCustomerId());
+        payment.setPaymentMethod(normalizedPaymentMethod);
+        payment.setPaymentStatus(PaymentStatus.UNPAID);
+        payment.setAmount(savedOrder.getTotalAmount());
+        paymentRepository.save(payment);
+
+        // Reserve stock for ALL orders (both COD and BANK_TRANSFER)
+        try {
+            List<InventoryService.StockReservation> reservations = new ArrayList<>();
+            for (OrderItem item : savedOrder.getItems()) {
+                if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                    reservations.add(new InventoryService.StockReservation(item.getVariantId(), item.getQuantity()));
+                }
+            }
+            if (!reservations.isEmpty()) {
+                inventoryService.batchReserveStock(reservations);
+                System.out.println("[ORDER] Reserved stock for order " + savedOrder.getOrderCode());
+            }
+        } catch (Exception e) {
+            // Rollback order if reservation fails
+            orderRepository.delete(savedOrder);
+            throw new IllegalStateException("Không đủ hàng trong kho: " + e.getMessage(), e);
+        }
+
+        // Create notification
         NotificationDto notif = NotificationDto.builder()
                 .type(NotificationType.ORDER)
                 .action(NotificationAction.CREATE)
@@ -408,6 +453,17 @@ public class OrderServiceImpl implements OrderService {
             if ("COD".equalsIgnoreCase(existing.getPaymentMethod()) || existing.getPaymentMethod() == null) {
                 if (status == OrderStatus.DELIVERED) {
                     existing.setPaymentStatus(PaymentStatus.PAID);
+                    // Confirm sale: move from reserved to sold
+                    try {
+                        for (OrderItem item : existing.getItems()) {
+                            if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                                inventoryService.confirmSale(item.getVariantId(), item.getQuantity());
+                            }
+                        }
+                        System.out.println("[ORDER] Confirmed sale for COD order " + existing.getOrderCode() + " on DELIVERED");
+                    } catch (Exception e) {
+                        System.err.println("Failed to confirm sale: " + e.getMessage());
+                    }
                 } else {
                     existing.setPaymentStatus(PaymentStatus.UNPAID);
                 }
@@ -415,17 +471,6 @@ public class OrderServiceImpl implements OrderService {
 
             if (status == OrderStatus.PENDING_PAYMENT_CONFIRMATION && "BANK_TRANSFER".equalsIgnoreCase(existing.getPaymentMethod())) {
                 existing.setPaymentStatus(PaymentStatus.WAITING_CONFIRM);
-            }
-
-            // Deduct inventory with proper error handling
-            if (status == OrderStatus.CONFIRMED || status == OrderStatus.DELIVERED) {
-                try {
-                    deductInventory(existing);
-                } catch (Exception e) {
-                    System.err.println("Failed to deduct inventory: " + e.getMessage());
-                    e.printStackTrace();
-                    // Continue with status update even if inventory deduction fails
-                }
             }
             
             Order savedOrder = orderRepository.save(existing);
@@ -586,8 +631,16 @@ public class OrderServiceImpl implements OrderService {
         order.setCancelledBy(cancelledBy);
         order.setCancelledAt(java.time.LocalDateTime.now());
 
-        if (Boolean.TRUE.equals(order.getInventoryDeducted())) {
-            restoreInventory(order);
+        // Release reserved stock when order is cancelled
+        try {
+            for (OrderItem item : order.getItems()) {
+                if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                    inventoryService.releaseStock(item.getVariantId(), item.getQuantity());
+                }
+            }
+            System.out.println("[ORDER] Released reserved stock for cancelled order " + order.getOrderCode());
+        } catch (Exception e) {
+            System.err.println("Failed to release stock: " + e.getMessage());
         }
 
         handleCancellationRefund(order);
@@ -652,9 +705,16 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // 3. Rollback Inventory (chỉ khi đã trừ kho trước đó)
-        if (Boolean.TRUE.equals(savedOrder.getInventoryDeducted())) {
-            restoreInventory(savedOrder);
+        // Release reserved stock when order is cancelled
+        try {
+            for (OrderItem item : savedOrder.getItems()) {
+                if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                    inventoryService.releaseStock(item.getVariantId(), item.getQuantity());
+                }
+            }
+            System.out.println("[ORDER] Released reserved stock for admin cancelled order " + savedOrder.getOrderCode());
+        } catch (Exception e) {
+            System.err.println("Failed to release stock: " + e.getMessage());
         }
 
         // 4. Notification for Customer
