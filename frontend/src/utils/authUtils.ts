@@ -51,10 +51,14 @@ export async function authenticatedFetch<T>(
 ): Promise<T> {
   const authHeader = getAuthHeader();
   
+  // Check if body is FormData - don't set Content-Type for multipart uploads
+  const isFormData = init?.body instanceof FormData;
+  
   const response = await fetch(url, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      // Only set Content-Type if not FormData (let browser set it for multipart)
+      ...(!isFormData && { 'Content-Type': 'application/json' }),
       ...(authHeader ? { Authorization: authHeader } : {}),
       ...(init?.headers || {}),
     },
