@@ -1,3 +1,5 @@
+import { getAuthHeader, authenticatedFetch } from "@/utils/authUtils";
+
 export type MaintenanceSettingDto = {
   settingId: number;
   maintenanceStart?: string | null;
@@ -12,20 +14,23 @@ export type UpdateMaintenancePayload = {
 
 const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
 
-function getAuthHeader(): Record<string, string> {
-  if (typeof window === "undefined") return {};
-  const token = localStorage.getItem("token");
-  if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  return authenticatedFetch<T>(`${API_URL}/api${path}`, {
+    ...init,
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers || {}),
+    },
+  });
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function publicRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}/api${path}`, {
     ...init,
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
-      ...getAuthHeader(),
       ...(init?.headers || {}),
     },
   });
@@ -50,10 +55,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const settingService = {
   getMaintenance: async (): Promise<MaintenanceSettingDto> => {
-    return request<MaintenanceSettingDto>("/settings/maintenance");
+    // Public endpoint - no auth required
+    return publicRequest<MaintenanceSettingDto>("/settings/maintenance");
   },
 
   updateMaintenance: async (payload: UpdateMaintenancePayload): Promise<MaintenanceSettingDto> => {
+    // Admin endpoint - requires auth
     return request<MaintenanceSettingDto>("/admin/settings/maintenance", {
       method: "PUT",
       body: JSON.stringify(payload),

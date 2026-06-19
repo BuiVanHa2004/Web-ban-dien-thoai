@@ -8,8 +8,8 @@ import com.webbanhang.shop.DTO.Statistical.TopProductSoldDto;
 import java.util.List;
 
 public interface StatisticalAdminService {
-    List<TopProductSoldDto> topProductsSold(int limit, Integer brandId, Integer categoryId, String paymentMethod);
-    SummaryStatisticalDto getSummary(Integer brandId, Integer categoryId, String paymentMethod);
-    List<MonthlyRevenueDto> getMonthlyRevenue(int months, Integer brandId, Integer categoryId, String paymentMethod);
-    List<OrderStatusCountDto> getOrderStatusDistribution(Integer brandId, Integer categoryId, String paymentMethod);
+    List<TopProductSoldDto> topProductsSold(int limit, Integer brandId, Integer categoryId, String paymentMethod, String startDate, String endDate);
+    SummaryStatisticalDto getSummary(Integer brandId, Integer categoryId, String paymentMethod, String startDate, String endDate);
+    List<MonthlyRevenueDto> getMonthlyRevenue(int months, Integer brandId, Integer categoryId, String paymentMethod, String startDate, String endDate);
+    List<OrderStatusCountDto> getOrderStatusDistribution(Integer brandId, Integer categoryId, String paymentMethod, String startDate, String endDate);
 }

@@ -33,6 +33,8 @@ import {
   History,
   FileText,
   ChevronDown,
+  Calendar,
+  X,
 } from "lucide-react";
 import {
   statisticalService,
@@ -81,7 +83,9 @@ export default function StatisticalPage() {
   const [selectedBrandId, setSelectedBrandId] = React.useState<string>("all");
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<string>("all");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<string>("all");
-  const [openDropdown, setOpenDropdown] = React.useState<null | "brand" | "category" | "payment"> (null);
+  const [startDate, setStartDate] = React.useState<string>("");
+  const [endDate, setEndDate] = React.useState<string>("");
+  const [openDropdown, setOpenDropdown] = React.useState<null | "brand" | "category" | "payment" | "date">(null);
   const dropdownContainerRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -101,8 +105,14 @@ export default function StatisticalPage() {
     const brandId = selectedBrandId === "all" ? undefined : Number(selectedBrandId);
     const categoryId = selectedCategoryId === "all" ? undefined : Number(selectedCategoryId);
     const paymentMethod = selectedPaymentMethod === "all" ? undefined : selectedPaymentMethod;
-    return { brandId, categoryId, paymentMethod };
-  }, [selectedBrandId, selectedCategoryId, selectedPaymentMethod]);
+    return { 
+      brandId, 
+      categoryId, 
+      paymentMethod,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+    };
+  }, [selectedBrandId, selectedCategoryId, selectedPaymentMethod, startDate, endDate]);
 
   const selectedBrandLabel = React.useMemo(() => {
     if (selectedBrandId === "all") return "Tất cả thương hiệu";
@@ -202,6 +212,8 @@ export default function StatisticalPage() {
       { "Bộ lọc": "Thương hiệu", "Giá trị": selectedBrandLabel },
       { "Bộ lọc": "Danh mục", "Giá trị": selectedCategoryLabel },
       { "Bộ lọc": "Phương thức thanh toán", "Giá trị": selectedPaymentMethodLabel },
+      { "Bộ lọc": "Từ ngày", "Giá trị": startDate ? new Date(startDate).toLocaleDateString("vi-VN") : "Không giới hạn" },
+      { "Bộ lọc": "Đến ngày", "Giá trị": endDate ? new Date(endDate).toLocaleDateString("vi-VN") : "Không giới hạn" },
       { "Bộ lọc": "Thời gian xuất", "Giá trị": new Date().toLocaleString("vi-VN") },
     ];
 
@@ -361,6 +373,8 @@ export default function StatisticalPage() {
             ["Thương hiệu", selectedBrandLabel],
             ["Danh mục", selectedCategoryLabel],
             ["Phương thức", selectedPaymentMethodLabel],
+            ["Từ ngày", startDate ? new Date(startDate).toLocaleDateString("vi-VN") : "Không giới hạn"],
+            ["Đến ngày", endDate ? new Date(endDate).toLocaleDateString("vi-VN") : "Không giới hạn"],
           ],
         },
       },
@@ -760,6 +774,90 @@ export default function StatisticalPage() {
                     >
                       Chuyển khoản (Ngân hàng)
                     </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Date Range Picker */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setOpenDropdown((v) => (v === "date" ? null : "date"))}
+                className="flex h-11 min-w-[240px] cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+              >
+                <Calendar className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
+                <span className="truncate">
+                  {startDate && endDate 
+                    ? `${new Date(startDate).toLocaleDateString('vi-VN')} - ${new Date(endDate).toLocaleDateString('vi-VN')}`
+                    : startDate 
+                    ? `Từ ${new Date(startDate).toLocaleDateString('vi-VN')}`
+                    : endDate
+                    ? `Đến ${new Date(endDate).toLocaleDateString('vi-VN')}`
+                    : "Chọn thời gian"}
+                </span>
+                {(startDate || endDate) && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setStartDate("");
+                      setEndDate("");
+                    }}
+                    className="rounded-lg p-1 hover:bg-slate-200 dark:hover:bg-white/20"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+                <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
+              </button>
+              {openDropdown === "date" ? (
+                <div className="absolute left-0 z-50 mt-2 w-full min-w-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xl animate-popover dark:border-white/10 dark:bg-slate-950">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        Từ ngày
+                      </label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        max={endDate || undefined}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-cyan-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        Đến ngày
+                      </label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        min={startDate || undefined}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-cyan-400"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStartDate("");
+                          setEndDate("");
+                          setOpenDropdown(null);
+                        }}
+                        className="flex-1 rounded-xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+                      >
+                        Xóa
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setOpenDropdown(null)}
+                        className="flex-1 rounded-xl bg-cyan-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500"
+                      >
+                        Áp dụng
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : null}

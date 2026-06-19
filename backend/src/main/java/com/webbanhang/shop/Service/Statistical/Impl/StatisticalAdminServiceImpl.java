@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -44,10 +45,13 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
     }
 
     @Override
-    public List<TopProductSoldDto> topProductsSold(int limit, Integer brandId, Integer categoryId, String paymentMethod) {
+    public List<TopProductSoldDto> topProductsSold(int limit, Integer brandId, Integer categoryId, String paymentMethod, String startDate, String endDate) {
         int lim = Math.max(1, Math.min(limit, 20));
         Set<Integer> filteredProductIds = getFilteredProductIds(brandId, categoryId);
         boolean hasProdFilter = brandId != null || categoryId != null;
+        
+        Instant startInstant = parseDate(startDate);
+        Instant endInstant = parseDate(endDate);
 
         Map<Integer, String> productNameMap = new HashMap<>();
         Map<Integer, Long> quantityMap = new HashMap<>();
@@ -61,6 +65,12 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
             }
             if (paymentMethod != null && item.getOrder() != null) {
                 if (!paymentMethod.equalsIgnoreCase(item.getOrder().getPaymentMethod())) {
+                    continue;
+                }
+            }
+            // Date filter
+            if (item.getOrder() != null && item.getOrder().getCreatedAt() != null) {
+                if (!isInDateRange(item.getOrder().getCreatedAt(), startInstant, endInstant)) {
                     continue;
                 }
             }
@@ -82,8 +92,8 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
     }
 
     @Override
-    public SummaryStatisticalDto getSummary(Integer brandId, Integer categoryId, String paymentMethod) {
-        List<Order> filteredOrders = getFilteredOrders(brandId, categoryId, paymentMethod);
+    public SummaryStatisticalDto getSummary(Integer brandId, Integer categoryId, String paymentMethod, String startDate, String endDate) {
+        List<Order> filteredOrders = getFilteredOrders(brandId, categoryId, paymentMethod, startDate, endDate);
         Set<Integer> filteredProductIds = getFilteredProductIds(brandId, categoryId);
         boolean hasProdFilter = brandId != null || categoryId != null;
 
@@ -92,7 +102,7 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
                 .filter(order -> order.getPaymentStatus() == PaymentStatus.PAID)
                 .map(order -> order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        long totalCustomers = (hasProdFilter || paymentMethod != null)
+        long totalCustomers = (hasProdFilter || paymentMethod != null || startDate != null || endDate != null)
                 ? filteredOrders.stream()
                     .map(Order::getCustomerId)
                     .filter(customerId -> customerId != null)
@@ -113,11 +123,11 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
     }
 
     @Override
-    public List<MonthlyRevenueDto> getMonthlyRevenue(int months, Integer brandId, Integer categoryId, String paymentMethod) {
+    public List<MonthlyRevenueDto> getMonthlyRevenue(int months, Integer brandId, Integer categoryId, String paymentMethod, String startDate, String endDate) {
         Instant now = Instant.now();
         Instant monthsAgo = now.minus(months * 30L, ChronoUnit.DAYS);
         
-        List<Order> orders = getFilteredOrders(brandId, categoryId, paymentMethod).stream()
+        List<Order> orders = getFilteredOrders(brandId, categoryId, paymentMethod, startDate, endDate).stream()
                 .filter(o -> o.getCreatedAt() != null && o.getCreatedAt().isAfter(monthsAgo))
                 .toList();
 
@@ -144,8 +154,8 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
     }
 
     @Override
-    public List<OrderStatusCountDto> getOrderStatusDistribution(Integer brandId, Integer categoryId, String paymentMethod) {
-        return getFilteredOrders(brandId, categoryId, paymentMethod).stream()
+    public List<OrderStatusCountDto> getOrderStatusDistribution(Integer brandId, Integer categoryId, String paymentMethod, String startDate, String endDate) {
+        return getFilteredOrders(brandId, categoryId, paymentMethod, startDate, endDate).stream()
                 .filter(o -> o.getOrderStatus() != null)
                 .collect(Collectors.groupingBy(o -> o.getOrderStatus().toString(), Collectors.counting()))
                 .entrySet().stream()
@@ -177,11 +187,22 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
                 .collect(Collectors.toCollection(HashSet::new));
     }
 
-    private List<Order> getFilteredOrders(Integer brandId, Integer categoryId, String paymentMethod) {
+    private List<Order> getFilteredOrders(Integer brandId, Integer categoryId, String paymentMethod, String startDate, String endDate) {
+        Instant startInstant = parseDate(startDate);
+        Instant endInstant = parseDate(endDate);
+        
         List<Order> orders = orderRepository.findAll().stream()
                 .filter(order -> {
                     if (paymentMethod != null && !paymentMethod.isEmpty()) {
-                        return paymentMethod.equalsIgnoreCase(order.getPaymentMethod());
+                        if (!paymentMethod.equalsIgnoreCase(order.getPaymentMethod())) {
+                            return false;
+                        }
+                    }
+                    // Date range filter
+                    if (order.getCreatedAt() != null) {
+                        if (!isInDateRange(order.getCreatedAt(), startInstant, endInstant)) {
+                            return false;
+                        }
                     }
                     return true;
                 })
@@ -201,5 +222,31 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
                         .map(OrderItem::getProductId)
                         .anyMatch(filteredProductIds::contains))
                 .toList();
+    }
+    
+    private Instant parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        try {
+            LocalDate localDate = LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE);
+            return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    private boolean isInDateRange(Instant instant, Instant start, Instant end) {
+        if (start != null && instant.isBefore(start)) {
+            return false;
+        }
+        if (end != null) {
+            // Add 1 day to end date to include the entire end date
+            Instant endPlusOneDay = end.plus(1, ChronoUnit.DAYS);
+            if (instant.isAfter(endPlusOneDay)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

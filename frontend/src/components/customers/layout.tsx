@@ -22,6 +22,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
   // State cho ChatBox
   const [chatUser, setChatUser] = React.useState<{ id: number; fullName: string; username: string } | null>(null);
   const [chatToken, setChatToken] = React.useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = React.useState(false);
 
   const isProfilePage = pathname === "/profile";
 
@@ -38,46 +39,123 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
   React.useEffect(() => {
     let cancelled = false;
-    try {
-      const token = localStorage.getItem("token");
-      const userRaw = localStorage.getItem("user");
-      const user = userRaw ? (JSON.parse(userRaw) as { userType?: string }) : null;
 
-      // Set chat user và token
-      if (token && user && user.userType === "customer") {
-        setChatUser(user as any);
-        setChatToken(token);
-      } else {
-        setChatUser(null);
-        setChatToken(null);
-      }
+    const verifyAndInitialize = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const userRaw = localStorage.getItem("user");
+        const user = userRaw ? (JSON.parse(userRaw) as { userType?: string }) : null;
 
-      if (isProtectedRoute && (!token || !user || user.userType !== "customer")) {
-        router.replace("/login");
-        return;
-      }
-
-      (async () => {
-        try {
-          const s = await settingService.getMaintenance();
-          if (cancelled) return;
-          if (s?.isMaintenance) {
-            router.replace("/maintenance");
+        // If protected route and no token/user → redirect to login
+        if (isProtectedRoute && (!token || !user || user.userType !== "customer")) {
+          if (!cancelled) {
+            router.replace("/login");
           }
-        } catch {
-          // ignore
+          return;
         }
-      })();
-    } catch {
-      if (isProtectedRoute) {
-        router.replace("/login");
+
+        // If we have a token, verify it with backend
+        if (token && user) {
+          if (isProtectedRoute) {
+            setIsVerifying(true);
+          }
+
+          try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:8080'}/api/auth/me`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (!response.ok) {
+              // Token invalid/expired
+              throw new Error('Token validation failed');
+            }
+
+            const meData = await response.json();
+
+            if (cancelled) return;
+
+            // Verify still customer
+            if (meData.userType !== 'CUSTOMER') {
+              throw new Error('Not a customer user');
+            }
+
+            // Update user data from backend (in case it changed)
+            const updatedUser = {
+              id: meData.userId,
+              email: meData.email,
+              name: meData.name,
+              fullName: meData.name,
+              username: meData.username,
+              avatarUrl: meData.avatarUrl,
+              userType: meData.userType.toLowerCase(),
+              role: meData.role,
+            };
+
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            setChatUser(updatedUser as any);
+            setChatToken(token);
+          } catch (verifyError) {
+            // Token verification failed
+            if (!cancelled) {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              setChatUser(null);
+              setChatToken(null);
+
+              // If protected route, redirect to login
+              if (isProtectedRoute) {
+                router.replace("/login");
+                return;
+              }
+            }
+          } finally {
+            if (!cancelled) {
+              setIsVerifying(false);
+            }
+          }
+        }
+
+        // Check maintenance mode
+        if (!cancelled) {
+          try {
+            const s = await settingService.getMaintenance();
+            if (cancelled) return;
+            if (s?.isMaintenance) {
+              router.replace("/maintenance");
+            }
+          } catch {
+            // ignore
+          }
+        }
+      } catch (error) {
+        if (!cancelled && isProtectedRoute) {
+          router.replace("/login");
+        }
       }
-    }
+    };
+
+    verifyAndInitialize();
 
     return () => {
       cancelled = true;
     };
   }, [router, isProtectedRoute]);
+
+  // Show loading state while verifying protected routes
+  if (isVerifying && isProtectedRoute) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
+        <div className="text-center">
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+          <p className="text-zinc-400">Đang xác thực...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="customer-portal dark customer-portal-bg-base relative min-h-dvh text-zinc-100 antialiased">

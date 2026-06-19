@@ -25,30 +25,38 @@ public class StatisticalAdminController {
     @GetMapping("/summary")
     public SummaryStatisticalDto summary(@RequestParam(value = "brandId", required = false) Integer brandId,
                                          @RequestParam(value = "categoryId", required = false) Integer categoryId,
-                                         @RequestParam(value = "paymentMethod", required = false) String paymentMethod) {
-        return statisticalAdminService.getSummary(brandId, categoryId, paymentMethod);
+                                         @RequestParam(value = "paymentMethod", required = false) String paymentMethod,
+                                         @RequestParam(value = "startDate", required = false) String startDate,
+                                         @RequestParam(value = "endDate", required = false) String endDate) {
+        return statisticalAdminService.getSummary(brandId, categoryId, paymentMethod, startDate, endDate);
     }
 
     @GetMapping("/monthly-revenue")
     public List<MonthlyRevenueDto> monthlyRevenue(@RequestParam(value = "months", defaultValue = "6") int months,
                                                   @RequestParam(value = "brandId", required = false) Integer brandId,
                                                   @RequestParam(value = "categoryId", required = false) Integer categoryId,
-                                                  @RequestParam(value = "paymentMethod", required = false) String paymentMethod) {
-        return statisticalAdminService.getMonthlyRevenue(months, brandId, categoryId, paymentMethod);
+                                                  @RequestParam(value = "paymentMethod", required = false) String paymentMethod,
+                                                  @RequestParam(value = "startDate", required = false) String startDate,
+                                                  @RequestParam(value = "endDate", required = false) String endDate) {
+        return statisticalAdminService.getMonthlyRevenue(months, brandId, categoryId, paymentMethod, startDate, endDate);
     }
 
     @GetMapping("/status-distribution")
     public List<OrderStatusCountDto> statusDistribution(@RequestParam(value = "brandId", required = false) Integer brandId,
                                                         @RequestParam(value = "categoryId", required = false) Integer categoryId,
-                                                        @RequestParam(value = "paymentMethod", required = false) String paymentMethod) {
-        return statisticalAdminService.getOrderStatusDistribution(brandId, categoryId, paymentMethod);
+                                                        @RequestParam(value = "paymentMethod", required = false) String paymentMethod,
+                                                        @RequestParam(value = "startDate", required = false) String startDate,
+                                                        @RequestParam(value = "endDate", required = false) String endDate) {
+        return statisticalAdminService.getOrderStatusDistribution(brandId, categoryId, paymentMethod, startDate, endDate);
     }
 
     @GetMapping("/top-products")
     public List<TopProductSoldDto> topProducts(@RequestParam(value = "limit", required = false, defaultValue = "5") int limit,
                                                @RequestParam(value = "brandId", required = false) Integer brandId,
                                                @RequestParam(value = "categoryId", required = false) Integer categoryId,
-                                               @RequestParam(value = "paymentMethod", required = false) String paymentMethod) {
-        return statisticalAdminService.topProductsSold(limit, brandId, categoryId, paymentMethod);
+                                               @RequestParam(value = "paymentMethod", required = false) String paymentMethod,
+                                               @RequestParam(value = "startDate", required = false) String startDate,
+                                               @RequestParam(value = "endDate", required = false) String endDate) {
+        return statisticalAdminService.topProductsSold(limit, brandId, categoryId, paymentMethod, startDate, endDate);
     }
 }

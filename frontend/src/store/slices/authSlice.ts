@@ -67,6 +67,21 @@ export const forgotPassword = createAsyncThunk(
   }
 );
 
+// Async thunk for verifying token validity
+export const verifyToken = createAsyncThunk(
+  'auth/verifyToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      const user = await authService.verifyToken();
+      return user;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Token không hợp lệ hoặc đã hết hạn.'
+      );
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -94,6 +109,8 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
     },
     initializeAuth: (state) => {
+      // Note: This only reads from localStorage
+      // You should call verifyToken() thunk immediately after to validate with backend
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem('token');
         const userStr = localStorage.getItem('user');
@@ -164,6 +181,31 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
         state.forgotPasswordSuccess = false;
+      })
+      // Verify Token
+      .addCase(verifyToken.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(verifyToken.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        // Update localStorage with fresh user data
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(action.payload));
+        }
+      })
+      .addCase(verifyToken.rejected, (state) => {
+        state.isLoading = false;
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        // Clear localStorage on verification failure
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       });
   },
 });

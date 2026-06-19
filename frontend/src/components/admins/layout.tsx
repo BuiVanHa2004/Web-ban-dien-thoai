@@ -19,47 +19,118 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [adminUser, setAdminUser] = React.useState<{ id: number; fullName: string; username: string } | null>(null);
   const [adminToken, setAdminToken] = React.useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = React.useState(true);
   const router = useRouter();
 
   React.useEffect(() => {
     let cancelled = false;
-    try {
-      const token = localStorage.getItem("token");
-      const userRaw = localStorage.getItem("user");
-      const user = userRaw ? (JSON.parse(userRaw) as { userType?: string; role?: string }) : null;
 
-      if (!token || !user || user.userType !== "admin") {
-        router.replace("/login");
-        return;
-      }
+    const verifyAndInitialize = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const userRaw = localStorage.getItem("user");
+        const user = userRaw ? (JSON.parse(userRaw) as { userType?: string; role?: string }) : null;
 
-      setAdminUser(user as any);
-      setAdminToken(token);
-
-      const role = (user.role || "").toUpperCase();
-      const isStaff = role && role !== "ADMIN";
-
-      if (isStaff) {
-        (async () => {
-          try {
-            const s = await settingService.getMaintenance();
-            if (cancelled) return;
-            if (s?.isMaintenance) {
-              router.replace("/maintenance");
-            }
-          } catch {
-            // ignore
+        // No token or user in localStorage
+        if (!token || !user || user.userType !== "admin") {
+          if (!cancelled) {
+            router.replace("/login");
           }
-        })();
+          return;
+        }
+
+        // Verify token with backend
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:8080'}/api/auth/me`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            // Token invalid/expired
+            throw new Error('Token validation failed');
+          }
+
+          const meData = await response.json();
+          
+          // Verify still admin
+          if (meData.userType !== 'ADMIN') {
+            throw new Error('Not an admin user');
+          }
+
+          if (cancelled) return;
+
+          // Update user data from backend (in case it changed)
+          const updatedUser = {
+            id: meData.userId,
+            email: meData.email,
+            name: meData.name,
+            fullName: meData.name,
+            username: meData.username,
+            avatarUrl: meData.avatarUrl,
+            userType: meData.userType.toLowerCase(),
+            role: meData.role,
+          };
+
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          setAdminUser(updatedUser as any);
+          setAdminToken(token);
+
+          const role = (meData.role || "").toUpperCase();
+          const isStaff = role && role !== "ADMIN";
+
+          if (isStaff) {
+            try {
+              const s = await settingService.getMaintenance();
+              if (cancelled) return;
+              if (s?.isMaintenance) {
+                router.replace("/maintenance");
+              }
+            } catch {
+              // ignore
+            }
+          }
+        } catch (verifyError) {
+          // Token verification failed - logout
+          if (!cancelled) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            router.replace("/login");
+          }
+          return;
+        }
+      } catch (error) {
+        if (!cancelled) {
+          router.replace("/login");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsVerifying(false);
+        }
       }
-    } catch {
-      router.replace("/login");
-    }
+    };
+
+    verifyAndInitialize();
 
     return () => {
       cancelled = true;
     };
   }, [router]);
+
+  // Show loading state while verifying
+  if (isVerifying) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
+        <div className="text-center">
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+          <p className="text-zinc-400">Đang xác thực...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="customer-portal dark customer-portal-bg-base relative min-h-dvh text-zinc-100 antialiased" style={{ overflow: "visible" }}>

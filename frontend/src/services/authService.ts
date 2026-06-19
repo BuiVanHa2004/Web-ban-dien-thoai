@@ -81,7 +81,52 @@ const toLoginResponse = (data: {
   return { token: data.token, user };
 };
 
-export const authService = {
+  /**
+   * Verify current token validity by calling /auth/me
+   * Returns user info if valid, throws if invalid/expired
+   */
+  verifyToken: async (): Promise<User> => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      throw toApiError('Token không tồn tại');
+    }
+
+    try {
+      const data = await requestJson<{
+        userId: number;
+        userType: string;
+        role: string;
+        name: string;
+        email: string;
+        username: string;
+        avatarUrl?: string | null;
+      }>('/auth/me', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const user: User = {
+        id: data.userId.toString(),
+        email: data.email,
+        name: data.name,
+        avatarUrl: data.avatarUrl || null,
+        userType: data.userType.toLowerCase() as 'admin' | 'customer',
+        role: data.role,
+      };
+      
+      return user;
+    } catch (error) {
+      // Token invalid/expired - clear localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+      throw error;
+    }
+  },
+
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     try {
       const data = await requestJson<{

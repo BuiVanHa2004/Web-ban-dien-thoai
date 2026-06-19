@@ -1,3 +1,5 @@
+import { getAuthHeader, authenticatedFetch } from "@/utils/authUtils";
+
 const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
 
 export type BankTransactionDto = {
@@ -39,37 +41,15 @@ export type CreateBankTransactionPayload = {
   rawData?: string;
 };
 
-function getAuthHeader(): string | null {
-  if (typeof window === "undefined") return null;
-  const token = localStorage.getItem("token");
-  return token ? `Bearer ${token}` : null;
-}
-
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const auth = getAuthHeader();
-  const res = await fetch(`${API_URL}/api${path}`, {
+  return authenticatedFetch<T>(`${API_URL}/api${path}`, {
     ...init,
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
-      ...(auth ? { Authorization: auth } : {}),
       ...(init?.headers || {}),
     },
   });
-  if (!res.ok) {
-    let message = "Có lỗi xảy ra.";
-    try {
-      const data = (await res.json()) as { message?: string; error?: string };
-      message = data.message || data.error || message;
-    } catch {
-      // ignore
-    }
-    throw new Error(message);
-  }
-  
-  if (res.status === 204) return null as any;
-  const text = await res.text();
-  return text ? JSON.parse(text) : (null as any);
 }
 
 export const adminBankTransactionService = {
