@@ -294,11 +294,9 @@ export default function OrderId() {
       let failedItems: string[] = [];
       for (const item of order.items) {
         try {
-          // We don't have colorId in order items, so we need to pass null or fetch it
-          // For now, pass null as the backend should handle it
           await cartService.addItem({
             productId: Number(item.productId),
-            productColorId: null, // Order items don't store colorId
+            productColorId: null, // Backend will derive from variant
             productVariantId: item.variantId || null,
             quantity: item.quantity || 1
           });

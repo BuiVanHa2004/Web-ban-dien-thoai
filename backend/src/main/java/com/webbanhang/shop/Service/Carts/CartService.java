@@ -85,31 +85,34 @@ public class CartService {
 
     @Transactional
     public CartDto getOrCreateCart(Integer customerId) {
-        System.out.println("CartService.getOrCreateCart called - customerId=" + customerId);
+        System.out.println("=== CartService.getOrCreateCart START - customerId=" + customerId + " ===");
         validateCustomerActive(customerId);
         Cart cart = cartRepository.findByCustomerId(customerId).orElseGet(() -> {
             Cart c = new Cart();
             c.setCustomerId(customerId);
             Cart saved = cartRepository.save(c);
-            System.out.println("Created cart in getOrCreateCart - cartId=" + saved.getCartId());
+            entityManager.flush();
+            System.out.println("[NEW CART] cartId=" + saved.getCartId() + ", customerId=" + saved.getCustomerId());
             return saved;
         });
-        System.out.println("Cart found/created - cartId=" + cart.getCartId());
+        System.out.println("[CART LOADED] cartId=" + cart.getCartId() + ", customerId=" + cart.getCustomerId());
 
         List<CartItem> lines = cartItemRepository.findAllByCartIdWithProduct(cart.getCartId());
-        System.out.println("Cart items fetched: " + lines.size() + " items");
+        System.out.println("[QUERY RESULT] Found " + lines.size() + " cart items");
         for (CartItem item : lines) {
-            System.out.println("  - CartItem id=" + item.getCartItemId() + ", productId=" + item.getProduct().getProductId() + ", qty=" + item.getQuantity());
+            System.out.println("  → CartItem[id=" + item.getCartItemId() + ", cartId=" + item.getCart().getCartId() + ", productId=" + item.getProduct().getProductId() + ", colorId=" + item.getProductColorId() + ", variantId=" + item.getProductVariantId() + ", qty=" + item.getQuantity() + "]");
         }
         
         List<CartItemDto> items = lines.stream().map(this::toDto).toList();
         int totalQty = items.stream().mapToInt(it -> Math.max(0, it.quantity() == null ? 0 : it.quantity())).sum();
+        System.out.println("[RESPONSE] customerId=" + customerId + ", items.size=" + items.size() + ", totalQty=" + totalQty);
+        System.out.println("=== CartService.getOrCreateCart END ===\n");
         return new CartDto(customerId, items, totalQty);
     }
 
     @Transactional
     public CartDto addItem(Integer customerId, Integer productId, Integer productColorId, Integer productVariantId, Integer quantity) {
-        System.out.println("CartService.addItem called - customerId=" + customerId + ", productId=" + productId + ", colorId=" + productColorId + ", variantId=" + productVariantId + ", qty=" + quantity);
+        System.out.println("\n=== CartService.addItem START - customerId=" + customerId + ", productId=" + productId + ", colorId=" + productColorId + ", variantId=" + productVariantId + ", qty=" + quantity + " ===");
         validateCustomerActive(customerId);
         if (productId == null || productId <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu productId.");
@@ -120,10 +123,11 @@ public class CartService {
             Cart c = new Cart();
             c.setCustomerId(customerId);
             Cart saved = cartRepository.save(c);
-            System.out.println("Created new cart - cartId=" + saved.getCartId() + ", customerId=" + saved.getCustomerId());
+            entityManager.flush();
+            System.out.println("[NEW CART CREATED] cartId=" + saved.getCartId() + ", customerId=" + saved.getCustomerId());
             return saved;
         });
-        System.out.println("Working with cart - cartId=" + cart.getCartId() + ", customerId=" + cart.getCustomerId());
+        System.out.println("[CART] cartId=" + cart.getCartId() + ", customerId=" + cart.getCustomerId());
 
         Product product = requireProductActive(productId);
 
@@ -141,9 +145,10 @@ public class CartService {
         final Integer effectiveColorId;
         if (productColorId == null && variant.getProductColor() != null) {
             effectiveColorId = variant.getProductColor().getProductColorId();
-            System.out.println("Derived colorId from variant: " + effectiveColorId);
+            System.out.println("[COLOR] Derived from variant: " + effectiveColorId);
         } else {
             effectiveColorId = productColorId;
+            System.out.println("[COLOR] Provided explicitly: " + effectiveColorId);
         }
 
         // validate color if provided explicitly (for backward compatibility)
@@ -156,7 +161,7 @@ public class CartService {
         }
 
         Optional<CartItem> existing = cartItemRepository.findOneLine(cart.getCartId(), productId, effectiveColorId, productVariantId);
-        System.out.println("Existing cart item found: " + existing.isPresent());
+        System.out.println("[LOOKUP] Existing cart item: " + (existing.isPresent() ? "FOUND (id=" + existing.get().getCartItemId() + ")" : "NOT FOUND - will create new"));
         CartItem line = existing.orElseGet(() -> {
             CartItem ci = new CartItem();
             ci.setCart(cart);
@@ -164,18 +169,24 @@ public class CartService {
             ci.setProductColorId(effectiveColorId);
             ci.setProductVariantId(productVariantId);
             ci.setQuantity(0);
-            System.out.println("Created new CartItem");
+            System.out.println("[NEW CART ITEM] Created new CartItem entity (not saved yet)");
             return ci;
         });
         int nextQty = Math.min(99, Math.max(1, (line.getQuantity() == null ? 0 : line.getQuantity()) + qty));
+        System.out.println("[QUANTITY] Old=" + line.getQuantity() + ", New=" + nextQty);
         inventoryStockValidator.requireStock(variant, nextQty, inventoryStockValidator.buildVariantLabel(variant));
         line.setQuantity(nextQty);
         CartItem saved = cartItemRepository.save(line);
-        entityManager.flush(); // Force flush to database before querying
-        System.out.println("Saved CartItem - id=" + saved.getCartItemId() + ", cartId=" + saved.getCart().getCartId() + ", qty=" + saved.getQuantity());
+        System.out.println("[SAVED] CartItem id=" + saved.getCartItemId() + ", cartId=" + saved.getCart().getCartId() + ", qty=" + saved.getQuantity());
         
-        CartDto result = getOrCreateCart(customerId);
-        System.out.println("Returning CartDto - customerId=" + result.customerId() + ", items.size=" + result.items().size() + ", totalQty=" + result.totalQuantity());
+        // Build response inline without calling getOrCreateCart to avoid nested transaction issues
+        List<CartItem> allItems = cartItemRepository.findAllByCartIdWithProduct(cart.getCartId());
+        System.out.println("[LOAD ALL ITEMS] Found " + allItems.size() + " items in cart");
+        List<CartItemDto> itemDtos = allItems.stream().map(this::toDto).toList();
+        int totalQty = itemDtos.stream().mapToInt(it -> Math.max(0, it.quantity() == null ? 0 : it.quantity())).sum();
+        CartDto result = new CartDto(customerId, itemDtos, totalQty);
+        System.out.println("[FINAL RESULT] customerId=" + result.customerId() + ", items.size=" + result.items().size() + ", totalQty=" + result.totalQuantity());
+        System.out.println("=== CartService.addItem END ===\n");
         return result;
     }
 
@@ -202,8 +213,12 @@ public class CartService {
         inventoryStockValidator.requireStock(variant, qty, inventoryStockValidator.buildVariantLabel(variant));
         line.setQuantity(qty);
         cartItemRepository.save(line);
-        entityManager.flush(); // Force flush to database
-        return getOrCreateCart(customerId);
+        
+        // Build response inline
+        List<CartItem> allItems = cartItemRepository.findAllByCartIdWithProduct(cart.getCartId());
+        List<CartItemDto> itemDtos = allItems.stream().map(this::toDto).toList();
+        int totalQty = itemDtos.stream().mapToInt(it -> Math.max(0, it.quantity() == null ? 0 : it.quantity())).sum();
+        return new CartDto(customerId, itemDtos, totalQty);
     }
 
     @Transactional
@@ -214,7 +229,12 @@ public class CartService {
         CartItem line = cartItemRepository.findOneLine(cart.getCartId(), productId, productColorId, productVariantId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sản phẩm không có trong giỏ."));
         cartItemRepository.delete(line);
-        return getOrCreateCart(customerId);
+        
+        // Build response inline
+        List<CartItem> allItems = cartItemRepository.findAllByCartIdWithProduct(cart.getCartId());
+        List<CartItemDto> itemDtos = allItems.stream().map(this::toDto).toList();
+        int totalQty = itemDtos.stream().mapToInt(it -> Math.max(0, it.quantity() == null ? 0 : it.quantity())).sum();
+        return new CartDto(customerId, itemDtos, totalQty);
     }
 
     @Transactional
@@ -228,7 +248,9 @@ public class CartService {
                 });
         List<CartItem> lines = cartItemRepository.findAllByCartIdWithProduct(cart.getCartId());
         cartItemRepository.deleteAll(lines);
-        return getOrCreateCart(customerId);
+        
+        // Return empty cart
+        return new CartDto(customerId, List.of(), 0);
     }
 
     private CartItemDto toDto(CartItem ci) {
