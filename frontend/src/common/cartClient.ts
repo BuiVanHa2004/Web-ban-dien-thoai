@@ -88,23 +88,9 @@ function migrateCartToActive(fromKey: string, cart: CartLine[]) {
 
 export function getLocalCartTotalQuantity(): number {
   if (typeof window === "undefined") return 0;
-  const token = window.localStorage.getItem("token");
-  const user = window.localStorage.getItem("user");
   
-  // If not logged in (no token/user), clear guest cart data
-  if (!token || !user) {
-    try {
-      window.localStorage.removeItem(CART_STORAGE_KEY_GUEST);
-      window.localStorage.removeItem("cart");
-      window.localStorage.removeItem("Cart");
-      window.localStorage.removeItem("cartItems");
-      window.localStorage.removeItem("customer_cart");
-      window.localStorage.removeItem("customer-cart");
-    } catch {}
-    return 0;
-  }
-  
-  // If logged in, read from user-specific cart key only
+  // Always read cart from localStorage, regardless of auth state
+  // This prevents losing cart data during token verification or auth state changes
   const { key, cart } = readCartFromAnyKey();
   migrateCartToActive(key, cart);
   return cart.reduce((sum, item) => sum + Math.max(0, Number(item?.quantity) || 0), 0);
@@ -162,6 +148,23 @@ export async function addProductToCart(item: CartLine): Promise<number> {
       productVariantId: item.productVariantId,
       quantity: item.quantity,
     });
+    
+    // Also update localStorage to keep in sync with server
+    const activeKey = getActiveCartStorageKey();
+    const serverCart = (dto.items || []).map((it: any) => ({
+      productId: Number(it.productId),
+      productName: String(it.productName || ""),
+      price: Number(it.price || 0),
+      quantity: Number(it.quantity || 1),
+      productVariantId: it.productVariantId ?? null,
+      productColorId: it.productColorId ?? null,
+      ramGb: it.ramGb ?? null,
+      storageGb: it.storageGb ?? null,
+      colorName: it.colorName ?? null,
+      imageUrl: it.imageUrl ?? null,
+    }));
+    window.localStorage.setItem(activeKey, JSON.stringify(serverCart));
+    
     emitCartUpdated(dto.totalQuantity);
     return dto.totalQuantity;
   } catch (e: any) {

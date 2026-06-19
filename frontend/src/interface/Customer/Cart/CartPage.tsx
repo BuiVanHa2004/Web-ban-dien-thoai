@@ -130,12 +130,17 @@ export default function CartPage() {
         if (mounted) {
           setItems(mapped);
           setLoading(false);
+          
+          // Sync server cart to localStorage for consistency
+          const activeKey = getActiveCartStorageKey();
+          const serverCart = mapped;
+          localStorage.setItem(activeKey, JSON.stringify(serverCart));
         }
         emitCartUpdated(dto.totalQuantity);
       } catch (e: any) {
         console.error("[CartPage] Failed to load cart:", e);
-        // If API fails, fallback to reading from localStorage as guest
-        // This handles token expiration and other auth errors gracefully
+        // If API fails, fallback to reading from localStorage
+        // This handles token expiration and auth errors gracefully
         if (mounted) {
           const localCart = readCart();
           setItems(localCart);

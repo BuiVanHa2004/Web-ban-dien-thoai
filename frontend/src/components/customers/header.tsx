@@ -59,18 +59,31 @@ export default function PremiumHeader() {
         if (token && String(u?.userType || "").toLowerCase() === "customer") {
           const dto = await cartService.getMyCart();
           setCartTotal(dto.totalQuantity || 0);
+          
+          // Sync server cart to localStorage for consistency
+          const activeKey = `cart:user:${u?.id || ""}`;
+          const serverCart = (dto.items || []).map((it: any) => ({
+            productId: Number(it.productId),
+            productName: String(it.productName || ""),
+            price: Number(it.price || 0),
+            quantity: Number(it.quantity || 1),
+            productVariantId: it.productVariantId ?? null,
+            productColorId: it.productColorId ?? null,
+            ramGb: it.ramGb ?? null,
+            storageGb: it.storageGb ?? null,
+            colorName: it.colorName ?? null,
+            imageUrl: it.imageUrl ?? null,
+          }));
+          localStorage.setItem(activeKey, JSON.stringify(serverCart));
           return;
         }
       } catch (e) {
         console.error("[Header] Failed to get cart from server:", e);
-        // If logged in user fails to get cart from server, show 0 instead of localStorage
-        // This prevents showing wrong cart count from previous user
-        const token = localStorage.getItem("token");
-        if (token) {
-          setCartTotal(0);
-          return;
-        }
+        // If API fails, read from localStorage as fallback
+        // This handles token expiration gracefully without losing cart data
       }
+      
+      // Fallback: read cart from localStorage (works for both guest and logged-in users)
       setCartTotal(getLocalCartTotalQuantity());
     };
 

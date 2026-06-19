@@ -71,6 +71,21 @@ export default function Login() {
           // Already on customer domain — save and go
           localStorage.setItem("token", res.token);
           localStorage.setItem("user", JSON.stringify(res.user));
+          
+          // Sync guest cart to user cart after login
+          try {
+            const guestCart = localStorage.getItem("cart:guest") || localStorage.getItem("cart");
+            if (guestCart) {
+              const userCartKey = `cart:user:${res.user.id}`;
+              localStorage.setItem(userCartKey, guestCart);
+              // Clean up guest cart after migration
+              localStorage.removeItem("cart:guest");
+              localStorage.removeItem("cart");
+            }
+          } catch (err) {
+            console.error("[Login] Failed to migrate guest cart:", err);
+          }
+          
           router.push("/home");
         }
       }
@@ -118,6 +133,21 @@ export default function Login() {
               if (!res.auth) throw new Error(res.message || "Đăng nhập Google thất bại.");
               localStorage.setItem("token", res.auth.token);
               localStorage.setItem("user", JSON.stringify(res.auth.user));
+              
+              // Sync guest cart to user cart after Google login
+              try {
+                const guestCart = localStorage.getItem("cart:guest") || localStorage.getItem("cart");
+                if (guestCart) {
+                  const userCartKey = `cart:user:${res.auth.user.id}`;
+                  localStorage.setItem(userCartKey, guestCart);
+                  // Clean up guest cart after migration
+                  localStorage.removeItem("cart:guest");
+                  localStorage.removeItem("cart");
+                }
+              } catch (err) {
+                console.error("[GoogleLogin] Failed to migrate guest cart:", err);
+              }
+              
               if (res.requiresProfileCompletion) {
                 router.push("/signin-google?mode=complete-profile");
               } else if (res.auth.user.userType === "admin") {
