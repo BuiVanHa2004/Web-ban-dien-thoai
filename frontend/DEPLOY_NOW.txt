@@ -1,0 +1,21 @@
+========================================
+  🚀 LỆNH DEPLOY (Copy & Paste)
+========================================
+
+git add .
+
+git commit -m "fix: Tiếp tục thanh toán với orderId + wrap Suspense"
+
+git push origin main
+
+========================================
+  ✅ XEM TRÊN VERCEL
+========================================
+Sau khi push, Vercel tự động deploy.
+Build sẽ thành công!
+
+Files đã sửa:
+1. src/interface/Customer/Payment/PaymentPage.tsx
+2. src/app/(customer)/payment/page.tsx
+
+Chi tiết: ../PAYMENT_FIX_COMPLETE.md

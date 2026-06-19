@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 
 import PaymentPage from "@/interface/Customer/Payment/PaymentPage";
 
