@@ -699,6 +699,54 @@ export default function OrderId() {
         </motion.div>
       </div>
 
+      {/* Admin Payment Note - Show for both approved and rejected payments */}
+      {!isCancelled && order?.paymentNote && order?.paymentNoteAuthor && order?.paymentStatus === "PAID" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-6 backdrop-blur-xl dark:border-emerald-900/20 dark:bg-emerald-500/5"
+        >
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+            <div className="flex-1 space-y-3">
+              <h3 className="text-lg font-black text-emerald-700 dark:text-emerald-400">
+                Thanh toán đã được xác nhận
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">
+                    Xác nhận bởi
+                  </div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white">
+                    {order.paymentNoteAuthor}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">
+                    Thời gian
+                  </div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white">
+                    {formatDate(order.paymentNoteDate)}
+                  </div>
+                </div>
+              </div>
+              {order.paymentNote && (
+                <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500 mb-2">
+                    Ghi chú
+                  </div>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {order.paymentNote}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* ELITE PRODUCTS LIST */}
       <div className="space-y-12">
         <div className="flex items-center justify-between px-6">
