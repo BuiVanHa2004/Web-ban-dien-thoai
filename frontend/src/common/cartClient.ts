@@ -36,17 +36,6 @@ function safeParseUserId(raw: string | null): string | null {
     const parsed = JSON.parse(raw) as unknown;
     const id = (parsed as { id?: unknown } | null)?.id;
     
-    // DEBUG: Log runtime data
-    console.log("[safeParseUserId] Runtime data:", {
-      raw: raw,
-      parsed: parsed,
-      id: id,
-      typeofId: typeof id,
-      isString: typeof id === "string",
-      isNumber: typeof id === "number",
-      result: (typeof id === "string" && id.trim()) ? id.trim() : (typeof id === "number" && id > 0) ? String(id) : null
-    });
-    
     // Accept both string and number, convert to string
     if (typeof id === "string" && id.trim()) {
       return id.trim();
@@ -69,14 +58,6 @@ export function getActiveCartStorageKey(): string {
   const token = window.localStorage.getItem("token");
   const userRaw = window.localStorage.getItem("user");
   const userId = safeParseUserId(userRaw);
-  
-  // DEBUG: Log runtime data
-  console.log("[getActiveCartStorageKey] Runtime data:", {
-    hasToken: !!token,
-    userRaw: userRaw,
-    userId: userId,
-    result: (token && userId) ? `cart:user:${userId}` : "cart:guest"
-  });
   
   return (token && userId) ? `${CART_STORAGE_KEY_PREFIX}:user:${userId}` : CART_STORAGE_KEY_GUEST;
 }
@@ -161,12 +142,6 @@ export function addProductToLocalCart(item: CartLine): number {
     cart.unshift(item);
   }
   const finalKey = getActiveCartStorageKey();
-  console.log(`[${new Date().toISOString()}] addProductToLocalCart - WRITING:`, {
-    function: 'addProductToLocalCart',
-    key: finalKey,
-    itemCount: cart.length,
-    firstProductId: cart[0]?.productId
-  });
   window.localStorage.setItem(finalKey, JSON.stringify(cart));
   const total = cart.reduce((sum, line) => sum + Math.max(0, Number(line?.quantity) || 0), 0);
   emitCartUpdated(total);
@@ -179,21 +154,11 @@ export async function addProductToCart(item: CartLine): Promise<number> {
   const userRaw = window.localStorage.getItem("user");
   const userId = safeParseUserId(userRaw);
 
-  // DEBUG: Log at add to cart
-  console.log("[addProductToCart] Before adding:", {
-    hasToken: !!token,
-    userRaw: userRaw,
-    userId: userId,
-    willUseGuestBranch: !token || !userId
-  });
-
   // Guest / chưa đăng nhập: fallback localStorage như hiện tại
   if (!token || !userId) {
-    console.log("[addProductToCart] Using GUEST branch");
     return addProductToLocalCart(item);
   }
 
-  console.log("[addProductToCart] Using LOGGED-IN branch");
   // Đã đăng nhập: lưu về server theo tài khoản
   try {
     const dto = await cartService.addItem({
@@ -217,12 +182,6 @@ export async function addProductToCart(item: CartLine): Promise<number> {
       colorName: it.colorName ?? null,
       imageUrl: it.imageUrl ?? null,
     }));
-    console.log(`[${new Date().toISOString()}] addProductToCart (logged-in) - WRITING:`, {
-      function: 'addProductToCart',
-      key: activeKey,
-      itemCount: serverCart.length,
-      firstProductId: serverCart[0]?.productId
-    });
     window.localStorage.setItem(activeKey, JSON.stringify(serverCart));
     
     emitCartUpdated(dto.totalQuantity);
