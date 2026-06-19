@@ -812,7 +812,7 @@ export default function StatisticalPage() {
                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
               </button>
               {openDropdown === "date" ? (
-                <div className="absolute left-0 z-50 mt-2 w-full min-w-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xl animate-popover dark:border-white/10 dark:bg-slate-950">
+                <div className="absolute right-0 z-50 mt-2 w-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xl animate-popover dark:border-white/10 dark:bg-slate-950 md:left-0 md:right-auto">
                   <div className="space-y-4">
                     <div>
                       <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">

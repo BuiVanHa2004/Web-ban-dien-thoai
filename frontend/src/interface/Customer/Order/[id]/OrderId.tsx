@@ -296,7 +296,7 @@ export default function OrderId() {
         try {
           await cartService.addItem({
             productId: Number(item.productId),
-            productColorId: item.colorId,
+            productColorId: undefined,
             productVariantId: item.variantId,
             quantity: item.quantity
           });
