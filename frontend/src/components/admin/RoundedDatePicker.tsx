@@ -148,8 +148,8 @@ export function RoundedDatePicker({
           {/* Mobile Overlay backdrop */}
           <div className="fixed inset-0 bg-black/30 z-40 sm:hidden" onClick={() => setIsOpen(false)} />
           
-          {/* Calendar popup container with better positioning */}
-          <div className="fixed sm:absolute inset-x-4 top-1/2 -translate-y-1/2 sm:translate-y-0 sm:inset-x-auto sm:top-full sm:left-0 mt-0 sm:mt-2 z-50 flex justify-center sm:block">
+          {/* Calendar popup container - shows below button on all screens */}
+          <div className="absolute left-0 right-0 sm:right-auto top-full mt-2 z-50 flex justify-center sm:block px-2 sm:px-0">
             {/* Calendar popup */}
             <div className="relative rounded-2xl bg-white border border-slate-200 shadow-2xl dark:bg-slate-800 dark:border-slate-700 overflow-hidden w-full max-w-[340px] sm:max-w-none sm:w-[320px]">
               {/* Header with padding adjustments for mobile */}
