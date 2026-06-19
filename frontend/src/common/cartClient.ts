@@ -160,7 +160,14 @@ export function addProductToLocalCart(item: CartLine): number {
   } else {
     cart.unshift(item);
   }
-  window.localStorage.setItem(getActiveCartStorageKey(), JSON.stringify(cart));
+  const finalKey = getActiveCartStorageKey();
+  console.log(`[${new Date().toISOString()}] addProductToLocalCart - WRITING:`, {
+    function: 'addProductToLocalCart',
+    key: finalKey,
+    itemCount: cart.length,
+    firstProductId: cart[0]?.productId
+  });
+  window.localStorage.setItem(finalKey, JSON.stringify(cart));
   const total = cart.reduce((sum, line) => sum + Math.max(0, Number(line?.quantity) || 0), 0);
   emitCartUpdated(total);
   return total;
@@ -210,6 +217,12 @@ export async function addProductToCart(item: CartLine): Promise<number> {
       colorName: it.colorName ?? null,
       imageUrl: it.imageUrl ?? null,
     }));
+    console.log(`[${new Date().toISOString()}] addProductToCart (logged-in) - WRITING:`, {
+      function: 'addProductToCart',
+      key: activeKey,
+      itemCount: serverCart.length,
+      firstProductId: serverCart[0]?.productId
+    });
     window.localStorage.setItem(activeKey, JSON.stringify(serverCart));
     
     emitCartUpdated(dto.totalQuantity);
