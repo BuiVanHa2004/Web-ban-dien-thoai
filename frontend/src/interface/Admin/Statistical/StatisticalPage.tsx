@@ -106,12 +106,16 @@ export default function StatisticalPage() {
     const brandId = selectedBrandId === "all" ? undefined : Number(selectedBrandId);
     const categoryId = selectedCategoryId === "all" ? undefined : Number(selectedCategoryId);
     const paymentMethod = selectedPaymentMethod === "all" ? undefined : selectedPaymentMethod;
+    
+    // Only include dates if both are selected
+    const hasValidDates = startDate && endDate;
+    
     return { 
       brandId, 
       categoryId, 
       paymentMethod,
-      startDate: startDate || undefined,
-      endDate: endDate || undefined,
+      startDate: hasValidDates ? startDate : undefined,
+      endDate: hasValidDates ? endDate : undefined,
     };
   }, [selectedBrandId, selectedCategoryId, selectedPaymentMethod, startDate, endDate]);
 
@@ -575,6 +579,26 @@ export default function StatisticalPage() {
           outline: none !important;
           border: none !important;
         }
+        
+        /* Bo tròn 4 góc popup lịch */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          cursor: pointer;
+          opacity: 0.7;
+        }
+        input[type="date"]:hover::-webkit-calendar-picker-indicator {
+          opacity: 1;
+        }
+        input[type="date"]::-webkit-datetime-edit {
+          padding: 0;
+        }
+        /* Webkit browsers (Chrome, Safari, Edge) */
+        ::-webkit-calendar-picker-indicator {
+          filter: invert(0.5);
+        }
+        /* Dark mode */
+        .dark ::-webkit-calendar-picker-indicator {
+          filter: invert(0.7);
+        }
       ` }} />
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
@@ -791,8 +815,19 @@ export default function StatisticalPage() {
                 <input
                   type="date"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="h-11 w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  max={endDate || undefined}
+                  onChange={(e) => {
+                    const newStartDate = e.target.value;
+                    setStartDate(newStartDate);
+                    // If start date is after end date, clear end date
+                    if (endDate && newStartDate > endDate) {
+                      setEndDate("");
+                    }
+                  }}
+                  className="h-11 w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 hover:[&::-webkit-calendar-picker-indicator]:opacity-100"
+                  style={{
+                    colorScheme: 'light'
+                  }}
                   placeholder="Từ ngày"
                 />
               </div>
@@ -802,8 +837,22 @@ export default function StatisticalPage() {
                 <input
                   type="date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="h-11 w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  min={startDate || undefined}
+                  onChange={(e) => {
+                    const newEndDate = e.target.value;
+                    // Only allow if start date is set and new end date is >= start date
+                    if (!startDate) {
+                      return; // Don't allow selecting end date before start date
+                    }
+                    if (newEndDate >= startDate) {
+                      setEndDate(newEndDate);
+                    }
+                  }}
+                  disabled={!startDate}
+                  className="h-11 w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 hover:[&::-webkit-calendar-picker-indicator]:opacity-100"
+                  style={{
+                    colorScheme: 'light'
+                  }}
                   placeholder="Đến ngày"
                 />
               </div>
