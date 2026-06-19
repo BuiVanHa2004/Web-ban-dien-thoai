@@ -187,8 +187,15 @@ export default function StatisticalPage() {
   }, []);
 
   React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    // Only fetch if:
+    // 1. No dates selected (both empty) OR
+    // 2. Both dates selected (both filled)
+    const shouldFetch = (!startDate && !endDate) || (startDate && endDate);
+    
+    if (shouldFetch) {
+      fetchData();
+    }
+  }, [fetchData, startDate, endDate]);
 
   const formatVnd = (val: number) => {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(val);
