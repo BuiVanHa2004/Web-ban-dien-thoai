@@ -33,6 +33,7 @@ import {
   History,
   FileText,
   ChevronDown,
+  Calendar,
 } from "lucide-react";
 import {
   statisticalService,
@@ -83,8 +84,7 @@ export default function StatisticalPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<string>("all");
   const [startDate, setStartDate] = React.useState<string>("");
   const [endDate, setEndDate] = React.useState<string>("");
-  const [selectedDateRange, setSelectedDateRange] = React.useState<string>("all");
-  const [openDropdown, setOpenDropdown] = React.useState<null | "brand" | "category" | "payment" | "date">(null);
+  const [openDropdown, setOpenDropdown] = React.useState<null | "brand" | "category" | "payment">(null);
   const dropdownContainerRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -100,56 +100,7 @@ export default function StatisticalPage() {
     }
   }, []);
 
-  // Function to calculate date range based on selection
-  const calculateDateRange = React.useCallback((range: string) => {
-    const today = new Date();
-    let start = "";
-    let end = "";
 
-    switch (range) {
-      case "today":
-        start = today.toISOString().split("T")[0];
-        end = today.toISOString().split("T")[0];
-        break;
-      case "7days":
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(today.getDate() - 7);
-        start = sevenDaysAgo.toISOString().split("T")[0];
-        end = today.toISOString().split("T")[0];
-        break;
-      case "30days":
-        const thirtyDaysAgo = new Date(today);
-        thirtyDaysAgo.setDate(today.getDate() - 30);
-        start = thirtyDaysAgo.toISOString().split("T")[0];
-        end = today.toISOString().split("T")[0];
-        break;
-      case "90days":
-        const ninetyDaysAgo = new Date(today);
-        ninetyDaysAgo.setDate(today.getDate() - 90);
-        start = ninetyDaysAgo.toISOString().split("T")[0];
-        end = today.toISOString().split("T")[0];
-        break;
-      case "thisyear":
-        start = `${today.getFullYear()}-01-01`;
-        end = today.toISOString().split("T")[0];
-        break;
-      case "all":
-      default:
-        start = "";
-        end = "";
-        break;
-    }
-
-    setStartDate(start);
-    setEndDate(end);
-  }, []);
-
-  // Update date range when selection changes
-  React.useEffect(() => {
-    if (selectedDateRange !== "custom") {
-      calculateDateRange(selectedDateRange);
-    }
-  }, [selectedDateRange, calculateDateRange]);
 
   const currentFilter = React.useMemo(() => {
     const brandId = selectedBrandId === "all" ? undefined : Number(selectedBrandId);
@@ -178,34 +129,6 @@ export default function StatisticalPage() {
     if (selectedPaymentMethod === "all") return "Tất cả PT thanh toán";
     return selectedPaymentMethod === "COD" ? "Thanh toán COD" : "Chuyển khoản (Ngân hàng)";
   }, [selectedPaymentMethod]);
-
-  const selectedDateRangeLabel = React.useMemo(() => {
-    switch (selectedDateRange) {
-      case "all":
-        return "Tất cả thời gian";
-      case "today":
-        return "Hôm nay";
-      case "7days":
-        return "7 ngày qua";
-      case "30days":
-        return "30 ngày qua";
-      case "90days":
-        return "90 ngày qua";
-      case "thisyear":
-        return "Năm nay";
-      case "custom":
-        if (startDate && endDate) {
-          return `${new Date(startDate).toLocaleDateString('vi-VN')} - ${new Date(endDate).toLocaleDateString('vi-VN')}`;
-        } else if (startDate) {
-          return `Từ ${new Date(startDate).toLocaleDateString('vi-VN')}`;
-        } else if (endDate) {
-          return `Đến ${new Date(endDate).toLocaleDateString('vi-VN')}`;
-        }
-        return "Tùy chỉnh";
-      default:
-        return "Tất cả thời gian";
-    }
-  }, [selectedDateRange, startDate, endDate]);
   const hasMonthlyData = monthlyRevenue.some((item) => Number(item.orderCount) > 0 || Number(item.revenue) > 0);
   const hasStatusData = statusDist.some((item) => Number(item.count) > 0);
   const hasTopProductsData = topProducts.some((item) => Number(item.quantitySold) > 0);
@@ -290,7 +213,10 @@ export default function StatisticalPage() {
       { "Bộ lọc": "Thương hiệu", "Giá trị": selectedBrandLabel },
       { "Bộ lọc": "Danh mục", "Giá trị": selectedCategoryLabel },
       { "Bộ lọc": "Phương thức thanh toán", "Giá trị": selectedPaymentMethodLabel },
-      { "Bộ lọc": "Thời gian", "Giá trị": selectedDateRangeLabel },
+      ...(startDate || endDate ? [{ 
+        "Bộ lọc": "Thời gian", 
+        "Giá trị": `${startDate ? `Từ ngày ${new Date(startDate).toLocaleDateString('vi-VN')}` : ''}${startDate && endDate ? ' - ' : ''}${endDate ? `Đến ngày ${new Date(endDate).toLocaleDateString('vi-VN')}` : ''}`
+      }] : []),
       { "Bộ lọc": "Thời gian xuất", "Giá trị": new Date().toLocaleString("vi-VN") },
     ];
 
@@ -450,7 +376,10 @@ export default function StatisticalPage() {
             ["Thương hiệu", selectedBrandLabel],
             ["Danh mục", selectedCategoryLabel],
             ["Phương thức", selectedPaymentMethodLabel],
-            ["Thời gian", selectedDateRangeLabel],
+            ...(startDate || endDate ? [[
+              "Thời gian", 
+              `${startDate ? `Từ ngày ${new Date(startDate).toLocaleDateString('vi-VN')}` : ''}${startDate && endDate ? ' - ' : ''}${endDate ? `Đến ngày ${new Date(endDate).toLocaleDateString('vi-VN')}` : ''}`
+            ]] : []),
           ],
         },
       },
@@ -856,111 +785,28 @@ export default function StatisticalPage() {
             </div>
 
             {/* Date Range Picker */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setOpenDropdown((v) => (v === "date" ? null : "date"))}
-                className="flex h-11 min-w-[190px] cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-              >
-                <span className="truncate">{selectedDateRangeLabel}</span>
-                <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
-              </button>
-              {openDropdown === "date" ? (
-                <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg animate-popover dark:border-white/10 dark:bg-slate-950">
-                  <div className="max-h-56 overflow-auto p-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedDateRange("all");
-                        setOpenDropdown(null);
-                      }}
-                      className={
-                        "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                        (selectedDateRange === "all"
-                          ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
-                          : "text-slate-700 dark:text-slate-200")
-                      }
-                    >
-                      Tất cả thời gian
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedDateRange("today");
-                        setOpenDropdown(null);
-                      }}
-                      className={
-                        "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                        (selectedDateRange === "today"
-                          ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
-                          : "text-slate-700 dark:text-slate-200")
-                      }
-                    >
-                      Hôm nay
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedDateRange("7days");
-                        setOpenDropdown(null);
-                      }}
-                      className={
-                        "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                        (selectedDateRange === "7days"
-                          ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
-                          : "text-slate-700 dark:text-slate-200")
-                      }
-                    >
-                      7 ngày qua
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedDateRange("30days");
-                        setOpenDropdown(null);
-                      }}
-                      className={
-                        "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                        (selectedDateRange === "30days"
-                          ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
-                          : "text-slate-700 dark:text-slate-200")
-                      }
-                    >
-                      30 ngày qua
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedDateRange("90days");
-                        setOpenDropdown(null);
-                      }}
-                      className={
-                        "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                        (selectedDateRange === "90days"
-                          ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
-                          : "text-slate-700 dark:text-slate-200")
-                      }
-                    >
-                      90 ngày qua
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedDateRange("thisyear");
-                        setOpenDropdown(null);
-                      }}
-                      className={
-                        "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                        (selectedDateRange === "thisyear"
-                          ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
-                          : "text-slate-700 dark:text-slate-200")
-                      }
-                    >
-                      Năm nay
-                    </button>
-                  </div>
-                </div>
-              ) : null}
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none" />
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="h-11 w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  placeholder="Từ ngày"
+                />
+              </div>
+              <span className="text-slate-400">-</span>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none" />
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="h-11 w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  placeholder="Đến ngày"
+                />
+              </div>
             </div>
           </div>
         </div>
