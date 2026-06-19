@@ -67,13 +67,13 @@ export default function BankTransferQr({
       </div>
       
       <div className="p-4 sm:p-6 lg:p-8">
-        <div className="flex flex-col items-stretch gap-6 sm:gap-8 lg:flex-row lg:items-start">
+        <div className="flex flex-col items-center gap-6 sm:gap-8 lg:flex-row lg:items-start lg:justify-center">
           <div className="w-full shrink-0 text-center lg:w-auto">
             <div className="relative mx-auto w-fit max-w-full rounded-2xl border-4 border-slate-100 bg-white p-3 shadow-inner sm:p-4 dark:border-slate-800">
               <img 
                 src={qrUrl} 
                 alt="Mã QR Thanh Toán" 
-                className="h-48 w-48 max-w-[min(100%,12rem)] object-contain sm:h-56 sm:w-56 lg:h-64 lg:w-64"
+                className="h-48 w-48 sm:h-56 sm:w-56 lg:h-64 lg:w-64 object-contain"
               />
             </div>
             <div className="mt-4">
@@ -84,7 +84,7 @@ export default function BankTransferQr({
           </div>
 
           {/* Info Section */}
-          <div className="flex-1 space-y-4 w-full">
+          <div className="flex-1 space-y-4 w-full max-w-2xl">{/* ← thêm max-w */}
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
                 <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Chủ tài khoản</div>
