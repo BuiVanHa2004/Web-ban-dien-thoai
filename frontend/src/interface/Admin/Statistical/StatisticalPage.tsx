@@ -796,7 +796,7 @@ export default function StatisticalPage() {
             </div>
 
             {/* Date Range Picker */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="relative flex-1 sm:flex-none">
                 <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none z-10" />
                 <input
@@ -817,11 +817,11 @@ export default function StatisticalPage() {
                       setEndDate("");
                     }
                   }}
-                  className="h-11 w-full sm:w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  className="h-11 w-full sm:w-[180px] cursor-pointer rounded-xl bg-white border border-slate-200 pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition hover:border-cyan-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:border-cyan-500 dark:focus:border-cyan-500"
                   placeholder="Từ ngày"
                 />
               </div>
-              <span className="hidden sm:block text-slate-400">-</span>
+              <span className="hidden sm:block text-slate-400 font-medium">đến</span>
               <div className="relative flex-1 sm:flex-none">
                 <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none z-10" />
                 <input
@@ -845,10 +845,38 @@ export default function StatisticalPage() {
                     }
                   }}
                   disabled={!startDate}
-                  className="h-11 w-full sm:w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-11 w-full sm:w-[180px] cursor-pointer rounded-xl bg-white border border-slate-200 pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition hover:border-cyan-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:border-cyan-500 dark:focus:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-200 dark:disabled:hover:border-slate-700"
                   placeholder="Đến ngày"
                 />
               </div>
+              
+              {/* Action Buttons */}
+              {(startDate || endDate) && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setStartDate("");
+                      setEndDate("");
+                    }}
+                    className="h-11 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-bold text-slate-700 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              )}
+              
+              {!startDate && !endDate && (
+                <button
+                  onClick={() => {
+                    const today = new Date().toISOString().split("T")[0];
+                    setStartDate(today);
+                    setEndDate(today);
+                  }}
+                  className="h-11 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-sm font-bold text-white transition-colors shadow-lg shadow-cyan-500/30"
+                >
+                  Hôm nay
+                </button>
+              )}
             </div>
           </div>
         </div>
