@@ -35,7 +35,7 @@ import {
   ChevronDown,
   Calendar,
 } from "lucide-react";
-import { CustomDateInput } from "@/components/admin/CustomDateInput";
+import { RoundedDatePicker } from "@/components/admin/RoundedDatePicker";
 import {
   statisticalService,
   type SummaryStatisticalDto,
@@ -798,18 +798,17 @@ export default function StatisticalPage() {
 
             {/* Date Range Picker */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <CustomDateInput
+              <RoundedDatePicker
                 value={startDate}
                 max={endDate || undefined}
-                onChange={(e) => {
-                  const newStartDate = e.target.value;
-                  if (!newStartDate) {
+                onChange={(date) => {
+                  if (!date) {
                     setStartDate("");
                     setEndDate("");
                     return;
                   }
-                  setStartDate(newStartDate);
-                  if (endDate && newStartDate > endDate) {
+                  setStartDate(date);
+                  if (endDate && date > endDate) {
                     setEndDate("");
                   }
                 }}
@@ -818,12 +817,11 @@ export default function StatisticalPage() {
               
               <span className="hidden sm:block text-slate-400 font-medium">đến</span>
               
-              <CustomDateInput
+              <RoundedDatePicker
                 value={endDate}
                 min={startDate || undefined}
-                onChange={(e) => {
-                  const newEndDate = e.target.value;
-                  if (!newEndDate) {
+                onChange={(date) => {
+                  if (!date) {
                     setStartDate("");
                     setEndDate("");
                     return;
@@ -831,8 +829,8 @@ export default function StatisticalPage() {
                   if (!startDate) {
                     return;
                   }
-                  if (newEndDate >= startDate) {
-                    setEndDate(newEndDate);
+                  if (date >= startDate) {
+                    setEndDate(date);
                   }
                 }}
                 disabled={!startDate}
@@ -841,29 +839,14 @@ export default function StatisticalPage() {
               
               {/* Action Buttons */}
               {(startDate || endDate) && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setStartDate("");
-                      setEndDate("");
-                    }}
-                    className="h-11 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-bold text-slate-700 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200"
-                  >
-                    Xóa
-                  </button>
-                </div>
-              )}
-              
-              {!startDate && !endDate && (
                 <button
                   onClick={() => {
-                    const today = new Date().toISOString().split("T")[0];
-                    setStartDate(today);
-                    setEndDate(today);
+                    setStartDate("");
+                    setEndDate("");
                   }}
-                  className="h-11 px-4 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-sm font-bold text-white transition-colors shadow-lg shadow-cyan-500/30"
+                  className="h-11 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-bold text-slate-700 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200"
                 >
-                  Hôm nay
+                  Xóa tất cả
                 </button>
               )}
             </div>
