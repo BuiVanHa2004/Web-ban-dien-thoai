@@ -174,6 +174,18 @@ export default function PaymentPage() {
     return draft.items.reduce((sum, it) => sum + toNumberSafe(it.price) * toNumberSafe(it.quantity), 0);
   }, [draft]);
 
+  const totalOriginalPrice = React.useMemo(() => {
+    if (!draft?.items) return 0;
+    return draft.items.reduce((sum, it) => {
+      const originalPrice = getDraftItemOriginalPrice(it, productMap[Number(it.productId)]);
+      const currentPrice = toNumberSafe(it.price);
+      const quantity = toNumberSafe(it.quantity);
+      // Use original price if available, otherwise use current price
+      const price = originalPrice && originalPrice > 0 ? originalPrice : currentPrice;
+      return sum + price * quantity;
+    }, 0);
+  }, [draft, productMap]);
+
   const totalDiscount = React.useMemo(() => {
     if (!draft?.items) return 0;
     return draft.items.reduce((sum, it) => {
@@ -640,8 +652,8 @@ export default function PaymentPage() {
               <div className="space-y-6 p-6 lg:p-8">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-bold text-slate-400">Tạm tính</span>
-                    <span className="font-bold text-white">{formatVnd(total)}</span>
+                    <span className="font-bold text-slate-400">Giá gốc</span>
+                    <span className="font-bold text-white">{formatVnd(totalOriginalPrice)}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-bold text-slate-400">Phí vận chuyển</span>
