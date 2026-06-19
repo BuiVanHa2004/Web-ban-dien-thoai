@@ -271,8 +271,6 @@ export default function OrderId() {
     return steps.findIndex(s => s.id === order.orderStatus);
   }, [steps, order?.orderStatus]);
 
-  const isCancelled = order?.orderStatus === "CANCELLED";
-
   const shouldShowContinuePayment = React.useMemo(() => {
     if (!order || order.paymentMethod !== "BANK_TRANSFER") return false;
     const cancelled = order.orderStatus === "CANCELLED";

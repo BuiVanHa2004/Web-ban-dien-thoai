@@ -144,99 +144,108 @@ export function RoundedDatePicker({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 z-50 rounded-2xl bg-white border border-slate-200 shadow-xl dark:bg-slate-800 dark:border-slate-700 overflow-hidden w-[320px]">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-            <button
-              type="button"
-              onClick={handlePrevMonth}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-sm font-bold text-slate-900 dark:text-white">
-              {monthName}
-            </span>
-            <button
-              type="button"
-              onClick={handleNextMonth}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="p-3">
-            {/* Weekday Headers */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
-                <div
-                  key={day}
-                  className="h-8 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400"
-                >
-                  {day}
-                </div>
-              ))}
+        <div className="fixed sm:absolute inset-0 sm:inset-auto sm:top-full sm:left-0 sm:mt-2 z-50 flex items-center justify-center sm:block p-4 sm:p-0">
+          {/* Mobile backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 sm:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+          
+          {/* Calendar popup */}
+          <div className="relative rounded-2xl bg-white border border-slate-200 shadow-xl dark:bg-slate-800 dark:border-slate-700 overflow-hidden w-full max-w-[340px] sm:w-[320px]">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="text-sm font-bold text-slate-900 dark:text-white">
+                {monthName}
+              </span>
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
 
-            {/* Days Grid */}
-            <div className="grid grid-cols-7 gap-1">
-              {days.map((day, idx) => {
-                if (day === null) {
-                  return <div key={`empty-${idx}`} className="h-9" />;
-                }
-
-                const disabled = isDateDisabled(day);
-                const selected = isDateSelected(day);
-                const today = isToday(day);
-
-                return (
-                  <button
+            {/* Calendar Grid */}
+            <div className="p-3">
+              {/* Weekday Headers */}
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
+                  <div
                     key={day}
-                    type="button"
-                    onClick={() => !disabled && handleSelectDay(day)}
-                    disabled={disabled}
-                    className={`
-                      h-9 flex items-center justify-center text-sm font-medium rounded-lg transition
-                      ${disabled 
-                        ? "text-slate-300 dark:text-slate-600 cursor-not-allowed" 
-                        : "hover:bg-slate-100 dark:hover:bg-slate-700"
-                      }
-                      ${selected 
-                        ? "bg-cyan-500 text-white hover:bg-cyan-600" 
-                        : today 
-                          ? "bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400" 
-                          : "text-slate-900 dark:text-slate-100"
-                      }
-                    `}
+                    className="h-8 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400"
                   >
                     {day}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                  </div>
+                ))}
+              </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
-            <button
-              type="button"
-              onClick={() => {
-                onChange("");
-                setIsOpen(false);
-              }}
-              className="text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-            >
-              Xóa
-            </button>
-            <button
-              type="button"
-              onClick={handleToday}
-              className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-sm font-bold text-white transition"
-            >
-              Hôm nay
-            </button>
+              {/* Days Grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {days.map((day, idx) => {
+                  if (day === null) {
+                    return <div key={`empty-${idx}`} className="h-9" />;
+                  }
+
+                  const disabled = isDateDisabled(day);
+                  const selected = isDateSelected(day);
+                  const today = isToday(day);
+
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => !disabled && handleSelectDay(day)}
+                      disabled={disabled}
+                      className={`
+                        h-9 flex items-center justify-center text-sm font-medium rounded-lg transition
+                        ${disabled 
+                          ? "text-slate-300 dark:text-slate-600 cursor-not-allowed" 
+                          : "hover:bg-slate-100 dark:hover:bg-slate-700"
+                        }
+                        ${selected 
+                          ? "bg-cyan-500 text-white hover:bg-cyan-600" 
+                          : today 
+                            ? "bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400" 
+                            : "text-slate-900 dark:text-slate-100"
+                        }
+                      `}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => {
+                  onChange("");
+                  setIsOpen(false);
+                }}
+                className="text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+              >
+                Xóa
+              </button>
+              <button
+                type="button"
+                onClick={handleToday}
+                className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-sm font-bold text-white transition"
+              >
+                Hôm nay
+              </button>
+            </div>
           </div>
         </div>
       )}
