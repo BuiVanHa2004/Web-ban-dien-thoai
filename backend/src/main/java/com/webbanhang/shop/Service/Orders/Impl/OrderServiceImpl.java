@@ -29,9 +29,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.webbanhang.shop.Repository.Orders.PaymentAttemptRepository;
 import com.webbanhang.shop.Repository.Orders.PaymentLogRepository;
 import com.webbanhang.shop.Repository.Orders.BankTransactionRepository;
+import com.webbanhang.shop.Repository.Orders.PaymentRepository;
 import com.webbanhang.shop.Model.Orders.PaymentAttempt;
 import com.webbanhang.shop.Model.Orders.PaymentLog;
 import com.webbanhang.shop.Model.Orders.BankTransaction;
+import com.webbanhang.shop.Model.Orders.Payment;
 import com.webbanhang.shop.Service.Inventory.InventoryService;
 
 import java.math.BigDecimal;
