@@ -587,7 +587,7 @@ export default function StatisticalPage() {
           border: none !important;
         }
         
-        /* Bo tròn 4 góc popup lịch - Webkit (Chrome, Edge, Safari) */
+        /* Bo tròn 4 góc popup lịch */
         input[type="date"].date-input-rounded::-webkit-calendar-picker-indicator {
           cursor: pointer;
           opacity: 0.7;
@@ -597,24 +597,37 @@ export default function StatisticalPage() {
           opacity: 1;
         }
         
-        /* Bo tròn popup */
-        input[type="date"]::-webkit-datetime-edit {
-          padding: 0;
-        }
-        
-        /* Style cho popup calendar khi mở */
-        ::-webkit-datetime-edit-fields-wrapper {
-          padding: 0;
-        }
-        
         /* Dark mode calendar icon */
         .dark input[type="date"]::-webkit-calendar-picker-indicator {
           filter: invert(0.7);
         }
         
-        /* Bo tròn cho dropdown calendar - CSS hack */
+        /* Bo tròn popup calendar trên Webkit browsers */
+        input[type="date"]::-webkit-datetime-edit {
+          padding: 0;
+        }
+        ::-webkit-datetime-edit-fields-wrapper {
+          padding: 0;
+        }
+        
+        /* Popup calendar dropdown - chỉ hoạt động trên một số browser */
+        input[type="date"]::-webkit-inner-spin-button,
+        input[type="date"]::-webkit-clear-button {
+          display: none;
+        }
+        
+        /* Cố gắng bo tròn date dropdown panel khi mở (Chrome, Edge) */
         input[type="date"]::-webkit-calendar-picker-indicator {
-          border-radius: 16px;
+          background: transparent;
+          bottom: 0;
+          color: transparent;
+          cursor: pointer;
+          height: auto;
+          left: 0;
+          position: absolute;
+          right: 0;
+          top: 0;
+          width: auto;
         }
       ` }} />
       <motion.div 
@@ -835,13 +848,15 @@ export default function StatisticalPage() {
                   max={endDate || undefined}
                   onChange={(e) => {
                     const newStartDate = e.target.value;
+                    // If clearing, clear both dates and reload
+                    if (!newStartDate) {
+                      setStartDate("");
+                      setEndDate("");
+                      return;
+                    }
                     setStartDate(newStartDate);
                     // If start date is after end date, clear end date
                     if (endDate && newStartDate > endDate) {
-                      setEndDate("");
-                    }
-                    // If clearing start date, also clear end date and reload
-                    if (!newStartDate) {
                       setEndDate("");
                     }
                   }}
@@ -858,6 +873,12 @@ export default function StatisticalPage() {
                   min={startDate || undefined}
                   onChange={(e) => {
                     const newEndDate = e.target.value;
+                    // If clearing, clear both dates and reload
+                    if (!newEndDate) {
+                      setStartDate("");
+                      setEndDate("");
+                      return;
+                    }
                     // Only allow if start date is set and new end date is >= start date
                     if (!startDate) {
                       return; // Don't allow selecting end date before start date
