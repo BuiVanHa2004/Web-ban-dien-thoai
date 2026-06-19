@@ -144,15 +144,15 @@ export function RoundedDatePicker({
       </button>
 
       {isOpen && (
-        <div className="fixed sm:absolute inset-0 sm:inset-auto sm:top-full sm:left-0 sm:mt-2 z-50 flex items-center justify-center sm:block p-4 sm:p-0">
+        <div className="fixed sm:absolute inset-0 sm:inset-auto sm:top-full sm:left-0 sm:mt-2 z-50 flex items-center justify-center p-4 sm:p-0">
           {/* Mobile backdrop */}
           <div 
-            className="fixed inset-0 bg-black/50 sm:hidden"
+            className="fixed inset-0 bg-black/50 sm:hidden -z-10"
             onClick={() => setIsOpen(false)}
           />
           
           {/* Calendar popup */}
-          <div className="relative rounded-2xl bg-white border border-slate-200 shadow-xl dark:bg-slate-800 dark:border-slate-700 overflow-hidden w-full max-w-[340px] sm:w-[320px]">
+          <div className="relative rounded-2xl bg-white border border-slate-200 shadow-xl dark:bg-slate-800 dark:border-slate-700 overflow-hidden w-full max-w-[340px] sm:max-w-none sm:w-[320px]">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
               <button
