@@ -251,10 +251,14 @@ export default function OrderId() {
   }, [order?.orderStatus]);
 
   const shouldShowContinuePayment = React.useMemo(() => {
-    return order?.paymentMethod === "BANK_TRANSFER" && 
-           !waitingConfirm && 
-           getRealPaymentStatus({ ...order, waitingConfirm }) !== "PAID";
-  }, [order, waitingConfirm]);
+    if (!order || order.paymentMethod !== "BANK_TRANSFER") return false;
+    if (isCancelled) return false; // Don't show for cancelled orders
+    if (waitingConfirm) return false; // Already uploaded, waiting for confirmation
+    
+    const paymentStatus = getRealPaymentStatus({ ...order, waitingConfirm });
+    // Show "Continue Payment" if unpaid OR if payment was rejected (has paymentNote from admin)
+    return paymentStatus !== "PAID" || (order.paymentNote && order.paymentNoteAuthor);
+  }, [order, waitingConfirm, isCancelled]);
 
 
   const total = React.useMemo(() => {
@@ -534,51 +538,45 @@ export default function OrderId() {
         </motion.div>
       )}
 
-      {/* Payment Rejection Info - Show when payment failed but order NOT cancelled */}
-      {!isCancelled && order?.paymentStatus === "FAILED" && (
+      {/* Payment Rejection Warning - Show when payment rejected but order NOT cancelled */}
+      {!isCancelled && order?.paymentNote && order?.paymentNoteAuthor && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 rounded-2xl border border-rose-100 bg-rose-50/50 p-4 backdrop-blur-xl sm:mb-10 sm:rounded-[2.5rem] sm:p-6 lg:p-8 dark:border-rose-900/20 dark:bg-rose-500/5"
+          className="mb-6 rounded-2xl border border-amber-100 bg-amber-50/50 p-4 backdrop-blur-xl sm:mb-10 sm:rounded-[2.5rem] sm:p-6 lg:p-8 dark:border-amber-900/20 dark:bg-amber-500/5"
         >
-          <div className="mb-6 flex items-center gap-3 text-rose-700 dark:text-rose-400">
+          <div className="mb-4 flex items-center gap-3 text-amber-700 dark:text-amber-400">
             <AlertCircle className="h-6 w-6" />
-            <h3 className="text-lg font-black tracking-tight sm:text-xl">Thông tin từ chối thanh toán</h3>
+            <h3 className="text-lg font-black tracking-tight sm:text-xl">Minh chứng thanh toán bị từ chối</h3>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-2">
-              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500">Lý do</div>
-              <div className="text-sm font-bold text-slate-900 dark:text-white">
-                Đơn hàng quá 30 phút chưa thanh toán
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Người xử lý</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                  {order.paymentNoteAuthor}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Thời gian</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                  {formatDate(order.paymentNoteDate)}
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500">Người thực hiện</div>
-              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                {order.paymentNoteAuthor || "Hệ thống"}
+            {order.paymentNote && (
+              <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
+                <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500 mb-2">Lý do từ chối</div>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {order.paymentNote}
+                </p>
               </div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500">Thời gian</div>
-              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                {formatDate(order.paymentNoteDate)}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500">Trạng thái thanh toán</div>
-              <div className="text-sm font-bold text-rose-600">
-                Thất bại
-              </div>
+            )}
+            <div className="flex items-center gap-2 text-sm font-bold text-amber-700 dark:text-amber-400">
+              <AlertCircle className="h-4 w-4" />
+              Vui lòng thanh toán lại để tiếp tục đơn hàng
             </div>
           </div>
-          {order.paymentNote && (
-            <div className="mt-6 rounded-xl bg-white/50 p-4 dark:bg-black/20">
-              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500 mb-2">Ghi chú</div>
-              <p className="text-sm font-medium italic text-slate-700 dark:text-slate-300">
-                "{order.paymentNote}"
-              </p>
-            </div>
-          )}
         </motion.div>
       )}
 

@@ -424,9 +424,10 @@ public class PaymentServiceImpl implements PaymentService {
         attempt.setRejectReason(adminNote);
         paymentAttemptRepository.save(attempt);
 
-        // Update Order - Cho phép khách upload lại bill
+        // Update Order - Keep order active, allow customer to re-upload bill
+        // DO NOT cancel order, just mark payment as failed/unpaid
         order.setPaymentStatus(PaymentStatus.UNPAID);
-        order.setOrderStatus(OrderStatus.PENDING_CONFIRM); // Trở về trạng thái chờ thanh toán
+        order.setOrderStatus(OrderStatus.CONFIRMED); // Keep confirmed so customer can retry payment
         order.setPaymentNote(adminNote);
         order.setPaymentNoteAuthor(adminName);
         order.setPaymentNoteDate(LocalDateTime.now());
