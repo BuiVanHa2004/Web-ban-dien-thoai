@@ -250,17 +250,6 @@ export default function OrderId() {
     return ["PENDING_CONFIRM", "PENDING_PAYMENT_CONFIRMATION", "CONFIRMED", "PENDING_PICKUP"].includes(s);
   }, [order?.orderStatus]);
 
-  const shouldShowContinuePayment = React.useMemo(() => {
-    if (!order || order.paymentMethod !== "BANK_TRANSFER") return false;
-    if (isCancelled) return false; // Don't show for cancelled orders
-    if (waitingConfirm) return false; // Already uploaded, waiting for confirmation
-    
-    const paymentStatus = getRealPaymentStatus({ ...order, waitingConfirm });
-    // Show "Continue Payment" if unpaid OR if payment was rejected (has paymentNote from admin)
-    return paymentStatus !== "PAID" || (order.paymentNote && order.paymentNoteAuthor);
-  }, [order, waitingConfirm, isCancelled]);
-
-
   const total = React.useMemo(() => {
     if (!order?.items) return 0;
     return order.items.reduce((sum, it) => {
@@ -283,6 +272,16 @@ export default function OrderId() {
   }, [steps, order?.orderStatus]);
 
   const isCancelled = order?.orderStatus === "CANCELLED";
+
+  const shouldShowContinuePayment = React.useMemo(() => {
+    if (!order || order.paymentMethod !== "BANK_TRANSFER") return false;
+    if (isCancelled) return false; // Don't show for cancelled orders
+    if (waitingConfirm) return false; // Already uploaded, waiting for confirmation
+    
+    const paymentStatus = getRealPaymentStatus({ ...order, waitingConfirm });
+    // Show "Continue Payment" if unpaid OR if payment was rejected (has paymentNote from admin)
+    return paymentStatus !== "PAID" || (order.paymentNote && order.paymentNoteAuthor);
+  }, [order, waitingConfirm, isCancelled]);
 
   const canReview = String(order?.orderStatus || "") === "DELIVERED";
 
