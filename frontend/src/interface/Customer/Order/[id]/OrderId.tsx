@@ -534,6 +534,54 @@ export default function OrderId() {
         </motion.div>
       )}
 
+      {/* Payment Rejection Info - Show when payment failed but order NOT cancelled */}
+      {!isCancelled && order?.paymentStatus === "FAILED" && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-6 rounded-2xl border border-rose-100 bg-rose-50/50 p-4 backdrop-blur-xl sm:mb-10 sm:rounded-[2.5rem] sm:p-6 lg:p-8 dark:border-rose-900/20 dark:bg-rose-500/5"
+        >
+          <div className="mb-6 flex items-center gap-3 text-rose-700 dark:text-rose-400">
+            <AlertCircle className="h-6 w-6" />
+            <h3 className="text-lg font-black tracking-tight sm:text-xl">Thông tin từ chối thanh toán</h3>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500">Lý do</div>
+              <div className="text-sm font-bold text-slate-900 dark:text-white">
+                Đơn hàng quá 30 phút chưa thanh toán
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500">Người thực hiện</div>
+              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                {order.paymentNoteAuthor || "Hệ thống"}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500">Thời gian</div>
+              <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                {formatDate(order.paymentNoteDate)}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500">Trạng thái thanh toán</div>
+              <div className="text-sm font-bold text-rose-600">
+                Thất bại
+              </div>
+            </div>
+          </div>
+          {order.paymentNote && (
+            <div className="mt-6 rounded-xl bg-white/50 p-4 dark:bg-black/20">
+              <div className="text-[10px] font-black uppercase tracking-wider text-rose-400 dark:text-rose-500 mb-2">Ghi chú</div>
+              <p className="text-sm font-medium italic text-slate-700 dark:text-slate-300">
+                "{order.paymentNote}"
+              </p>
+            </div>
+          )}
+        </motion.div>
+      )}
+
       {/* TOP DASHBOARD: Customer, Address, Payment */}
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
         {/* Card: Customer Info */}
