@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { motion } from "framer-motion";
 import {
@@ -87,6 +87,7 @@ function getDraftItemOriginalPrice(
 
 export default function PaymentPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showStatus } = useAppNotification();
 
   const [loading, setLoading] = React.useState(true);
@@ -101,6 +102,9 @@ export default function PaymentPage() {
   const [receiverPhone, setReceiverPhone] = React.useState("");
   const [shippingAddress, setShippingAddress] = React.useState("");
 
+  // Check if orderId exists in query params
+  const orderIdParam = searchParams.get("orderId");
+
   React.useEffect(() => {
     const customerId = readCustomerId();
     if (!customerId) {
@@ -109,6 +113,70 @@ export default function PaymentPage() {
       return;
     }
 
+    // Case 1: Continue payment with orderId
+    if (orderIdParam) {
+      const orderId = Number(orderIdParam);
+      if (!Number.isFinite(orderId) || orderId <= 0) {
+        setLoading(false);
+        setError("Mã đơn hàng không hợp lệ.");
+        return;
+      }
+
+      // Fetch order and QR info from orderId
+      (async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          // Fetch order details
+          const orderData = await orderService.getById(orderId);
+
+          // Verify ownership
+          if (orderData.customerId != null && Number(orderData.customerId) !== customerId) {
+            setError("Bạn không có quyền truy cập đơn hàng này.");
+            setLoading(false);
+            return;
+          }
+
+          // Check if payment method is Bank Transfer
+          if (orderData.paymentMethod !== "BANK_TRANSFER") {
+            setError("Đơn hàng này không sử dụng phương thức chuyển khoản ngân hàng.");
+            setLoading(false);
+            return;
+          }
+
+          // Check if order is already paid
+          if (orderData.paymentStatus === "PAID") {
+            setError("Đơn hàng này đã được thanh toán.");
+            setLoading(false);
+            return;
+          }
+
+          // Check if order is cancelled
+          if (orderData.orderStatus === "CANCELLED") {
+            setError("Không thể thanh toán cho đơn hàng đã bị hủy.");
+            setLoading(false);
+            return;
+          }
+
+          // Fetch QR info
+          const qr = await bankTransferService.getQRInfo(orderId);
+
+          // Set state to render QR page
+          setCreatedOrder(orderData);
+          setQrInfo(qr);
+          setSuccess("BANK_TRANSFER");
+          setLoading(false);
+        } catch (e: any) {
+          console.error("Error loading payment data:", e);
+          setError(e?.message || "Không thể tải thông tin thanh toán. Vui lòng thử lại.");
+          setLoading(false);
+        }
+      })();
+
+      return; // Stop here, don't continue with checkout flow
+    }
+
+    // Case 2: Normal checkout flow (no orderId)
     const checkoutDraft = readCheckoutDraft();
     if (!checkoutDraft || !checkoutDraft.items || checkoutDraft.items.length === 0) {
       setLoading(false);
@@ -132,7 +200,7 @@ export default function PaymentPage() {
         console.error("Failed to fetch profile:", err);
       }
     })();
-  }, []);
+  }, [orderIdParam]);
 
   React.useEffect(() => {
     let mounted = true;
