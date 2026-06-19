@@ -52,9 +52,17 @@ function readCartFromAnyKey(): { key: string; cart: CartLine[] } {
 
   const activeKey = getActiveCartStorageKey();
   const active = safeParseCart(window.localStorage.getItem(activeKey));
+  
+  // If user is logged in, ONLY use their specific cart key
+  // Do NOT fallback to legacy keys to prevent cart mixing between users
+  const userId = safeParseUserId(window.localStorage.getItem("user"));
+  if (userId) {
+    return { key: activeKey, cart: active };
+  }
+  
+  // For guest users, check legacy keys for backward compatibility
   if (active.length > 0) return { key: activeKey, cart: active };
 
-  // Back-compat: old code used plain "cart"
   const oldPrimary = safeParseCart(window.localStorage.getItem("cart"));
   if (oldPrimary.length > 0) return { key: "cart", cart: oldPrimary };
 
@@ -82,6 +90,8 @@ export function getLocalCartTotalQuantity(): number {
   if (typeof window === "undefined") return 0;
   const token = window.localStorage.getItem("token");
   const user = window.localStorage.getItem("user");
+  
+  // If not logged in (no token/user), clear guest cart data
   if (!token || !user) {
     try {
       window.localStorage.removeItem(CART_STORAGE_KEY_GUEST);
@@ -93,6 +103,8 @@ export function getLocalCartTotalQuantity(): number {
     } catch {}
     return 0;
   }
+  
+  // If logged in, read from user-specific cart key only
   const { key, cart } = readCartFromAnyKey();
   migrateCartToActive(key, cart);
   return cart.reduce((sum, item) => sum + Math.max(0, Number(item?.quantity) || 0), 0);

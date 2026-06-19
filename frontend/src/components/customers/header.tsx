@@ -61,8 +61,15 @@ export default function PremiumHeader() {
           setCartTotal(dto.totalQuantity || 0);
           return;
         }
-      } catch {
-        /* ignore */
+      } catch (e) {
+        console.error("[Header] Failed to get cart from server:", e);
+        // If logged in user fails to get cart from server, show 0 instead of localStorage
+        // This prevents showing wrong cart count from previous user
+        const token = localStorage.getItem("token");
+        if (token) {
+          setCartTotal(0);
+          return;
+        }
       }
       setCartTotal(getLocalCartTotalQuantity());
     };
@@ -170,8 +177,19 @@ export default function PremiumHeader() {
   const onLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    
+    // Clear all cart data from localStorage
+    const allKeys = Object.keys(localStorage);
+    allKeys.forEach(key => {
+      if (key.startsWith("cart:") || key === "cart" || key === "Cart" || 
+          key === "cartItems" || key === "customer_cart" || key === "customer-cart") {
+        localStorage.removeItem(key);
+      }
+    });
+    
     setUser(null);
     setShowUserMenu(false);
+    setCartTotal(0); // Reset cart badge to 0
     router.replace("/login");
   };
 
