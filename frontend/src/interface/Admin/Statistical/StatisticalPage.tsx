@@ -587,24 +587,34 @@ export default function StatisticalPage() {
           border: none !important;
         }
         
-        /* Bo tròn 4 góc popup lịch */
-        input[type="date"]::-webkit-calendar-picker-indicator {
+        /* Bo tròn 4 góc popup lịch - Webkit (Chrome, Edge, Safari) */
+        input[type="date"].date-input-rounded::-webkit-calendar-picker-indicator {
           cursor: pointer;
           opacity: 0.7;
+          transition: opacity 0.2s;
         }
-        input[type="date"]:hover::-webkit-calendar-picker-indicator {
+        input[type="date"].date-input-rounded:hover::-webkit-calendar-picker-indicator {
           opacity: 1;
         }
+        
+        /* Bo tròn popup */
         input[type="date"]::-webkit-datetime-edit {
           padding: 0;
         }
-        /* Webkit browsers (Chrome, Safari, Edge) */
-        ::-webkit-calendar-picker-indicator {
-          filter: invert(0.5);
+        
+        /* Style cho popup calendar khi mở */
+        ::-webkit-datetime-edit-fields-wrapper {
+          padding: 0;
         }
-        /* Dark mode */
-        .dark ::-webkit-calendar-picker-indicator {
+        
+        /* Dark mode calendar icon */
+        .dark input[type="date"]::-webkit-calendar-picker-indicator {
           filter: invert(0.7);
+        }
+        
+        /* Bo tròn cho dropdown calendar - CSS hack */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          border-radius: 16px;
         }
       ` }} />
       <motion.div 
@@ -816,9 +826,9 @@ export default function StatisticalPage() {
             </div>
 
             {/* Date Range Picker */}
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="relative flex-1 sm:flex-none">
+                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none z-10" />
                 <input
                   type="date"
                   value={startDate}
@@ -830,17 +840,18 @@ export default function StatisticalPage() {
                     if (endDate && newStartDate > endDate) {
                       setEndDate("");
                     }
+                    // If clearing start date, also clear end date and reload
+                    if (!newStartDate) {
+                      setEndDate("");
+                    }
                   }}
-                  className="h-11 w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 hover:[&::-webkit-calendar-picker-indicator]:opacity-100"
-                  style={{
-                    colorScheme: 'light'
-                  }}
+                  className="h-11 w-full sm:w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 date-input-rounded"
                   placeholder="Từ ngày"
                 />
               </div>
-              <span className="text-slate-400">-</span>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none" />
+              <span className="hidden sm:block text-slate-400">-</span>
+              <div className="relative flex-1 sm:flex-none">
+                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none z-10" />
                 <input
                   type="date"
                   value={endDate}
@@ -856,10 +867,7 @@ export default function StatisticalPage() {
                     }
                   }}
                   disabled={!startDate}
-                  className="h-11 w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 hover:[&::-webkit-calendar-picker-indicator]:opacity-100"
-                  style={{
-                    colorScheme: 'light'
-                  }}
+                  className="h-11 w-full sm:w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 disabled:cursor-not-allowed disabled:opacity-50 date-input-rounded"
                   placeholder="Đến ngày"
                 />
               </div>
