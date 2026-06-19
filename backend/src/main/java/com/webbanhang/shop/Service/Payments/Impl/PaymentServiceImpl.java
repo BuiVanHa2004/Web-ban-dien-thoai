@@ -259,10 +259,11 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public void adminApprovePayment(Integer attemptId, Integer adminId, String adminNote) {
-        PaymentAttempt attempt = paymentAttemptRepository.findByIdWithLock(attemptId)
+        // Load attempt first (no lock yet)
+        PaymentAttempt attempt = paymentAttemptRepository.findById(attemptId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment attempt not found"));
 
-        // Check lock: allow system (null/0) to bypass so auto-match or manual-match can succeed even if locked
+        // Validate early (before locking)
         boolean systemActor = adminId == null || adminId.equals(0);
         if (!systemActor) {
             AdminAccount admin = adminAccountRepository.findById(adminId)
@@ -286,13 +287,22 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         if ("MATCHED".equals(attempt.getStatus()) || "SUCCESS".equals(attempt.getStatus())) {
-            return;
+            return; // Already processed
         }
 
-        Order order = orderRepository.findById(attempt.getOrderId())
+        // NOW lock with minimal time
+        PaymentAttempt lockedAttempt = paymentAttemptRepository.findByIdWithLock(attemptId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment attempt not found"));
+
+        // Double-check after lock
+        if ("MATCHED".equals(lockedAttempt.getStatus()) || "SUCCESS".equals(lockedAttempt.getStatus())) {
+            return; // Another transaction processed it
+        }
+
+        Order order = orderRepository.findById(lockedAttempt.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
-        String oldStatus = attempt.getStatus();
+        String oldStatus = lockedAttempt.getStatus();
 
         Integer persistedAdminId = systemActor ? null : adminId;
         String adminName = systemActor
@@ -300,15 +310,15 @@ public class PaymentServiceImpl implements PaymentService {
                 : adminAccountRepository.findById(adminId)
                         .map(AdminAccount::getFullName).orElse("Admin #" + adminId);
 
-        // Update Attempt
-        attempt.setStatus("MATCHED");
-        attempt.setProcessingByAdminId(null);
-        attempt.setProcessingByAdminName(null);
-        attempt.setLockedAt(null);
-        attempt.setLockExpiresAt(null);
-        attempt.setReviewedByAdminId(persistedAdminId);
-        attempt.setReviewedAt(LocalDateTime.now());
-        paymentAttemptRepository.save(attempt);
+        // Update Attempt (use lockedAttempt, not attempt!)
+        lockedAttempt.setStatus("MATCHED");
+        lockedAttempt.setProcessingByAdminId(null);
+        lockedAttempt.setProcessingByAdminName(null);
+        lockedAttempt.setLockedAt(null);
+        lockedAttempt.setLockExpiresAt(null);
+        lockedAttempt.setReviewedByAdminId(persistedAdminId);
+        lockedAttempt.setReviewedAt(LocalDateTime.now());
+        paymentAttemptRepository.save(lockedAttempt);
 
         // Update Order
         order.setPaymentStatus(PaymentStatus.PAID);
