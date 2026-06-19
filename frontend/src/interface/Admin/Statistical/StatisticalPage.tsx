@@ -84,8 +84,15 @@ export default function StatisticalPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<string>("all");
   const [startDate, setStartDate] = React.useState<string>("");
   const [endDate, setEndDate] = React.useState<string>("");
-  const [openDropdown, setOpenDropdown] = React.useState<null | "brand" | "category" | "payment">(null);
+  const [openDropdown, setOpenDropdown] = React.useState<null | "brand" | "category" | "payment" | "startDate" | "endDate">(null);
   const dropdownContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Helper to format date for display
+  const formatDateDisplay = (dateStr: string) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
 
   React.useEffect(() => {
     setIsClient(true);
@@ -838,59 +845,100 @@ export default function StatisticalPage() {
               ) : null}
             </div>
 
-            {/* Date Range Picker */}
+            {/* Date Range Picker - Custom Dropdown Style */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              {/* Start Date */}
               <div className="relative flex-1 sm:flex-none">
-                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none z-10" />
-                <input
-                  type="date"
-                  value={startDate}
-                  max={endDate || undefined}
-                  onChange={(e) => {
-                    const newStartDate = e.target.value;
-                    // If clearing, clear both dates and reload
-                    if (!newStartDate) {
-                      setStartDate("");
-                      setEndDate("");
-                      return;
-                    }
-                    setStartDate(newStartDate);
-                    // If start date is after end date, clear end date
-                    if (endDate && newStartDate > endDate) {
-                      setEndDate("");
-                    }
-                  }}
-                  className="h-11 w-full sm:w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 date-input-rounded"
-                  placeholder="Từ ngày"
-                />
+                <button
+                  type="button"
+                  onClick={() => setOpenDropdown((v) => (v === "startDate" ? null : "startDate"))}
+                  className="flex h-11 w-full sm:w-[160px] cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                    <span className={startDate ? "" : "text-slate-400"}>
+                      {startDate ? formatDateDisplay(startDate) : "Từ ngày"}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
+                </button>
+                {openDropdown === "startDate" ? (
+                  <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg animate-popover dark:border-white/10 dark:bg-slate-950">
+                    <div className="p-4">
+                      <input
+                        type="date"
+                        value={startDate}
+                        max={endDate || undefined}
+                        onChange={(e) => {
+                          const newStartDate = e.target.value;
+                          if (!newStartDate) {
+                            setStartDate("");
+                            setEndDate("");
+                            setOpenDropdown(null);
+                            return;
+                          }
+                          setStartDate(newStartDate);
+                          if (endDate && newStartDate > endDate) {
+                            setEndDate("");
+                          }
+                          setOpenDropdown(null);
+                        }}
+                        className="w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                ) : null}
               </div>
+              
               <span className="hidden sm:block text-slate-400">-</span>
+              
+              {/* End Date */}
               <div className="relative flex-1 sm:flex-none">
-                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none z-10" />
-                <input
-                  type="date"
-                  value={endDate}
-                  min={startDate || undefined}
-                  onChange={(e) => {
-                    const newEndDate = e.target.value;
-                    // If clearing, clear both dates and reload
-                    if (!newEndDate) {
-                      setStartDate("");
-                      setEndDate("");
-                      return;
-                    }
-                    // Only allow if start date is set and new end date is >= start date
-                    if (!startDate) {
-                      return; // Don't allow selecting end date before start date
-                    }
-                    if (newEndDate >= startDate) {
-                      setEndDate(newEndDate);
-                    }
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!startDate) return;
+                    setOpenDropdown((v) => (v === "endDate" ? null : "endDate"));
                   }}
                   disabled={!startDate}
-                  className="h-11 w-full sm:w-[160px] cursor-pointer rounded-2xl bg-slate-100 pl-10 pr-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 disabled:cursor-not-allowed disabled:opacity-50 date-input-rounded"
-                  placeholder="Đến ngày"
-                />
+                  className="flex h-11 w-full sm:w-[160px] cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                    <span className={endDate ? "" : "text-slate-400"}>
+                      {endDate ? formatDateDisplay(endDate) : "Đến ngày"}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
+                </button>
+                {openDropdown === "endDate" ? (
+                  <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg animate-popover dark:border-white/10 dark:bg-slate-950">
+                    <div className="p-4">
+                      <input
+                        type="date"
+                        value={endDate}
+                        min={startDate || undefined}
+                        onChange={(e) => {
+                          const newEndDate = e.target.value;
+                          if (!newEndDate) {
+                            setStartDate("");
+                            setEndDate("");
+                            setOpenDropdown(null);
+                            return;
+                          }
+                          if (!startDate) return;
+                          if (newEndDate >= startDate) {
+                            setEndDate(newEndDate);
+                            setOpenDropdown(null);
+                          }
+                        }}
+                        className="w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
