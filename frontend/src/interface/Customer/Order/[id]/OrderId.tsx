@@ -275,13 +275,14 @@ export default function OrderId() {
 
   const shouldShowContinuePayment = React.useMemo(() => {
     if (!order || order.paymentMethod !== "BANK_TRANSFER") return false;
-    if (isCancelled) return false; // Don't show for cancelled orders
+    const cancelled = order.orderStatus === "CANCELLED";
+    if (cancelled) return false; // Don't show for cancelled orders
     if (waitingConfirm) return false; // Already uploaded, waiting for confirmation
     
     const paymentStatus = getRealPaymentStatus({ ...order, waitingConfirm });
     // Show "Continue Payment" if unpaid OR if payment was rejected (has paymentNote from admin)
     return paymentStatus !== "PAID" || (order.paymentNote && order.paymentNoteAuthor);
-  }, [order, waitingConfirm, isCancelled]);
+  }, [order, waitingConfirm]);
 
   const canReview = String(order?.orderStatus || "") === "DELIVERED";
 
@@ -537,8 +538,50 @@ export default function OrderId() {
         </motion.div>
       )}
 
-      {/* Payment Rejection Warning - Show when payment rejected but order NOT cancelled */}
-      {!isCancelled && order?.paymentNote && order?.paymentNoteAuthor && (
+      {/* Payment Approval Note - Show when payment approved (PAID + has paymentNote) */}
+      {!isCancelled && order?.paymentStatus === "PAID" && (order?.paymentNote || order?.paymentNoteAuthor) && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 backdrop-blur-xl sm:mb-10 sm:rounded-[2.5rem] sm:p-6 lg:p-8 dark:border-emerald-900/20 dark:bg-emerald-500/5"
+        >
+          <div className="mb-4 flex items-center gap-3 text-emerald-700 dark:text-emerald-400">
+            <CheckCircle2 className="h-6 w-6" />
+            <h3 className="text-lg font-black tracking-tight sm:text-xl">Thanh toán đã được xác nhận</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Người xử lý</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                  {order.paymentNoteAuthor || "Admin"}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Thời gian</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                  {formatDate(order.paymentNoteDate) || "-"}
+                </div>
+              </div>
+            </div>
+            {order.paymentNote && (
+              <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500 mb-2">Ghi chú</div>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {order.paymentNote}
+                </p>
+              </div>
+            )}
+            <div className="flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-400">
+              <CheckCircle2 className="h-4 w-4" />
+              Đơn hàng của bạn đang được xử lý
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Payment Rejection Warning - Show when payment rejected (CONFIRMED + UNPAID + has paymentNote) */}
+      {!isCancelled && order?.orderStatus === "CONFIRMED" && order?.paymentStatus === "UNPAID" && (order?.paymentNote || order?.paymentNoteAuthor) && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -553,13 +596,13 @@ export default function OrderId() {
               <div className="space-y-1">
                 <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Người xử lý</div>
                 <div className="text-sm font-bold text-slate-900 dark:text-white">
-                  {order.paymentNoteAuthor}
+                  {order.paymentNoteAuthor || "Admin"}
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Thời gian</div>
                 <div className="text-sm font-bold text-slate-900 dark:text-white">
-                  {formatDate(order.paymentNoteDate)}
+                  {formatDate(order.paymentNoteDate) || "-"}
                 </div>
               </div>
             </div>
@@ -699,8 +742,8 @@ export default function OrderId() {
         </motion.div>
       </div>
 
-      {/* Admin Payment Note - Show for both approved and rejected payments */}
-      {!isCancelled && order?.paymentNote && order?.paymentNoteAuthor && order?.paymentStatus === "PAID" && (
+      {/* Admin Payment Approval Note - Show when payment is approved (PAID + has paymentNote) */}
+      {!isCancelled && order?.paymentStatus === "PAID" && (order?.paymentNote || order?.paymentNoteAuthor) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -720,7 +763,7 @@ export default function OrderId() {
                     Xác nhận bởi
                   </div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white">
-                    {order.paymentNoteAuthor}
+                    {order.paymentNoteAuthor || "Admin"}
                   </div>
                 </div>
                 <div className="space-y-1">
@@ -728,7 +771,7 @@ export default function OrderId() {
                     Thời gian
                   </div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white">
-                    {formatDate(order.paymentNoteDate)}
+                    {formatDate(order.paymentNoteDate) || "-"}
                   </div>
                 </div>
               </div>
