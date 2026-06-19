@@ -47,6 +47,9 @@ export type OrderDto = {
   adminNote?: string | null;
   adminNoteAuthor?: string | null;
   adminNoteDate?: string | null;
+  paymentNote?: string | null;
+  paymentNoteAuthor?: string | null;
+  paymentNoteDate?: string | null;
   cancelReasonId?: number | null;
   cancelNote?: string | null;
   cancelledBy?: string | null;
