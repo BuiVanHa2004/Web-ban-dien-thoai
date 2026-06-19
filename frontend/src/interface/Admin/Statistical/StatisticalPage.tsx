@@ -35,6 +35,7 @@ import {
   ChevronDown,
   Calendar,
 } from "lucide-react";
+import { CustomDateInput } from "@/components/admin/CustomDateInput";
 import {
   statisticalService,
   type SummaryStatisticalDto,
@@ -797,58 +798,46 @@ export default function StatisticalPage() {
 
             {/* Date Range Picker */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="relative flex-1 sm:flex-none">
-                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none z-10" />
-                <input
-                  type="date"
-                  value={startDate}
-                  max={endDate || undefined}
-                  onChange={(e) => {
-                    const newStartDate = e.target.value;
-                    // If clearing, clear both dates and reload
-                    if (!newStartDate) {
-                      setStartDate("");
-                      setEndDate("");
-                      return;
-                    }
-                    setStartDate(newStartDate);
-                    // If start date is after end date, clear end date
-                    if (endDate && newStartDate > endDate) {
-                      setEndDate("");
-                    }
-                  }}
-                  className="h-11 w-full sm:w-[180px] cursor-pointer rounded-xl bg-white border border-slate-200 pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition hover:border-cyan-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:border-cyan-500 dark:focus:border-cyan-500"
-                  placeholder="Từ ngày"
-                />
-              </div>
+              <CustomDateInput
+                value={startDate}
+                max={endDate || undefined}
+                onChange={(e) => {
+                  const newStartDate = e.target.value;
+                  if (!newStartDate) {
+                    setStartDate("");
+                    setEndDate("");
+                    return;
+                  }
+                  setStartDate(newStartDate);
+                  if (endDate && newStartDate > endDate) {
+                    setEndDate("");
+                  }
+                }}
+                placeholder="Từ ngày"
+              />
+              
               <span className="hidden sm:block text-slate-400 font-medium">đến</span>
-              <div className="relative flex-1 sm:flex-none">
-                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none z-10" />
-                <input
-                  type="date"
-                  value={endDate}
-                  min={startDate || undefined}
-                  onChange={(e) => {
-                    const newEndDate = e.target.value;
-                    // If clearing, clear both dates and reload
-                    if (!newEndDate) {
-                      setStartDate("");
-                      setEndDate("");
-                      return;
-                    }
-                    // Only allow if start date is set and new end date is >= start date
-                    if (!startDate) {
-                      return; // Don't allow selecting end date before start date
-                    }
-                    if (newEndDate >= startDate) {
-                      setEndDate(newEndDate);
-                    }
-                  }}
-                  disabled={!startDate}
-                  className="h-11 w-full sm:w-[180px] cursor-pointer rounded-xl bg-white border border-slate-200 pl-10 pr-3 text-sm font-medium text-slate-900 outline-none transition hover:border-cyan-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:border-cyan-500 dark:focus:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-slate-200 dark:disabled:hover:border-slate-700"
-                  placeholder="Đến ngày"
-                />
-              </div>
+              
+              <CustomDateInput
+                value={endDate}
+                min={startDate || undefined}
+                onChange={(e) => {
+                  const newEndDate = e.target.value;
+                  if (!newEndDate) {
+                    setStartDate("");
+                    setEndDate("");
+                    return;
+                  }
+                  if (!startDate) {
+                    return;
+                  }
+                  if (newEndDate >= startDate) {
+                    setEndDate(newEndDate);
+                  }
+                }}
+                disabled={!startDate}
+                placeholder="Đến ngày"
+              />
               
               {/* Action Buttons */}
               {(startDate || endDate) && (
