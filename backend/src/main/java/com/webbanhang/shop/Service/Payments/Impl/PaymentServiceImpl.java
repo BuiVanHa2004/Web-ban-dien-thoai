@@ -349,10 +349,8 @@ public class PaymentServiceImpl implements PaymentService {
             System.out.println("[PAYMENT] Confirmed sale for BANK_TRANSFER order " + order.getOrderCode() + " on PAID");
         } catch (Exception e) {
             System.err.println("Failed to confirm sale: " + e.getMessage());
+            throw new RuntimeException("Failed to confirm inventory sale: " + e.getMessage(), e);
         }
-
-        // Deduct inventory (legacy - keeping for backward compatibility but inventory already moved by confirmSale)
-        orderService.deductInventory(order);
 
         // Update Payment
         Payment payment = paymentRepository.findTopByOrderIdOrderByCreatedAtDesc(order.getOrderId()).orElseGet(() -> {
