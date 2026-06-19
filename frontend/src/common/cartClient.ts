@@ -107,6 +107,11 @@ export function getLocalCartTotalQuantity(): number {
 export function emitCartUpdated(totalQuantity?: number) {
   if (typeof window === "undefined") return;
   const detail = { totalQuantity: totalQuantity ?? getLocalCartTotalQuantity() };
+  console.log(`[${new Date().toISOString()}] cartClient.ts:emitCartUpdated`, {
+    file: 'cartClient.ts',
+    function: 'emitCartUpdated',
+    totalQuantity: detail.totalQuantity
+  });
   window.dispatchEvent(new CustomEvent(CART_UPDATED_EVENT, { detail }));
 }
 
@@ -171,7 +176,18 @@ export async function addProductToCart(item: CartLine): Promise<number> {
       colorName: it.colorName ?? null,
       imageUrl: it.imageUrl ?? null,
     }));
+    console.log(`[${new Date().toISOString()}] cartClient.ts:addProductToCart - BEFORE setItem`, {
+      file: 'cartClient.ts',
+      function: 'addProductToCart',
+      key: activeKey,
+      value: JSON.stringify(serverCart),
+      itemCount: serverCart.length
+    });
     window.localStorage.setItem(activeKey, JSON.stringify(serverCart));
+    console.log(`[${new Date().toISOString()}] cartClient.ts:addProductToCart - AFTER setItem`, {
+      key: activeKey,
+      stored: window.localStorage.getItem(activeKey)
+    });
     
     emitCartUpdated(dto.totalQuantity);
     return dto.totalQuantity;
