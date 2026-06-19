@@ -643,199 +643,207 @@ export default function StatisticalPage() {
               </button>
             </div>
           )}
-          <div className="flex flex-wrap items-center gap-3 md:justify-end">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setOpenDropdown((v) => (v === "brand" ? null : "brand"))}
-                className="flex h-11 min-w-[190px] cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-              >
-                <span className="truncate">{selectedBrandLabel}</span>
-                <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
-              </button>
-              {openDropdown === "brand" ? (
-                <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg animate-popover dark:border-white/10 dark:bg-slate-950">
-                  <div className="max-h-56 overflow-auto p-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedBrandId("all");
-                        setOpenDropdown(null);
-                      }}
-                      className="flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
-                    >
-                      Tất cả thương hiệu
-                    </button>
-                    {brands.map((brand) => (
+          {/* Filter Section - Better mobile layout */}
+          <div className="flex flex-col gap-3 md:justify-end">
+            {/* First row: Brand, Category, Payment filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOpenDropdown((v) => (v === "brand" ? null : "brand"))}
+                  className="flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                >
+                  <span className="truncate">{selectedBrandLabel}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
+                </button>
+                {openDropdown === "brand" ? (
+                  <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg animate-popover dark:border-white/10 dark:bg-slate-950">
+                    <div className="max-h-56 overflow-auto p-1">
                       <button
-                        key={brand.brandId}
                         type="button"
                         onClick={() => {
-                          setSelectedBrandId(String(brand.brandId));
+                          setSelectedBrandId("all");
+                          setOpenDropdown(null);
+                        }}
+                        className="flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
+                      >
+                        Tất cả thương hiệu
+                      </button>
+                      {brands.map((brand) => (
+                        <button
+                          key={brand.brandId}
+                          type="button"
+                          onClick={() => {
+                            setSelectedBrandId(String(brand.brandId));
+                            setOpenDropdown(null);
+                          }}
+                          className={
+                            "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
+                            (selectedBrandId === String(brand.brandId)
+                              ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
+                              : "text-slate-700 dark:text-slate-200")
+                          }
+                        >
+                          {brand.brandName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOpenDropdown((v) => (v === "category" ? null : "category"))}
+                  className="flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                >
+                  <span className="truncate">{selectedCategoryLabel}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
+                </button>
+                {openDropdown === "category" ? (
+                  <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg animate-popover dark:border-white/10 dark:bg-slate-950">
+                    <div className="max-h-56 overflow-auto p-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategoryId("all");
+                          setOpenDropdown(null);
+                        }}
+                        className="flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
+                      >
+                        Tất cả danh mục
+                      </button>
+                      {categories.map((category) => (
+                        <button
+                          key={category.categoryId}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategoryId(String(category.categoryId));
+                            setOpenDropdown(null);
+                          }}
+                          className={
+                            "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
+                            (selectedCategoryId === String(category.categoryId)
+                              ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
+                              : "text-slate-700 dark:text-slate-200")
+                          }
+                        >
+                          {category.categoryName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOpenDropdown((v) => (v === "payment" ? null : "payment"))}
+                  className="flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                >
+                  <span className="truncate">{selectedPaymentMethodLabel}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
+                </button>
+                {openDropdown === "payment" ? (
+                  <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg animate-popover dark:border-white/10 dark:bg-slate-950">
+                    <div className="max-h-56 overflow-auto p-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPaymentMethod("all");
                           setOpenDropdown(null);
                         }}
                         className={
                           "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                          (selectedBrandId === String(brand.brandId)
+                          (selectedPaymentMethod === "all"
                             ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
                             : "text-slate-700 dark:text-slate-200")
                         }
                       >
-                        {brand.brandName}
+                        Tất cả PT thanh toán
                       </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setOpenDropdown((v) => (v === "category" ? null : "category"))}
-                className="flex h-11 min-w-[190px] cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-              >
-                <span className="truncate">{selectedCategoryLabel}</span>
-                <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
-              </button>
-              {openDropdown === "category" ? (
-                <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg animate-popover dark:border-white/10 dark:bg-slate-950">
-                  <div className="max-h-56 overflow-auto p-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategoryId("all");
-                        setOpenDropdown(null);
-                      }}
-                      className="flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
-                    >
-                      Tất cả danh mục
-                    </button>
-                    {categories.map((category) => (
                       <button
-                        key={category.categoryId}
                         type="button"
                         onClick={() => {
-                          setSelectedCategoryId(String(category.categoryId));
+                          setSelectedPaymentMethod("COD");
                           setOpenDropdown(null);
                         }}
                         className={
                           "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                          (selectedCategoryId === String(category.categoryId)
+                          (selectedPaymentMethod === "COD"
                             ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
                             : "text-slate-700 dark:text-slate-200")
                         }
                       >
-                        {category.categoryName}
+                        Thanh toán COD
                       </button>
-                    ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPaymentMethod("BANK_TRANSFER");
+                          setOpenDropdown(null);
+                        }}
+                        className={
+                          "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
+                          (selectedPaymentMethod === "BANK_TRANSFER"
+                            ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
+                            : "text-slate-700 dark:text-slate-200")
+                        }
+                      >
+                        Chuyển khoản (Ngân hàng)
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
+              </div>
             </div>
 
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setOpenDropdown((v) => (v === "payment" ? null : "payment"))}
-                className="flex h-11 min-w-[190px] cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-              >
-                <span className="truncate">{selectedPaymentMethodLabel}</span>
-                <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
-              </button>
-              {openDropdown === "payment" ? (
-                <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg animate-popover dark:border-white/10 dark:bg-slate-950">
-                  <div className="max-h-56 overflow-auto p-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPaymentMethod("all");
-                        setOpenDropdown(null);
-                      }}
-                      className={
-                        "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                        (selectedPaymentMethod === "all"
-                          ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
-                          : "text-slate-700 dark:text-slate-200")
-                      }
-                    >
-                      Tất cả PT thanh toán
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPaymentMethod("COD");
-                        setOpenDropdown(null);
-                      }}
-                      className={
-                        "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                        (selectedPaymentMethod === "COD"
-                          ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
-                          : "text-slate-700 dark:text-slate-200")
-                      }
-                    >
-                      Thanh toán COD
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPaymentMethod("BANK_TRANSFER");
-                        setOpenDropdown(null);
-                      }}
-                      className={
-                        "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                        (selectedPaymentMethod === "BANK_TRANSFER"
-                          ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100"
-                          : "text-slate-700 dark:text-slate-200")
-                      }
-                    >
-                      Chuyển khoản (Ngân hàng)
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            {/* Date Range Picker */}
+            {/* Second row: Date Range Picker with better mobile layout */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <RoundedDatePicker
-                value={startDate}
-                max={endDate || undefined}
-                onChange={(date) => {
-                  if (!date) {
-                    setStartDate("");
-                    setEndDate("");
-                    return;
-                  }
-                  setStartDate(date);
-                  if (endDate && date > endDate) {
-                    setEndDate("");
-                  }
-                }}
-                placeholder="Từ ngày"
-              />
+              <div className="flex-1 sm:flex-none">
+                <RoundedDatePicker
+                  value={startDate}
+                  max={endDate || undefined}
+                  onChange={(date) => {
+                    if (!date) {
+                      setStartDate("");
+                      setEndDate("");
+                      return;
+                    }
+                    setStartDate(date);
+                    if (endDate && date > endDate) {
+                      setEndDate("");
+                    }
+                  }}
+                  placeholder="Từ ngày"
+                />
+              </div>
               
-              <span className="hidden sm:block text-slate-400 font-medium">đến</span>
+              <span className="hidden sm:block text-slate-400 font-medium self-center">đến</span>
               
-              <RoundedDatePicker
-                value={endDate}
-                min={startDate || undefined}
-                onChange={(date) => {
-                  if (!date) {
-                    setStartDate("");
-                    setEndDate("");
-                    return;
-                  }
-                  if (!startDate) {
-                    return;
-                  }
-                  if (date >= startDate) {
-                    setEndDate(date);
-                  }
-                }}
-                disabled={!startDate}
-                placeholder="Đến ngày"
-              />
+              <div className="flex-1 sm:flex-none">
+                <RoundedDatePicker
+                  value={endDate}
+                  min={startDate || undefined}
+                  onChange={(date) => {
+                    if (!date) {
+                      setStartDate("");
+                      setEndDate("");
+                      return;
+                    }
+                    if (!startDate) {
+                      return;
+                    }
+                    if (date >= startDate) {
+                      setEndDate(date);
+                    }
+                  }}
+                  disabled={!startDate}
+                  placeholder="Đến ngày"
+                />
+              </div>
               
               {/* Action Buttons */}
               {(startDate || endDate) && (
@@ -844,7 +852,7 @@ export default function StatisticalPage() {
                     setStartDate("");
                     setEndDate("");
                   }}
-                  className="h-11 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-sm font-bold text-slate-700 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200"
+                  className="h-11 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-sm font-bold text-slate-700 transition-colors dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 whitespace-nowrap"
                 >
                   Xóa tất cả
                 </button>
