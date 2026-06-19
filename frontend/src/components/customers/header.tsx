@@ -60,14 +60,6 @@ export default function PremiumHeader() {
           const dto = await cartService.getMyCart();
           setCartTotal(dto.totalQuantity || 0);
           
-          console.log(`[${new Date().toISOString()}] header.tsx:syncCartTotal - API Response`, {
-            file: 'header.tsx',
-            function: 'syncCartTotal',
-            customerId: dto.customerId,
-            itemCount: dto.items?.length || 0,
-            items: dto.items
-          });
-          
           // Sync server cart to localStorage for consistency
           const activeKey = `cart:user:${u?.id || ""}`;
           const serverCart = (dto.items || []).map((it: any) => ({
@@ -82,18 +74,7 @@ export default function PremiumHeader() {
             colorName: it.colorName ?? null,
             imageUrl: it.imageUrl ?? null,
           }));
-          console.log(`[${new Date().toISOString()}] header.tsx:syncCartTotal - BEFORE setItem`, {
-            file: 'header.tsx',
-            function: 'syncCartTotal',
-            key: activeKey,
-            value: JSON.stringify(serverCart),
-            itemCount: serverCart.length
-          });
           localStorage.setItem(activeKey, JSON.stringify(serverCart));
-          console.log(`[${new Date().toISOString()}] header.tsx:syncCartTotal - AFTER setItem`, {
-            key: activeKey,
-            stored: localStorage.getItem(activeKey)
-          });
           return;
         }
       } catch (e) {
@@ -135,15 +116,9 @@ export default function PremiumHeader() {
 
     const onCartUpdated = (ev: Event) => {
       const custom = ev as CustomEvent<{ totalQuantity?: number }>;
-      console.log(`[${new Date().toISOString()}] header.tsx:onCartUpdated - Event received`, {
-        file: 'header.tsx',
-        function: 'onCartUpdated',
-        totalQuantity: custom.detail?.totalQuantity
-      });
       if (typeof custom.detail?.totalQuantity === "number") {
         setCartTotal(custom.detail.totalQuantity);
       } else {
-        console.log(`[${new Date().toISOString()}] header.tsx:onCartUpdated - Calling syncCartTotal`);
         void syncCartTotal();
       }
       void syncOrderTotal();

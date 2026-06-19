@@ -35,7 +35,16 @@ function safeParseUserId(raw: string | null): string | null {
   try {
     const parsed = JSON.parse(raw) as unknown;
     const id = (parsed as { id?: unknown } | null)?.id;
-    return typeof id === "string" && id.trim() ? id.trim() : null;
+    
+    // Accept both string and number, convert to string
+    if (typeof id === "string" && id.trim()) {
+      return id.trim();
+    }
+    if (typeof id === "number" && id > 0) {
+      return String(id);
+    }
+    
+    return null;
   } catch {
     return null;
   }
@@ -107,11 +116,6 @@ export function getLocalCartTotalQuantity(): number {
 export function emitCartUpdated(totalQuantity?: number) {
   if (typeof window === "undefined") return;
   const detail = { totalQuantity: totalQuantity ?? getLocalCartTotalQuantity() };
-  console.log(`[${new Date().toISOString()}] cartClient.ts:emitCartUpdated`, {
-    file: 'cartClient.ts',
-    function: 'emitCartUpdated',
-    totalQuantity: detail.totalQuantity
-  });
   window.dispatchEvent(new CustomEvent(CART_UPDATED_EVENT, { detail }));
 }
 
@@ -176,18 +180,7 @@ export async function addProductToCart(item: CartLine): Promise<number> {
       colorName: it.colorName ?? null,
       imageUrl: it.imageUrl ?? null,
     }));
-    console.log(`[${new Date().toISOString()}] cartClient.ts:addProductToCart - BEFORE setItem`, {
-      file: 'cartClient.ts',
-      function: 'addProductToCart',
-      key: activeKey,
-      value: JSON.stringify(serverCart),
-      itemCount: serverCart.length
-    });
     window.localStorage.setItem(activeKey, JSON.stringify(serverCart));
-    console.log(`[${new Date().toISOString()}] cartClient.ts:addProductToCart - AFTER setItem`, {
-      key: activeKey,
-      stored: window.localStorage.getItem(activeKey)
-    });
     
     emitCartUpdated(dto.totalQuantity);
     return dto.totalQuantity;

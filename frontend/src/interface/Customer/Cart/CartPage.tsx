@@ -131,29 +131,10 @@ export default function CartPage() {
           setItems(mapped);
           setLoading(false);
           
-          console.log(`[${new Date().toISOString()}] CartPage.tsx:useEffect - API Response`, {
-            file: 'CartPage.tsx',
-            function: 'useEffect',
-            customerId: dto.customerId,
-            itemCount: dto.items?.length || 0,
-            items: dto.items
-          });
-          
           // Sync server cart to localStorage for consistency
           const activeKey = getActiveCartStorageKey();
           const serverCart = mapped;
-          console.log(`[${new Date().toISOString()}] CartPage.tsx:useEffect - BEFORE setItem`, {
-            file: 'CartPage.tsx',
-            function: 'useEffect',
-            key: activeKey,
-            value: JSON.stringify(serverCart),
-            itemCount: serverCart.length
-          });
           localStorage.setItem(activeKey, JSON.stringify(serverCart));
-          console.log(`[${new Date().toISOString()}] CartPage.tsx:useEffect - AFTER setItem`, {
-            key: activeKey,
-            stored: localStorage.getItem(activeKey)
-          });
         }
         emitCartUpdated(dto.totalQuantity);
       } catch (e: any) {
