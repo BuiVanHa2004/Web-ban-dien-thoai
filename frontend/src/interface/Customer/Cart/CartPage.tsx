@@ -107,6 +107,7 @@ function mapServerItem(it: CartItemDto): CartItem {
 export default function CartPage() {
   const router = useRouter();
   const [items, setItems] = React.useState<CartItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [zoomImageUrl, setZoomImageUrl] = React.useState<string | null>(null);
   const [selectedKeys, setSelectedKeys] = React.useState<string[]>([]);
   const [checkingOut, setCheckingOut] = React.useState(false);
@@ -115,17 +116,27 @@ export default function CartPage() {
   React.useEffect(() => {
     let mounted = true;
     (async () => {
+      setLoading(true);
       if (!isCustomerLoggedIn()) {
-        if (mounted) setItems(readCart());
+        if (mounted) {
+          setItems(readCart());
+          setLoading(false);
+        }
         return;
       }
       try {
         const dto = await cartService.getMyCart();
         const mapped = (dto.items || []).map(mapServerItem);
-        if (mounted) setItems(mapped);
+        if (mounted) {
+          setItems(mapped);
+          setLoading(false);
+        }
         emitCartUpdated(dto.totalQuantity);
       } catch {
-        if (mounted) setItems([]);
+        if (mounted) {
+          setItems([]);
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -273,7 +284,11 @@ export default function CartPage() {
             Túi <span className="text-purple-600">Mua Sắm</span>
           </h1>
           <p className="mt-2 text-slate-500 dark:text-slate-400 font-medium">
-            Bạn đang có <span className="text-slate-900 dark:text-white font-bold">{items.length} sản phẩm</span> trong giỏ hàng
+            {loading ? (
+              <span className="inline-block h-6 w-32 rounded animate-pulse bg-slate-700" />
+            ) : (
+              <>Bạn đang có <span className="text-slate-900 dark:text-white font-bold">{items.length} sản phẩm</span> trong giỏ hàng</>
+            )}
           </p>
         </motion.div>
 
@@ -289,7 +304,7 @@ export default function CartPage() {
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
             Tiếp tục mua sắm
           </Link>
-          {items.length > 0 && (
+          {items.length > 0 && !loading && (
             <button
               type="button"
               onClick={clearCart}
@@ -303,7 +318,28 @@ export default function CartPage() {
       </div>
 
       <AnimatePresence mode="wait">
-        {items.length === 0 ? (
+        {loading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-4"
+          >
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="overflow-hidden rounded-[2rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-6 shadow-xl shadow-black/10">
+                <div className="flex gap-4">
+                  <div className="h-28 w-20 rounded-xl bg-slate-700 animate-pulse" />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-5 w-3/4 rounded bg-slate-700 animate-pulse" />
+                    <div className="h-4 w-1/2 rounded bg-slate-700 animate-pulse" />
+                    <div className="h-6 w-1/4 rounded bg-slate-700 animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        ) : items.length === 0 ? (
           <motion.div 
             key="empty"
             initial={{ opacity: 0, y: 20 }}

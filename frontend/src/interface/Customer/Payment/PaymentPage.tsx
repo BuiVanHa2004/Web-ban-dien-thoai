@@ -174,6 +174,18 @@ export default function PaymentPage() {
     return draft.items.reduce((sum, it) => sum + toNumberSafe(it.price) * toNumberSafe(it.quantity), 0);
   }, [draft]);
 
+  const totalDiscount = React.useMemo(() => {
+    if (!draft?.items) return 0;
+    return draft.items.reduce((sum, it) => {
+      const originalPrice = getDraftItemOriginalPrice(it, productMap[Number(it.productId)]);
+      if (!originalPrice) return sum;
+      const currentPrice = toNumberSafe(it.price);
+      const quantity = toNumberSafe(it.quantity);
+      const discount = (originalPrice - currentPrice) * quantity;
+      return sum + (discount > 0 ? discount : 0);
+    }, 0);
+  }, [draft, productMap]);
+
   async function removeCheckedOutItemsFromCart(checkoutDraft: CheckoutDraft) {
     if (checkoutDraft.source !== "cart") return;
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -637,7 +649,7 @@ export default function PaymentPage() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-bold text-slate-400">Giảm giá</span>
-                    <span className="font-bold text-rose-400">- 0 ₫</span>
+                    <span className="font-bold text-rose-400">- {formatVnd(totalDiscount)}</span>
                   </div>
                 </div>
                 <div className="h-px bg-zinc-700/50" />

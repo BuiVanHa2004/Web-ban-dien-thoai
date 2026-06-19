@@ -355,6 +355,19 @@ export default function OrderId() {
                 let title = "Thông tin hủy đơn hàng";
                 let reasonLabel = "Lý do hủy đơn";
                 let reasonValue = order.cancelReasonName || "N/A";
+                
+                // Check if order was cancelled after 30 minutes without payment
+                if (!order.cancelReasonName || order.cancelReasonName === "N/A") {
+                  if (order.createdAt) {
+                    const createdTime = new Date(order.createdAt).getTime();
+                    const cancelledTime = order.cancelledAt ? new Date(order.cancelledAt).getTime() : Date.now();
+                    const diffMinutes = (cancelledTime - createdTime) / (1000 * 60);
+                    if (diffMinutes >= 30) {
+                      reasonValue = "Chưa thanh toán";
+                    }
+                  }
+                }
+                
                 let noteValue = order.cancelNote;
                 let actorLabel = "Người thực hiện";
 

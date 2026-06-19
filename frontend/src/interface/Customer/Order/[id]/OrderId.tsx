@@ -499,7 +499,22 @@ export default function OrderId() {
             <h3 className="text-xl font-black tracking-tight">Đơn hàng đã bị hủy</h3>
             <div className="mt-2 space-y-2">
               <p className="text-sm font-medium opacity-70">
-                Lý do: <span className="font-bold">{order.cancelReasonName || "N/A"}</span>
+                Lý do: <span className="font-bold">
+                  {(() => {
+                    if (!order.cancelReasonName || order.cancelReasonName === "N/A") {
+                      if (order.createdAt) {
+                        const createdTime = new Date(order.createdAt).getTime();
+                        const cancelledTime = order.cancelledAt ? new Date(order.cancelledAt).getTime() : Date.now();
+                        const diffMinutes = (cancelledTime - createdTime) / (1000 * 60);
+                        if (diffMinutes >= 30) {
+                          return "Chưa thanh toán";
+                        }
+                      }
+                      return "N/A";
+                    }
+                    return order.cancelReasonName;
+                  })()}
+                </span>
               </p>
               {order.cancelNote && (
                 <p className="text-sm italic opacity-60">"{order.cancelNote}"</p>
