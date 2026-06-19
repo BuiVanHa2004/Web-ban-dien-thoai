@@ -11,6 +11,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
     Optional<Payment> findTopByOrderIdOrderByCreatedAtDesc(Integer orderId);
 
+    List<Payment> findAllByOrderId(Integer orderId);
+
     List<Payment> findAllByCustomerIdOrderByCreatedAtDesc(Integer customerId);
 
     List<Payment> findAllByOrderByCreatedAtDesc();

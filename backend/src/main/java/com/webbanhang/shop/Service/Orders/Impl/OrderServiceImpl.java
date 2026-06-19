@@ -404,37 +404,50 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public boolean deleteForever(Integer id) {
         return orderRepository.findById(id).map(existing -> {
-            // 1. Xóa các nhật ký đối soát liên quan
-            List<PaymentLog> logs = paymentLogRepository.findByOrderIdOrderByCreatedAtDesc(id);
-            if (logs != null && !logs.isEmpty()) {
-                paymentLogRepository.deleteAll(logs);
-            }
-
-            // 2. Xóa các minh chứng thanh toán VietQR liên quan
-            List<PaymentAttempt> attempts = paymentAttemptRepository.findAllByOrderIdOrderByCreatedAtDesc(id);
-            if (attempts != null && !attempts.isEmpty()) {
-                paymentAttemptRepository.deleteAll(attempts);
-            }
-
-            // 3. Gỡ liên kết các giao dịch ngân hàng trong Sổ cái để chúng quay về trạng thái chưa khớp tự do
-            List<BankTransaction> txs = bankTransactionRepository.findAllByMatchedOrderId(id);
-            if (txs != null && !txs.isEmpty()) {
-                for (BankTransaction tx : txs) {
-                    tx.setIsMatched(false);
-                    tx.setMatchedOrderId(null);
-                    tx.setMatchedByAdminId(null);
-                    tx.setPaymentAttemptId(null);
-                    tx.setReconcileStatus("PENDING");
-                    tx.setRejectedReason(null);
-                    bankTransactionRepository.save(tx);
+            try {
+                // 1. Xóa các nhật ký đối soát liên quan
+                List<PaymentLog> logs = paymentLogRepository.findByOrderIdOrderByCreatedAtDesc(id);
+                if (logs != null && !logs.isEmpty()) {
+                    paymentLogRepository.deleteAll(logs);
                 }
-            }
 
-            // 4. Xóa vĩnh viễn đơn hàng
-            orderRepository.deleteById(id);
-            return true;
+                // 2. Xóa các minh chứng thanh toán VietQR liên quan
+                List<PaymentAttempt> attempts = paymentAttemptRepository.findAllByOrderIdOrderByCreatedAtDesc(id);
+                if (attempts != null && !attempts.isEmpty()) {
+                    paymentAttemptRepository.deleteAll(attempts);
+                }
+
+                // 3. Gỡ liên kết các giao dịch ngân hàng trong Sổ cái để chúng quay về trạng thái chưa khớp tự do
+                List<BankTransaction> txs = bankTransactionRepository.findAllByMatchedOrderId(id);
+                if (txs != null && !txs.isEmpty()) {
+                    for (BankTransaction tx : txs) {
+                        tx.setIsMatched(false);
+                        tx.setMatchedOrderId(null);
+                        tx.setMatchedByAdminId(null);
+                        tx.setPaymentAttemptId(null);
+                        tx.setReconcileStatus("PENDING");
+                        tx.setRejectedReason(null);
+                        bankTransactionRepository.save(tx);
+                    }
+                }
+
+                // 4. Xóa payment records liên quan
+                List<Payment> payments = paymentRepository.findAllByOrderId(id);
+                if (payments != null && !payments.isEmpty()) {
+                    paymentRepository.deleteAll(payments);
+                }
+
+                // 5. Xóa vĩnh viễn đơn hàng
+                orderRepository.deleteById(id);
+                return true;
+            } catch (Exception e) {
+                System.err.println("Failed to delete order forever: " + e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("Cannot delete order: " + e.getMessage(), e);
+            }
         }).orElse(false);
     }
 
