@@ -175,6 +175,14 @@ export default function OrderId() {
           return;
         }
         setOrder(data);
+        console.log("📦 [Customer OrderId] Order loaded:", {
+          orderId: data.orderId,
+          orderStatus: data.orderStatus,
+          paymentStatus: data.paymentStatus,
+          paymentNote: data.paymentNote,
+          paymentNoteAuthor: data.paymentNoteAuthor,
+          paymentNoteDate: data.paymentNoteDate
+        });
         if (String(data.paymentMethod || "") === "BANK_TRANSFER") {
           try {
             const st = await bankTransferService.getStatus(data.orderId);
@@ -537,7 +545,7 @@ export default function OrderId() {
       )}
 
       {/* Payment Approval Note - Show when payment approved (PAID + has paymentNote) */}
-      {!isCancelled && order?.paymentStatus === "PAID" && (order?.paymentNote || order?.paymentNoteAuthor) && (
+      {!isCancelled && order?.paymentStatus === "PAID" && order?.paymentNote && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -579,7 +587,7 @@ export default function OrderId() {
       )}
 
       {/* Payment Rejection Warning - Show when payment rejected (CONFIRMED + UNPAID + has paymentNote) */}
-      {!isCancelled && order?.orderStatus === "CONFIRMED" && order?.paymentStatus === "UNPAID" && (order?.paymentNote || order?.paymentNoteAuthor) && (
+      {!isCancelled && order?.orderStatus === "CONFIRMED" && order?.paymentStatus === "UNPAID" && order?.paymentNote && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

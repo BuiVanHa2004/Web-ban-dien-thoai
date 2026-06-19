@@ -132,6 +132,14 @@ export default function OrderId() {
     try {
       const data = await orderService.getById(id);
       setOrder(data);
+      console.log("📦 [Admin OrderId] Order loaded:", {
+        orderId: data.orderId,
+        orderStatus: data.orderStatus,
+        paymentStatus: data.paymentStatus,
+        paymentNote: data.paymentNote,
+        paymentNoteAuthor: data.paymentNoteAuthor,
+        paymentNoteDate: data.paymentNoteDate
+      });
       const s = String(data.orderStatus || "PENDING_CONFIRM") as OrderStatus;
       setStatus(s);
 
@@ -346,7 +354,7 @@ export default function OrderId() {
           </div>
 
           {/* Admin Payment Note - Show for approved payments */}
-          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "PAID" && (order.paymentNote || order.paymentNoteAuthor) && (
+          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "PAID" && order.paymentNote && (
             <div className="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm backdrop-blur dark:border-emerald-500/20 dark:bg-emerald-500/5">
               <div className="mb-4 flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="h-5 w-5" />
@@ -384,7 +392,7 @@ export default function OrderId() {
           )}
 
           {/* Admin Payment Rejection Note - Show for rejected payments (not cancelled) */}
-          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "UNPAID" && order.orderStatus === "CONFIRMED" && (order.paymentNote || order.paymentNoteAuthor) && (
+          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "UNPAID" && order.orderStatus === "CONFIRMED" && order.paymentNote && (
             <div className="rounded-3xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm backdrop-blur dark:border-amber-500/20 dark:bg-amber-500/5">
               <div className="mb-4 flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
                 <AlertCircle className="h-5 w-5" />
