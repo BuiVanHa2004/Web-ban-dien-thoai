@@ -100,13 +100,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     },
   });
 }
-  if (res.status === 204) {
-    return undefined as T;
-  }
-
-  const text = await res.text();
-  return text ? JSON.parse(text) : (null as any);
-}
 
 export const orderService = {
   getAll: async (customerId?: number): Promise<OrderDto[]> => {

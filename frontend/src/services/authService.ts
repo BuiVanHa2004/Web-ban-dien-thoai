@@ -81,6 +81,7 @@ const toLoginResponse = (data: {
   return { token: data.token, user };
 };
 
+export const authService = {
   /**
    * Verify current token validity by calling /auth/me
    * Returns user info if valid, throws if invalid/expired
