@@ -146,9 +146,9 @@ export function RoundedDatePicker({
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-2 z-50 px-4 sm:px-0 sm:right-auto">
           {/* Calendar popup */}
-          <div className="relative rounded-2xl bg-white border border-slate-200 shadow-xl dark:bg-slate-800 dark:border-slate-700 overflow-hidden w-full max-w-[280px] sm:max-w-none sm:w-[320px]">
+          <div className="relative rounded-2xl bg-white border border-slate-200 shadow-xl dark:bg-slate-800 dark:border-slate-700 overflow-hidden w-full max-w-[310px] sm:max-w-none sm:w-[320px]">
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 dark:border-slate-700">
               <button
                 type="button"
                 onClick={handlePrevMonth}
@@ -169,13 +169,13 @@ export function RoundedDatePicker({
             </div>
 
             {/* Calendar Grid */}
-            <div className="p-2">
+            <div className="p-2.5">
               {/* Weekday Headers */}
-              <div className="grid grid-cols-7 gap-0.5 mb-1">
+              <div className="grid grid-cols-7 gap-1 mb-1.5">
                 {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
                   <div
                     key={day}
-                    className="h-7 flex items-center justify-center text-[11px] font-bold text-slate-500 dark:text-slate-400"
+                    className="h-7 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400"
                   >
                     {day}
                   </div>
@@ -183,7 +183,7 @@ export function RoundedDatePicker({
               </div>
 
               {/* Days Grid */}
-              <div className="grid grid-cols-7 gap-0.5">
+              <div className="grid grid-cols-7 gap-1">
                 {days.map((day, idx) => {
                   if (day === null) {
                     return <div key={`empty-${idx}`} className="h-8" />;
@@ -221,7 +221,7 @@ export function RoundedDatePicker({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-3 py-2 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-4 py-2.5 border-t border-slate-200 dark:border-slate-700">
               <button
                 type="button"
                 onClick={() => {
