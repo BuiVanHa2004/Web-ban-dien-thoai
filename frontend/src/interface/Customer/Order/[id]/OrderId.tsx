@@ -33,6 +33,7 @@ import {
 import { orderService, type OrderDto } from "@/services/orderService";
 import { bankTransferService } from "@/services/bankTransferService";
 import { productService, type ProductDto } from "@/services/productService";
+import { cartService } from "@/services/cartService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
 import { resolveImageUrl } from "@/common/resolveImageUrl";
 
@@ -249,6 +250,12 @@ export default function OrderId() {
     return ["PENDING_CONFIRM", "PENDING_PAYMENT_CONFIRMATION", "CONFIRMED", "PENDING_PICKUP"].includes(s);
   }, [order?.orderStatus]);
 
+  const shouldShowContinuePayment = React.useMemo(() => {
+    return order?.paymentMethod === "BANK_TRANSFER" && 
+           !waitingConfirm && 
+           getRealPaymentStatus({ ...order, waitingConfirm }) !== "PAID";
+  }, [order, waitingConfirm]);
+
 
   const total = React.useMemo(() => {
     if (!order?.items) return 0;
@@ -274,6 +281,42 @@ export default function OrderId() {
   const isCancelled = order?.orderStatus === "CANCELLED";
 
   const canReview = String(order?.orderStatus || "") === "DELIVERED";
+
+  async function handleReorder() {
+    if (!order?.items) return;
+    const customerId = readCustomerId();
+    if (!customerId) {
+      showToast("Vui lòng đăng nhập", "error");
+      return;
+    }
+    try {
+      let successCount = 0;
+      let failedItems: string[] = [];
+      for (const item of order.items) {
+        try {
+          await cartService.addItem({
+            productId: Number(item.productId),
+            productColorId: item.colorId,
+            productVariantId: item.variantId,
+            quantity: item.quantity
+          });
+          successCount++;
+        } catch (e: any) {
+          failedItems.push(item.productName || "N/A");
+        }
+      }
+      if (successCount > 0) {
+        showToast(`Đã thêm ${successCount} sản phẩm vào giỏ hàng`, "success");
+        if (failedItems.length > 0) {
+          showToast(`Không thể thêm: ${failedItems.join(", ")}`, "error");
+        }
+      } else {
+        showToast("Không thể thêm sản phẩm vào giỏ hàng", "error");
+      }
+    } catch (e: any) {
+      showToast(e?.message || "Có lỗi khi thêm vào giỏ", "error");
+    }
+  }
 
   React.useEffect(() => {
     const customerId = readCustomerId();
@@ -452,7 +495,7 @@ export default function OrderId() {
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/20">
             <XCircle className="h-8 w-8" />
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="text-xl font-black tracking-tight">Đơn hàng đã bị hủy</h3>
             <div className="mt-2 space-y-2">
               <p className="text-sm font-medium opacity-70">
@@ -465,6 +508,13 @@ export default function OrderId() {
                 Hủy bởi: {order.cancelledBy === "CUSTOMER" ? "Bạn" : (order.cancelledBy || "Hệ thống")} • {formatDate(order.cancelledAt)}
               </p>
             </div>
+            <button
+              onClick={handleReorder}
+              className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 py-3 text-sm font-bold text-white hover:bg-purple-700 transition-all active:scale-95 shadow-lg shadow-purple-500/20"
+            >
+              <Package className="h-4 w-4" />
+              Mua lại
+            </button>
           </div>
         </motion.div>
       )}
@@ -573,6 +623,16 @@ export default function OrderId() {
                   <XCircle className="h-4 w-4" />
                   Hủy đơn hàng ngay
                 </button>
+              )}
+
+              {shouldShowContinuePayment && (
+                <Link
+                  href={`/payment?orderId=${order.orderId}`}
+                  className="flex w-full items-center justify-center gap-3 rounded-2xl bg-cyan-50 py-4 text-xs font-black text-cyan-600 transition-all hover:bg-cyan-600 hover:text-white shadow-lg shadow-cyan-500/10 active:scale-95"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Tiếp tục thanh toán
+                </Link>
               )}
             </div>
           </div>
