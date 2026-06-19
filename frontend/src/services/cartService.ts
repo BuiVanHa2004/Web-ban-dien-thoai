@@ -16,18 +16,19 @@ type CartUpsertItemRequest = {
   quantity?: number | null;
 };
 
-async function requestJson<T>(path: string, init: RequestInit): Promise<T> {
+async function requestJson<T>(path: string, init: RequestInit, skipAutoLogout = false): Promise<T> {
   const url = `${API_URL}/api${path}`;
-  return authenticatedFetch<T>(url, init);
+  return authenticatedFetch<T>(url, init, skipAutoLogout);
 }
 
 export const cartService = {
   getMyCart: async (): Promise<CartDto> => {
     const auth = getAuthHeader();
     if (!auth) throw new Error("Vui lòng đăng nhập.");
+    // Skip auto logout to allow graceful fallback to localStorage
     return requestJson<CartDto>("/customer/cart", {
       method: "GET",
-    });
+    }, true);
   },
 
   addItem: async (req: CartUpsertItemRequest): Promise<CartDto> => {

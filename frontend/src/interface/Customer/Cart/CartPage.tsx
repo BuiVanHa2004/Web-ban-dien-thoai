@@ -132,10 +132,17 @@ export default function CartPage() {
           setLoading(false);
         }
         emitCartUpdated(dto.totalQuantity);
-      } catch {
+      } catch (e: any) {
+        console.error("[CartPage] Failed to load cart:", e);
+        // If API fails, fallback to reading from localStorage as guest
+        // This handles token expiration and other auth errors gracefully
         if (mounted) {
-          setItems([]);
+          const localCart = readCart();
+          setItems(localCart);
           setLoading(false);
+          // Emit cart update with local quantity to sync badge
+          const localQuantity = localCart.reduce((sum, it) => sum + Math.max(0, Number(it.quantity) || 0), 0);
+          emitCartUpdated(localQuantity);
         }
       }
     })();

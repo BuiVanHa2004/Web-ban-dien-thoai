@@ -877,7 +877,7 @@ export default function ProductPage() {
                                           }}
                                         >
                                           <Image
-                                            src={url || "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"}
+                                            src={resolveImageUrl(url) || "https://dummyimage.com/200x200/e2e8f0/64748b&text=No+Image"}
                                             alt={c.colorName}
                                             width={56}
                                             height={100}
