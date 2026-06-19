@@ -22,6 +22,7 @@ import { resolveImageUrl } from "@/common/resolveImageUrl";
 import { emitCartUpdated, getActiveCartStorageKey } from "@/common/cartClient";
 import { writeCheckoutDraft } from "@/common/checkoutDraft";
 import { cartService } from "@/services/cartService";
+import { productService, type ProductDto } from "@/services/productService";
 import type { CartItemDto } from "@/common/types/cart";
 
 type User = {
@@ -64,6 +65,33 @@ type CartItem = {
   colorName?: string | null;
   imageUrl?: string | null;
 };
+
+function toNumberSafe(v: unknown): number {
+  const n = typeof v === "string" ? Number(v) : typeof v === "number" ? v : NaN;
+  return Number.isFinite(n) ? n : 0;
+}
+
+function getItemOriginalPrice(it: CartItem, product?: ProductDto): number | null {
+  const variantId = it.productVariantId;
+  
+  if (product && variantId != null && variantId > 0) {
+    const colors = product.productColors || [];
+    for (const c of colors) {
+      const variants = c.variants || [];
+      const v = variants.find((x) => Number(x.variantId) === variantId);
+      if (v && v.originalPrice != null) {
+        const n = Number(v.originalPrice);
+        if (Number.isFinite(n) && n > 0) return n;
+      }
+    }
+  }
+
+  if (product && product.originalBasePrice != null) {
+    const n = Number(product.originalBasePrice);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
+}
 
 function formatVnd(value: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
@@ -112,6 +140,7 @@ export default function CartPage() {
   const [selectedKeys, setSelectedKeys] = React.useState<string[]>([]);
   const [checkingOut, setCheckingOut] = React.useState(false);
   const [checkoutError, setCheckoutError] = React.useState<string | null>(null);
+  const [productMap, setProductMap] = React.useState<Record<number, ProductDto>>({});
 
   React.useEffect(() => {
     let mounted = true;
@@ -156,6 +185,42 @@ export default function CartPage() {
     };
   }, []);
 
+  // Fetch product details to get original prices
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const ids = Array.from(
+        new Set(items.map((it) => Number(it.productId)).filter((x) => Number.isFinite(x) && x > 0))
+      );
+      if (ids.length === 0) {
+        if (mounted) setProductMap({});
+        return;
+      }
+
+      const pairs = await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const p = await productService.getById(id);
+            return [id, p] as const;
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      if (!mounted) return;
+      const next: Record<number, ProductDto> = {};
+      for (const pair of pairs) {
+        if (!pair) continue;
+        next[pair[0]] = pair[1];
+      }
+      setProductMap(next);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [items]);
+
   const total = React.useMemo(() => {
     return items.reduce((sum, it) => sum + (Number(it.price || 0) * Number(it.quantity || 0)), 0);
   }, [items]);
@@ -181,6 +246,30 @@ export default function CartPage() {
       return sum + Number(it.price || 0) * Number(it.quantity || 0);
     }, 0);
   }, [items, selectedSet]);
+
+  const selectedOriginalPrice = React.useMemo(() => {
+    return items.reduce((sum, it) => {
+      if (!selectedSet.has(getItemKey(it))) return sum;
+      const originalPrice = getItemOriginalPrice(it, productMap[it.productId]);
+      const currentPrice = Number(it.price || 0);
+      const quantity = Number(it.quantity || 0);
+      // Use original price if available, otherwise use current price
+      const price = originalPrice && originalPrice > 0 ? originalPrice : currentPrice;
+      return sum + price * quantity;
+    }, 0);
+  }, [items, selectedSet, productMap]);
+
+  const selectedDiscount = React.useMemo(() => {
+    return items.reduce((sum, it) => {
+      if (!selectedSet.has(getItemKey(it))) return sum;
+      const originalPrice = getItemOriginalPrice(it, productMap[it.productId]);
+      if (!originalPrice) return sum;
+      const currentPrice = Number(it.price || 0);
+      const quantity = Number(it.quantity || 0);
+      const discount = (originalPrice - currentPrice) * quantity;
+      return sum + (discount > 0 ? discount : 0);
+    }, 0);
+  }, [items, selectedSet, productMap]);
 
   function setQuantity(
     key: {
@@ -525,12 +614,12 @@ export default function CartPage() {
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-white/5">
-                      <span className="text-sm font-bold text-slate-500">Tạm tính</span>
-                      <span className="text-sm font-black text-slate-900 dark:text-white">{formatVnd(selectedTotal)}</span>
+                      <span className="text-sm font-bold text-slate-500">Giá gốc</span>
+                      <span className="text-sm font-black text-slate-900 dark:text-white">{formatVnd(selectedOriginalPrice)}</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-white/5">
                       <span className="text-sm font-bold text-slate-500">Giảm giá</span>
-                      <span className="text-sm font-black text-emerald-600">- 0 ₫</span>
+                      <span className="text-sm font-black text-rose-400">- {formatVnd(selectedDiscount)}</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-white/5">
                       <div className="flex items-center gap-1">
