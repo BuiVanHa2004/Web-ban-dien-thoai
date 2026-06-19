@@ -749,7 +749,7 @@ export default function OrderId() {
       </div>
 
       {/* Admin Payment Approval Note - Show when payment is approved (PAID + has paymentNote) */}
-      {!isCancelled && order?.paymentStatus === "PAID" && (order?.paymentNote || order?.paymentNoteAuthor) && (
+      {order?.orderStatus !== "CANCELLED" && order?.paymentStatus === "PAID" && (order?.paymentNote || order?.paymentNoteAuthor) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
