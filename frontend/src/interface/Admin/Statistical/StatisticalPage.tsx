@@ -87,6 +87,7 @@ export default function StatisticalPage() {
   const [endDate, setEndDate] = React.useState<string>("");
   const [openDropdown, setOpenDropdown] = React.useState<null | "brand" | "category" | "payment" | "date">(null);
   const dropdownContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const datePickerRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     setIsClient(true);
@@ -100,6 +101,20 @@ export default function StatisticalPage() {
       }
     }
   }, []);
+
+  // Scroll date picker into view on mobile when opened
+  React.useEffect(() => {
+    if (openDropdown === "date" && datePickerRef.current && window.innerWidth < 768) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        datePickerRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'center'
+        });
+      }, 100);
+    }
+  }, [openDropdown]);
 
   const currentFilter = React.useMemo(() => {
     const brandId = selectedBrandId === "all" ? undefined : Number(selectedBrandId);
@@ -818,8 +833,12 @@ export default function StatisticalPage() {
                     className="fixed inset-0 z-40 bg-black/50 md:hidden" 
                     onClick={() => setOpenDropdown(null)}
                   />
-                  {/* Dropdown */}
-                  <div className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-[340px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xl animate-popover dark:border-white/10 dark:bg-slate-950 md:absolute md:left-0 md:right-0 md:top-full md:mt-2 md:w-auto md:translate-x-0 md:translate-y-0">
+                  {/* Dropdown - use transform for better mobile centering */}
+                  <div 
+                    ref={datePickerRef}
+                    className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-[340px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xl animate-popover dark:border-white/10 dark:bg-slate-950 md:absolute md:left-0 md:right-0 md:top-full md:mt-2 md:w-auto md:translate-x-0 md:translate-y-0"
+                    style={{ position: 'fixed' }}
+                  >
                     <div className="space-y-4">
                       <div>
                         <label className="mb-2 block text-xs font-semibold text-slate-600 dark:text-slate-400">
