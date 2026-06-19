@@ -43,8 +43,13 @@ function safeParseUserId(raw: string | null): string | null {
 
 export function getActiveCartStorageKey(): string {
   if (typeof window === "undefined") return CART_STORAGE_KEY_GUEST;
+  
+  // Only use user cart key if BOTH token and user exist
+  // This prevents reading old user's cart after logout/token expiration
+  const token = window.localStorage.getItem("token");
   const userId = safeParseUserId(window.localStorage.getItem("user"));
-  return userId ? `${CART_STORAGE_KEY_PREFIX}:user:${userId}` : CART_STORAGE_KEY_GUEST;
+  
+  return (token && userId) ? `${CART_STORAGE_KEY_PREFIX}:user:${userId}` : CART_STORAGE_KEY_GUEST;
 }
 
 function readCartFromAnyKey(): { key: string; cart: CartLine[] } {
@@ -53,14 +58,17 @@ function readCartFromAnyKey(): { key: string; cart: CartLine[] } {
   const activeKey = getActiveCartStorageKey();
   const active = safeParseCart(window.localStorage.getItem(activeKey));
   
+  // Check if user is authenticated (both token and user must exist)
+  const token = window.localStorage.getItem("token");
+  const userId = safeParseUserId(window.localStorage.getItem("user"));
+  
   // If user is logged in, ONLY use their specific cart key
   // Do NOT fallback to legacy keys to prevent cart mixing between users
-  const userId = safeParseUserId(window.localStorage.getItem("user"));
-  if (userId) {
+  if (token && userId) {
     return { key: activeKey, cart: active };
   }
   
-  // For guest users, check legacy keys for backward compatibility
+  // For guest users (no token or no user), check legacy keys for backward compatibility
   if (active.length > 0) return { key: activeKey, cart: active };
 
   const oldPrimary = safeParseCart(window.localStorage.getItem("cart"));

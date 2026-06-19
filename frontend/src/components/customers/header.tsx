@@ -191,18 +191,18 @@ export default function PremiumHeader() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     
-    // Clear all cart data from localStorage
-    const allKeys = Object.keys(localStorage);
-    allKeys.forEach(key => {
-      if (key.startsWith("cart:") || key === "cart" || key === "Cart" || 
-          key === "cartItems" || key === "customer_cart" || key === "customer-cart") {
-        localStorage.removeItem(key);
-      }
-    });
+    // DO NOT delete user cart data (cart:user:{id}) as it belongs to the user
+    // Only clear guest cart and legacy keys to start fresh
+    localStorage.removeItem("cart:guest");
+    localStorage.removeItem("cart");
+    localStorage.removeItem("Cart");
+    localStorage.removeItem("cartItems");
+    localStorage.removeItem("customer_cart");
+    localStorage.removeItem("customer-cart");
     
     setUser(null);
     setShowUserMenu(false);
-    setCartTotal(0); // Reset cart badge to 0
+    setCartTotal(0); // Reset cart badge to 0 (will load guest cart if any)
     router.replace("/login");
   };
 

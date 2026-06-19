@@ -72,16 +72,25 @@ export default function Login() {
           localStorage.setItem("token", res.token);
           localStorage.setItem("user", JSON.stringify(res.user));
           
-          // Sync guest cart to user cart after login
+          // Migrate guest cart to user cart after login (if guest cart exists)
           try {
             const guestCart = localStorage.getItem("cart:guest") || localStorage.getItem("cart");
-            if (guestCart) {
-              const userCartKey = `cart:user:${res.user.id}`;
+            const userCartKey = `cart:user:${res.user.id}`;
+            const existingUserCart = localStorage.getItem(userCartKey);
+            
+            // If user has existing cart, keep it (don't overwrite with guest cart)
+            // If no existing user cart, migrate guest cart if available
+            if (!existingUserCart && guestCart) {
               localStorage.setItem(userCartKey, guestCart);
-              // Clean up guest cart after migration
-              localStorage.removeItem("cart:guest");
-              localStorage.removeItem("cart");
             }
+            
+            // Clean up guest cart and legacy keys after login
+            localStorage.removeItem("cart:guest");
+            localStorage.removeItem("cart");
+            localStorage.removeItem("Cart");
+            localStorage.removeItem("cartItems");
+            localStorage.removeItem("customer_cart");
+            localStorage.removeItem("customer-cart");
           } catch (err) {
             console.error("[Login] Failed to migrate guest cart:", err);
           }
@@ -134,16 +143,25 @@ export default function Login() {
               localStorage.setItem("token", res.auth.token);
               localStorage.setItem("user", JSON.stringify(res.auth.user));
               
-              // Sync guest cart to user cart after Google login
+              // Migrate guest cart to user cart after Google login (if guest cart exists)
               try {
                 const guestCart = localStorage.getItem("cart:guest") || localStorage.getItem("cart");
-                if (guestCart) {
-                  const userCartKey = `cart:user:${res.auth.user.id}`;
+                const userCartKey = `cart:user:${res.auth.user.id}`;
+                const existingUserCart = localStorage.getItem(userCartKey);
+                
+                // If user has existing cart, keep it (don't overwrite with guest cart)
+                // If no existing user cart, migrate guest cart if available
+                if (!existingUserCart && guestCart) {
                   localStorage.setItem(userCartKey, guestCart);
-                  // Clean up guest cart after migration
-                  localStorage.removeItem("cart:guest");
-                  localStorage.removeItem("cart");
                 }
+                
+                // Clean up guest cart and legacy keys after login
+                localStorage.removeItem("cart:guest");
+                localStorage.removeItem("cart");
+                localStorage.removeItem("Cart");
+                localStorage.removeItem("cartItems");
+                localStorage.removeItem("customer_cart");
+                localStorage.removeItem("customer-cart");
               } catch (err) {
                 console.error("[GoogleLogin] Failed to migrate guest cart:", err);
               }
