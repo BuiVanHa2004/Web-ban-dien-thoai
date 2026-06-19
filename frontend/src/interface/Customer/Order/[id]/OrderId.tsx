@@ -458,7 +458,7 @@ export default function OrderId() {
       </div>
 
       {/* PROGRESS STEPPER */}
-      {!isCancelled && (
+      {order?.orderStatus !== "CANCELLED" && (
         <div className="rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/55 p-4 backdrop-blur-md sm:rounded-[2.5rem] sm:p-6 lg:p-8">
           <div className="overflow-x-auto pb-3">
             <div className="flex min-w-[440px] items-center pb-1 sm:min-w-0">
@@ -496,7 +496,7 @@ export default function OrderId() {
         </div>
       )}
 
-      {isCancelled && (
+      {order?.orderStatus === "CANCELLED" && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -545,7 +545,7 @@ export default function OrderId() {
       )}
 
       {/* Payment Approval Note - Show when payment approved (PAID + has paymentNote) */}
-      {!isCancelled && order?.paymentStatus === "PAID" && order?.paymentNote && (
+      {order?.orderStatus !== "CANCELLED" && order?.paymentStatus === "PAID" && order?.paymentNote && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -587,7 +587,7 @@ export default function OrderId() {
       )}
 
       {/* Payment Rejection Warning - Show when payment rejected (CONFIRMED + UNPAID + has paymentNote) */}
-      {!isCancelled && order?.orderStatus === "CONFIRMED" && order?.paymentStatus === "UNPAID" && order?.paymentNote && (
+      {order?.orderStatus !== "CANCELLED" && order?.orderStatus === "CONFIRMED" && order?.paymentStatus === "UNPAID" && order?.paymentNote && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
