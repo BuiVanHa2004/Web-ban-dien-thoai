@@ -144,38 +144,38 @@ export function RoundedDatePicker({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 z-50">
+        <div className="absolute top-full left-0 right-0 mt-2 z-50 px-2 sm:px-0 sm:right-auto">
           {/* Calendar popup */}
-          <div className="relative rounded-2xl bg-white border border-slate-200 shadow-xl dark:bg-slate-800 dark:border-slate-700 overflow-hidden w-[340px]">
+          <div className="relative rounded-2xl bg-white border border-slate-200 shadow-xl dark:bg-slate-800 dark:border-slate-700 overflow-hidden w-full sm:w-[300px]">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-200 dark:border-slate-700">
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="text-sm font-bold text-slate-900 dark:text-white">
+              <span className="text-xs font-bold text-slate-900 dark:text-white">
                 {monthName}
               </span>
               <button
                 type="button"
                 onClick={handleNextMonth}
-                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
 
             {/* Calendar Grid */}
-            <div className="p-3">
+            <div className="p-2.5">
               {/* Weekday Headers */}
-              <div className="grid grid-cols-7 gap-1 mb-2">
+              <div className="grid grid-cols-7 gap-0.5 mb-1.5">
                 {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
                   <div
                     key={day}
-                    className="h-8 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400"
+                    className="h-7 flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-slate-400"
                   >
                     {day}
                   </div>
@@ -183,10 +183,10 @@ export function RoundedDatePicker({
               </div>
 
               {/* Days Grid */}
-              <div className="grid grid-cols-7 gap-1">
+              <div className="grid grid-cols-7 gap-0.5">
                 {days.map((day, idx) => {
                   if (day === null) {
-                    return <div key={`empty-${idx}`} className="h-9" />;
+                    return <div key={`empty-${idx}`} className="h-8" />;
                   }
 
                   const disabled = isDateDisabled(day);
@@ -200,7 +200,7 @@ export function RoundedDatePicker({
                       onClick={() => !disabled && handleSelectDay(day)}
                       disabled={disabled}
                       className={`
-                        h-9 flex items-center justify-center text-sm font-medium rounded-lg transition
+                        h-8 flex items-center justify-center text-xs font-medium rounded-lg transition
                         ${disabled 
                           ? "text-slate-300 dark:text-slate-600 cursor-not-allowed" 
                           : "hover:bg-slate-100 dark:hover:bg-slate-700"
@@ -221,21 +221,21 @@ export function RoundedDatePicker({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-3 py-2.5 border-t border-slate-200 dark:border-slate-700">
               <button
                 type="button"
                 onClick={() => {
                   onChange("");
                   setIsOpen(false);
                 }}
-                className="text-sm font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                className="text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
               >
                 Xóa
               </button>
               <button
                 type="button"
                 onClick={handleToday}
-                className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-sm font-bold text-white transition"
+                className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-xs font-bold text-white transition"
               >
                 Hôm nay
               </button>
