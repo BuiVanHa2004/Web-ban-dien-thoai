@@ -135,6 +135,50 @@ public class InventoryService {
     }
 
     /**
+     * ✅ NEW: Restore stock khi hủy đơn đã trừ kho
+     * Hoàn lại stock từ sold về available (uncommon case - chỉ khi cancel sau khi đã giao hàng)
+     * 
+     * @param variantId ID của variant
+     * @param quantity Số lượng cần restore
+     */
+    @Transactional
+    public void restoreStock(Integer variantId, int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be positive");
+        }
+
+        ProductVariant variant = entityManager.find(
+            ProductVariant.class, 
+            variantId, 
+            LockModeType.PESSIMISTIC_WRITE
+        );
+
+        if (variant == null) {
+            throw new IllegalArgumentException("Product variant not found: " + variantId);
+        }
+
+        int prevSold = variant.getSoldStock();
+        
+        // Giảm sold_stock (hoàn lại hàng)
+        int newSold = Math.max(0, variant.getSoldStock() - quantity);
+        variant.setSoldStock(newSold);
+        variant.setVersion(variant.getVersion() + 1);
+        
+        variantRepository.save(variant);
+        
+        // Log the action
+        logStockChange(null, null, variant, quantity, OrderStockLog.StockAction.RESTORE,
+                variant.getTotalStock(), variant.getReservedStock(), prevSold,
+                variant.getTotalStock(), variant.getReservedStock(), variant.getSoldStock(),
+                "Restored stock due to order cancellation after delivery");
+        
+        System.out.println(String.format(
+            "[INVENTORY] ⚠️ Restored %d units for variant %d. Sold: %d -> %d", 
+            quantity, variantId, prevSold, variant.getSoldStock()
+        ));
+    }
+
+    /**
      * Confirm sale - chuyển stock từ reserved sang sold
      * Gọi khi:
      * - BANK_TRANSFER: Payment thành công (PAID status)

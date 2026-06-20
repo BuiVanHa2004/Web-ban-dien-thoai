@@ -370,17 +370,20 @@ public class PaymentServiceImpl implements PaymentService {
         order.setCancelNote(null);
         orderRepository.save(order);
 
-        // Confirm sale: move from reserved to sold (for BANK_TRANSFER)
+        // ✅ CRITICAL FIX: BANK_TRANSFER - Trừ kho khi Admin approve payment (PAID)
+        // Confirm sale: chuyển từ reserved sang sold (TRỪ KHO THỰC SỰ)
         try {
             for (OrderItem item : order.getItems()) {
                 if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
                     inventoryService.confirmSale(item.getVariantId(), item.getQuantity());
                 }
             }
-            System.out.println("[PAYMENT] Confirmed sale for BANK_TRANSFER order " + order.getOrderCode() + " on PAID");
+            order.setInventoryDeducted(true);
+            orderRepository.save(order);
+            System.out.println("[PAYMENT] ✅ BANK_TRANSFER order " + order.getOrderCode() + " - Stock deducted on PAID");
         } catch (Exception e) {
             System.err.println("Failed to confirm sale: " + e.getMessage());
-            throw new RuntimeException("Failed to confirm inventory sale: " + e.getMessage(), e);
+            throw new RuntimeException("Không thể trừ kho: " + e.getMessage(), e);
         }
 
         // Update Payment
@@ -627,19 +630,20 @@ public class PaymentServiceImpl implements PaymentService {
             order.setPaymentNoteDate(LocalDateTime.now());
             orderRepository.save(order);
 
-            // Confirm sale: move from reserved to sold
+            // ✅ Confirm sale: move from reserved to sold
             try {
                 for (OrderItem item : order.getItems()) {
                     if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
                         inventoryService.confirmSale(item.getVariantId(), item.getQuantity());
                     }
                 }
+                order.setInventoryDeducted(true);
+                orderRepository.save(order);
                 System.out.println("[PAYMENT] Confirmed sale for auto-matched order " + order.getOrderCode());
             } catch (Exception e) {
                 System.err.println("Failed to confirm sale: " + e.getMessage());
+                throw new RuntimeException("Không thể trừ kho: " + e.getMessage(), e);
             }
-
-            orderService.deductInventory(order);
 
             Payment payment = paymentRepository.findTopByOrderIdOrderByCreatedAtDesc(order.getOrderId()).orElseGet(() -> {
                 Payment newPayment = new Payment();
@@ -809,14 +813,10 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new IllegalStateException("Payment record not found"));
         payment.setPaymentMethod("COD");
         // paymentStatus giữ nguyên UNPAID
-        paymentRepository.save(payment);
+        paymentRepository.save(order);
         
-        // Trừ tồn kho vì đã chuyển sang CONFIRMED
-        try {
-            orderService.deductInventory(order);
-        } catch (Exception e) {
-            System.err.println("Failed to deduct inventory when changing to COD: " + e.getMessage());
-        }
+        // ✅ KHÔNG trừ kho ở đây - COD sẽ trừ khi DELIVERED
+        // Đơn COD chỉ có stock reserved, chưa confirm sale
         
         // Gửi notification cho khách hàng
         notifyCustomer(order, NotificationAction.CONFIRM, 

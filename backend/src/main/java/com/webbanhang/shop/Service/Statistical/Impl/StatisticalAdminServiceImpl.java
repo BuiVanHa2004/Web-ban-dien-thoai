@@ -98,8 +98,14 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
         boolean hasProdFilter = brandId != null || categoryId != null;
 
         long totalOrders = filteredOrders.size();
+        
+        // ✅ FIX: Revenue chỉ tính đơn ĐÃ GIAO HÀNG + ĐÃ THANH TOÁN + CHƯA BỊ HOÀN TIỀN
         BigDecimal totalRevenue = filteredOrders.stream()
-                .filter(order -> order.getPaymentStatus() == PaymentStatus.PAID)
+                .filter(order -> 
+                    order.getOrderStatus() == com.webbanhang.shop.Model.Orders.OrderStatus.DELIVERED &&
+                    order.getPaymentStatus() == PaymentStatus.PAID
+                    // Không tính các đơn đang hoàn tiền hoặc đã hoàn tiền
+                )
                 .map(order -> order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         long totalCustomers = (hasProdFilter || paymentMethod != null || startDate != null || endDate != null)
@@ -142,8 +148,13 @@ public class StatisticalAdminServiceImpl implements StatisticalAdminService {
             String monthLabel = formatter.format(monthDate);
             List<Order> monthOrders = grouped.getOrDefault(monthLabel, new ArrayList<>());
             
+            // ✅ FIX: Revenue chỉ tính đơn ĐÃ GIAO HÀNG + ĐÃ THANH TOÁN + CHƯA BỊ HOÀN TIỀN
             BigDecimal revenue = monthOrders.stream()
-                    .filter(o -> o.getPaymentStatus() == PaymentStatus.PAID)
+                    .filter(o -> 
+                        o.getOrderStatus() == com.webbanhang.shop.Model.Orders.OrderStatus.DELIVERED &&
+                        o.getPaymentStatus() == PaymentStatus.PAID
+                        // Không tính các đơn đang hoàn tiền hoặc đã hoàn tiền
+                    )
                     .map(o -> o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             

@@ -28,6 +28,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(body);
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(NotFoundException e) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", 404);
+        body.put("error", "Not Found");
+        body.put("message", e.getMessage());
+        return ResponseEntity.status(404).body(body);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException e) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", 400);
+        body.put("error", "Bad Request");
+        body.put("message", e.getMessage());
+        return ResponseEntity.status(400).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception e) {
         e.printStackTrace();

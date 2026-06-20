@@ -213,7 +213,11 @@ public class OrderServiceImpl implements OrderService {
         payment.setAmount(savedOrder.getTotalAmount());
         paymentRepository.save(payment);
 
-        // Reserve stock for ALL orders (both COD and BANK_TRANSFER)
+        // ✅ CRITICAL FIX: Reserve stock khi tạo đơn (KHÔNG TRỪ KHO)
+        // - Reserved stock = giữ hàng tạm thời
+        // - Trừ kho thực sự (confirm sale) xảy ra khi:
+        //   + COD: Giao hàng thành công (DELIVERED)
+        //   + BANK_TRANSFER: Admin duyệt thanh toán (PAID)
         List<InventoryService.StockReservation> reservations = new ArrayList<>();
         for (OrderItem item : savedOrder.getItems()) {
             if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
@@ -221,7 +225,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         if (!reservations.isEmpty()) {
-            // Nếu reserve stock fail, transaction sẽ tự động rollback toàn bộ (bao gồm order và payment)
+            // Nếu reserve stock fail, transaction sẽ tự động rollback toàn bộ
             inventoryService.batchReserveStock(reservations);
             System.out.println("[ORDER] Reserved stock for order " + savedOrder.getOrderCode());
         }
@@ -469,16 +473,19 @@ public class OrderServiceImpl implements OrderService {
             if ("COD".equalsIgnoreCase(existing.getPaymentMethod()) || existing.getPaymentMethod() == null) {
                 if (status == OrderStatus.DELIVERED) {
                     existing.setPaymentStatus(PaymentStatus.PAID);
-                    // Confirm sale: move from reserved to sold
+                    
+                    // ✅ CRITICAL FIX: Confirm sale - chuyển từ reserved sang sold (TRỪ KHO THỰC SỰ)
                     try {
                         for (OrderItem item : existing.getItems()) {
                             if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
                                 inventoryService.confirmSale(item.getVariantId(), item.getQuantity());
                             }
                         }
-                        System.out.println("[ORDER] Confirmed sale for COD order " + existing.getOrderCode() + " on DELIVERED");
+                        existing.setInventoryDeducted(true);
+                        System.out.println("[ORDER] ✅ COD order " + existing.getOrderCode() + " - Stock deducted on DELIVERED");
                     } catch (Exception e) {
                         System.err.println("Failed to confirm sale: " + e.getMessage());
+                        throw new IllegalStateException("Không thể trừ kho: " + e.getMessage());
                     }
                 } else {
                     existing.setPaymentStatus(PaymentStatus.UNPAID);
@@ -586,12 +593,23 @@ public class OrderServiceImpl implements OrderService {
                     }
                 }
             }
+            // ❌ DEPRECATED - Không còn dùng method này
+            // Đã thay thế bằng inventoryService.confirmSale()
             order.setInventoryDeducted(true);
             orderRepository.save(order);
         } catch (Exception e) {
-            System.err.println("Failed to deduct inventory for order " + order.getOrderId() + ": " + e.getMessage());
-            // Don't throw exception, just log it
+            System.err.println("⚠️ DEPRECATED: deductInventory() called - " + e.getMessage());
         }
+    }
+
+    /**
+     * ❌ DEPRECATED: Không còn sử dụng
+     * Thay vào đó dùng inventoryService.restoreStock()
+     */
+    @Deprecated
+    @Override
+    public void restoreInventory(Order order) {
+        System.err.println("⚠️ WARNING: restoreInventory() is deprecated. Use inventoryService.restoreStock()");
     }
 
     @Override
@@ -637,16 +655,31 @@ public class OrderServiceImpl implements OrderService {
         order.setCancelledBy(cancelledBy);
         order.setCancelledAt(java.time.LocalDateTime.now());
 
-        // Release reserved stock when order is cancelled
+        // ✅ CRITICAL FIX: Release/Restore stock khi hủy đơn
+        // - Nếu chưa trừ kho (chỉ reserved) → release reserved stock
+        // - Nếu đã trừ kho (sold) → restore inventory (hoàn hàng)
         try {
-            for (OrderItem item : order.getItems()) {
-                if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
-                    inventoryService.releaseStock(item.getVariantId(), item.getQuantity());
+            if (Boolean.TRUE.equals(order.getInventoryDeducted())) {
+                // Đã trừ kho → phải hoàn lại stock
+                for (OrderItem item : order.getItems()) {
+                    if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                        inventoryService.restoreStock(item.getVariantId(), item.getQuantity());
+                    }
                 }
+                order.setInventoryDeducted(false);
+                System.out.println("[ORDER] ⚠️ Restored inventory for cancelled order " + order.getOrderCode());
+            } else {
+                // Chưa trừ kho → chỉ release reserved
+                for (OrderItem item : order.getItems()) {
+                    if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                        inventoryService.releaseStock(item.getVariantId(), item.getQuantity());
+                    }
+                }
+                System.out.println("[ORDER] Released reserved stock for cancelled order " + order.getOrderCode());
             }
-            System.out.println("[ORDER] Released reserved stock for cancelled order " + order.getOrderCode());
         } catch (Exception e) {
-            System.err.println("Failed to release stock: " + e.getMessage());
+            System.err.println("Failed to release/restore stock: " + e.getMessage());
+            throw new IllegalStateException("Không thể hoàn stock: " + e.getMessage());
         }
 
         handleCancellationRefund(order);
@@ -712,16 +745,30 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // Release reserved stock when order is cancelled
+        // ✅ CRITICAL FIX: Release/Restore stock khi admin cancel
         try {
-            for (OrderItem item : savedOrder.getItems()) {
-                if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
-                    inventoryService.releaseStock(item.getVariantId(), item.getQuantity());
+            if (Boolean.TRUE.equals(savedOrder.getInventoryDeducted())) {
+                // Đã trừ kho → restore
+                for (OrderItem item : savedOrder.getItems()) {
+                    if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                        inventoryService.restoreStock(item.getVariantId(), item.getQuantity());
+                    }
                 }
+                savedOrder.setInventoryDeducted(false);
+                orderRepository.save(savedOrder);
+                System.out.println("[ORDER] ⚠️ Restored inventory for admin cancelled order " + savedOrder.getOrderCode());
+            } else {
+                // Chưa trừ kho → release reserved
+                for (OrderItem item : savedOrder.getItems()) {
+                    if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                        inventoryService.releaseStock(item.getVariantId(), item.getQuantity());
+                    }
+                }
+                System.out.println("[ORDER] Released reserved stock for admin cancelled order " + savedOrder.getOrderCode());
             }
-            System.out.println("[ORDER] Released reserved stock for admin cancelled order " + savedOrder.getOrderCode());
         } catch (Exception e) {
-            System.err.println("Failed to release stock: " + e.getMessage());
+            System.err.println("Failed to release/restore stock: " + e.getMessage());
+            throw new IllegalStateException("Không thể hoàn stock: " + e.getMessage());
         }
 
         // 4. Notification for Customer
@@ -741,33 +788,14 @@ public class OrderServiceImpl implements OrderService {
         return Optional.of(savedOrder);
     }
 
+    /**
+     * ❌ DEPRECATED: Không còn sử dụng
+     * Thay vào đó dùng inventoryService.restoreStock()
+     */
+    @Deprecated
     @Override
     public void restoreInventory(Order order) {
-        if (order == null || order.getItems() == null) return;
-        if (!Boolean.TRUE.equals(order.getInventoryDeducted())) return;
-
-        for (OrderItem item : order.getItems()) {
-            int qty = Math.max(0, item.getQuantity() == null ? 0 : item.getQuantity());
-            if (qty <= 0) continue;
-
-            Integer variantId = item.getVariantId();
-            if (variantId != null) {
-                productVariantRepository.findByVariantId(variantId).ifPresent(variant -> {
-                    int current = Math.max(0, variant.getQuantity() == null ? 0 : variant.getQuantity());
-                    variant.setQuantity(current + qty);
-                    productVariantRepository.save(variant);
-
-                    ProductColor color = variant.getProductColor();
-                    if (color != null) {
-                        int colorCurrent = Math.max(0, color.getQuantity() == null ? 0 : color.getQuantity());
-                        color.setQuantity(colorCurrent + qty);
-                        productColorRepository.save(color);
-                    }
-                });
-            }
-        }
-        order.setInventoryDeducted(false);
-        orderRepository.save(order);
+        System.err.println("⚠️ WARNING: restoreInventory() is deprecated. Use inventoryService.restoreStock()");
     }
 
     @Override
@@ -787,13 +815,25 @@ public class OrderServiceImpl implements OrderService {
         if (orders == null) return java.util.List.of();
         return orders.stream().map(this::convertToDto).toList();
     }
+    /**
+     * ✅ CRITICAL FIX: Handle refund khi cancel đơn đã thanh toán
+     * - Nếu đã PAID → chuyển sang REFUND_PENDING (chờ admin hoàn tiền)
+     * - Không tự động chuyển sang REFUNDED (phải có biên lai hoàn tiền)
+     */
     private void handleCancellationRefund(Order order) {
         if (order.getPaymentStatus() == com.webbanhang.shop.Model.Orders.PaymentStatus.PAID) {
-            order.setPaymentStatus(com.webbanhang.shop.Model.Orders.PaymentStatus.REFUNDED);
-            String note = "[ĐÃ HỦY - CẦN HOÀN TIỀN]";
+            // ✅ Chuyển sang REFUND_PENDING thay vì REFUNDED
+            order.setPaymentStatus(com.webbanhang.shop.Model.Orders.PaymentStatus.REFUND_PENDING);
+            
+            String note = "[ĐÃ HỦY - CHỜ HOÀN TIỀN]";
             if (order.getPaymentNote() == null || !order.getPaymentNote().contains(note)) {
                 order.setPaymentNote(order.getPaymentNote() != null ? order.getPaymentNote() + " " + note : note);
             }
+            
+            // ✅ TODO: Tạo Refund record trong bảng refunds
+            // RefundService sẽ xử lý upload biên lai hoàn tiền
+            // Admin confirm → chuyển sang REFUNDED
+            System.out.println("[ORDER] Order " + order.getOrderCode() + " cancelled after payment - REFUND_PENDING");
         }
     }
 }

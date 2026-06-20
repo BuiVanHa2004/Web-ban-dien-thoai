@@ -6,7 +6,9 @@ public enum PaymentStatus {
     PAID,
     FAILED,
     REOPENED,
-    REFUNDED,
+    REFUND_PENDING,  // Đang chờ hoàn tiền
+    REFUNDED,        // Đã hoàn tiền
+    PARTIAL_REFUNDED, // Hoàn 1 phần
     PARTIAL_PAID
 }
 

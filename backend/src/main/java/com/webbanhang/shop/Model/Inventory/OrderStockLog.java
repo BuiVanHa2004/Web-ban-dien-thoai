@@ -67,8 +67,9 @@ public class OrderStockLog {
 
     public enum StockAction {
         RESERVE,    // Reserve stock khi tạo order
-        RELEASE,    // Release stock khi hủy order
-        CONFIRM,    // Confirm sale khi thanh toán/giao hàng
+        RELEASE,    // Release stock khi hủy order (chưa trừ kho)
+        CONFIRM,    // Confirm sale khi thanh toán/giao hàng (trừ kho thực sự)
+        RESTORE,    // Restore stock khi hủy order sau khi đã trừ kho (hoàn hàng)
         ADJUST      // Manual adjustment by admin
     }
 }
