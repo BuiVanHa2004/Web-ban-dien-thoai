@@ -7,6 +7,7 @@ import {
   type PaymentAttempt,
   type PaymentLog
 } from "@/services/adminManualPaymentService";
+import { orderService, type OrderDto } from "@/services/orderService";
 import { translatePaymentStatus } from "@/services/paymentStatusLabels";
 import {
   Check, X, Trash2, Loader2, Image as ImageIcon,
@@ -23,7 +24,8 @@ const formatVnd = (value: number) =>
 
 const formatDate = (iso?: string) => {
   if (!iso) return "-";
-  return new Date(iso).toLocaleString("vi-VN");
+  const date = new Date(iso);
+  return date.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
 };
 
 // --- Sub-components ---
@@ -147,6 +149,7 @@ export default function WareHousePage() {
   // Selected state
   const [selectedAttempt, setSelectedAttempt] = useState<PaymentAttempt | null>(null);
   const [attemptLogs, setAttemptLogs] = useState<PaymentLog[]>([]);
+  const [detailOrder, setDetailOrder] = useState<OrderDto | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -199,13 +202,18 @@ export default function WareHousePage() {
 
   const handleViewDetail = async (attempt: PaymentAttempt) => {
     setSelectedAttempt(attempt);
+    setShowDetailModal(true);
     try {
-      const logs = await adminManualPaymentService.getLogs(attempt.orderId);
+      const [logs, order] = await Promise.all([
+        adminManualPaymentService.getLogs(attempt.orderId),
+        orderService.getById(attempt.orderId),
+      ]);
       setAttemptLogs(logs);
+      setDetailOrder(order);
     } catch (err: any) {
       setAttemptLogs([]);
+      setDetailOrder(null);
     }
-    setShowDetailModal(true);
   };
 
   const handleDeleteOne = async (attemptId: number) => {
@@ -573,7 +581,7 @@ export default function WareHousePage() {
                         </div>
                         <p className="text-xs sm:text-sm font-medium text-white/90 break-words mb-3">
                           {selectedAttempt.status === "MATCHED" 
-                            ? (selectedAttempt.rejectReason || "Thanh toán đã được xác nhận. Giao dịch hợp lệ.")
+                            ? (detailOrder?.paymentNote || "Thanh toán đã được xác nhận. Giao dịch hợp lệ.")
                             : (selectedAttempt.rejectReason || "Minh chứng không hợp lệ.")}
                         </p>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold text-white/50">

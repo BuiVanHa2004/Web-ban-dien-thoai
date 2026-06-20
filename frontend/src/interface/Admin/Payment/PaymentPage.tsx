@@ -26,7 +26,8 @@ const formatVnd = (value: number) =>
 
 const formatDate = (iso?: string) => {
   if (!iso) return "-";
-  return new Date(iso).toLocaleString("vi-VN");
+  const date = new Date(iso);
+  return date.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
 };
 
 // --- Sub-components ---
@@ -742,7 +743,7 @@ export default function PaymentPage() {
                             </div>
                             <p className="text-xs sm:text-sm font-medium text-white/90 break-words mb-3">
                               {selectedAttempt.status === "MATCHED" 
-                                ? (selectedAttempt.rejectReason || "Thanh toán đã được xác nhận. Giao dịch hợp lệ.")
+                                ? (detailOrder?.paymentNote || "Thanh toán đã được xác nhận. Giao dịch hợp lệ.")
                                 : (selectedAttempt.rejectReason || "Minh chứng không hợp lệ.")}
                             </p>
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold text-white/50">
