@@ -47,6 +47,10 @@ public class OrderCancellationScheduler {
 
     /**
      * Chạy mỗi 5 phút để kiểm tra và hủy đơn hàng quá hạn
+     * 
+     * Điều kiện hủy:
+     * 1. Đơn chưa upload bill (PENDING_CONFIRM/UNPAID): Quá 30 phút từ created_at
+     * 2. Đơn bị từ chối (CONFIRMED/UNPAID có payment_note_date): Quá 30 phút từ payment_note_date
      */
     @Scheduled(fixedRate = 300000) // 5 phút = 300,000 ms
     @Transactional
@@ -54,15 +58,19 @@ public class OrderCancellationScheduler {
         try {
             Instant expiredTime = Instant.now().minus(30, ChronoUnit.MINUTES);
             
-            // Tìm các đơn hàng:
+            // Tìm các đơn hàng có khả năng bị hủy (optimized query):
             // - payment_method = BANK_TRANSFER
-            // - order_status = PENDING_CONFIRM
-            // - created_at < 30 phút trước
-            List<Order> allOrders = orderRepository.findAll();
+            // - payment_status = UNPAID
+            // - deleted_at IS NULL
+            // Thay vì findAll() để tránh load toàn bộ orders vào memory
+            List<Order> candidateOrders = orderRepository.findByPaymentMethodAndPaymentStatusAndDeletedAtIsNull(
+                    "BANK_TRANSFER", 
+                    PaymentStatus.UNPAID
+            );
             
             int cancelledCount = 0;
             
-            for (Order order : allOrders) {
+            for (Order order : candidateOrders) {
                 // Kiểm tra điều kiện hủy
                 if (shouldCancelOrder(order, expiredTime)) {
                     cancelOrder(order);
@@ -81,17 +89,31 @@ public class OrderCancellationScheduler {
     }
 
     private boolean shouldCancelOrder(Order order, Instant expiredTime) {
-        // Chỉ hủy nếu:
-        // 1. Phương thức thanh toán là BANK_TRANSFER
-        // 2. Trạng thái là PENDING_CONFIRM
-        // 3. created_at quá 30 phút
-        // 4. Chưa bị xóa (deleted_at == null)
+        // NOTE: payment_method, payment_status, và deleted_at đã được filter ở query
+        // Chỉ cần check order_status và thời gian
         
-        return "BANK_TRANSFER".equals(order.getPaymentMethod())
-                && OrderStatus.PENDING_CONFIRM.equals(order.getOrderStatus())
-                && order.getCreatedAt() != null
-                && order.getCreatedAt().isBefore(expiredTime)
-                && order.getDeletedAt() == null;
+        // TRƯỜNG HỢP 1: Đơn chưa upload bill (PENDING_CONFIRM)
+        // Hủy nếu created_at quá 30 phút
+        if (OrderStatus.PENDING_CONFIRM.equals(order.getOrderStatus())) {
+            return order.getCreatedAt() != null 
+                    && order.getCreatedAt().isBefore(expiredTime);
+        }
+        
+        // TRƯỜNG HỢP 2: Đơn bị admin từ chối bill (CONFIRMED + UNPAID + có payment_note_date)
+        // Hủy nếu payment_note_date quá 30 phút
+        if (OrderStatus.CONFIRMED.equals(order.getOrderStatus())) {
+            // payment_note_date != null chứng tỏ admin đã xử lý (approve hoặc reject)
+            // Kết hợp với payment_status = UNPAID (đã filter ở query) → admin đã reject
+            if (order.getPaymentNoteDate() != null) {
+                // Chuyển LocalDateTime sang Instant để so sánh
+                Instant paymentNoteInstant = order.getPaymentNoteDate()
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toInstant();
+                return paymentNoteInstant.isBefore(expiredTime);
+            }
+        }
+        
+        return false;
     }
 
     private void cancelOrder(Order order) {
@@ -99,6 +121,7 @@ public class OrderCancellationScheduler {
         order.setOrderStatus(OrderStatus.CANCELLED);
         order.setPaymentStatus(PaymentStatus.FAILED);
         order.setCancelledBy(CancelledBy.SYSTEM);
+        order.setCancelledByName("Hệ thống");
         order.setCancelledAt(LocalDateTime.now());
         order.setCancelNote("Đơn hàng quá 30 phút chưa thanh toán");
         orderRepository.save(order);

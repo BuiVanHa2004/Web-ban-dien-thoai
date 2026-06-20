@@ -37,4 +37,20 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     List<Order> findByPaymentMethodAndPaymentStatusNot(String paymentMethod, com.webbanhang.shop.Model.Orders.PaymentStatus status);
     List<Order> findByPaymentMethodInAndPaymentStatusNot(List<String> paymentMethods, com.webbanhang.shop.Model.Orders.PaymentStatus status);
+    
+    /**
+     * Find potential expired bank transfer orders for auto-cancellation scheduler.
+     * Only returns orders that meet ALL of these criteria:
+     * - payment_method = 'BANK_TRANSFER'
+     * - payment_status = UNPAID
+     * - deleted_at IS NULL
+     * 
+     * This significantly reduces the number of orders loaded into memory
+     * compared to findAll(), improving scheduler performance.
+     */
+    @EntityGraph(attributePaths = {"items"})
+    List<Order> findByPaymentMethodAndPaymentStatusAndDeletedAtIsNull(
+            String paymentMethod, 
+            com.webbanhang.shop.Model.Orders.PaymentStatus paymentStatus
+    );
 }
