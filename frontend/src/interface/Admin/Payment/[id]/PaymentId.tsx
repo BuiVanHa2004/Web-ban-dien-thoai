@@ -349,16 +349,66 @@ export default function PaymentId() {
               </div>
 
               {paymentInfo?.latestAttempt && (
-                <div className="mt-4 sm:mt-8 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-                  <div className="rounded-2xl bg-slate-50 p-3 sm:p-4 dark:bg-slate-800">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ghi chú của khách</p>
-                    <p className="mt-1 text-sm font-medium italic break-words">"{paymentInfo.latestAttempt?.transferNote || "Không có ghi chú"}"</p>
+                <>
+                  <div className="mt-4 sm:mt-8 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
+                    <div className="rounded-2xl bg-slate-50 p-3 sm:p-4 dark:bg-slate-800">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ghi chú của khách</p>
+                      <p className="mt-1 text-sm font-medium italic break-words">"{paymentInfo.latestAttempt?.transferNote || "Không có ghi chú"}"</p>
+                    </div>
+                    <div className="rounded-2xl bg-slate-50 p-3 sm:p-4 dark:bg-slate-800">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thời gian gửi</p>
+                      <p className="mt-1 text-sm font-bold">{formatDate(paymentInfo.latestAttempt?.customerConfirmedAt || paymentInfo.latestAttempt?.createdAt)}</p>
+                    </div>
                   </div>
-                  <div className="rounded-2xl bg-slate-50 p-3 sm:p-4 dark:bg-slate-800">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Thời gian gửi</p>
-                    <p className="mt-1 text-sm font-bold">{formatDate(paymentInfo.latestAttempt?.customerConfirmedAt || paymentInfo.latestAttempt?.createdAt)}</p>
-                  </div>
-                </div>
+
+                  {/* Admin Feedback Card for Payment Attempt */}
+                  {(paymentInfo.latestAttempt.status === "MATCHED" || paymentInfo.latestAttempt.status === "REJECTED") && 
+                   (paymentInfo.latestAttempt.reviewedAt || paymentInfo.latestAttempt.rejectReason) && (
+                    <div
+                      className={`mt-4 sm:mt-6 p-4 sm:p-6 rounded-2xl flex gap-3 sm:gap-4 ${
+                        paymentInfo.latestAttempt.status === "MATCHED"
+                          ? "bg-emerald-50 border border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-500/20"
+                          : "bg-rose-50 border border-rose-200 dark:bg-rose-900/10 dark:border-rose-500/20"
+                      }`}
+                    >
+                      <div
+                        className={`p-2 sm:p-3 rounded-xl h-fit shrink-0 ${
+                          paymentInfo.latestAttempt.status === "MATCHED"
+                            ? "bg-emerald-100 dark:bg-emerald-500/15"
+                            : "bg-rose-100 dark:bg-rose-500/15"
+                        }`}
+                      >
+                        {paymentInfo.latestAttempt.status === "MATCHED" ? (
+                          <Check className={`h-4 w-4 sm:h-5 sm:w-5 ${paymentInfo.latestAttempt.status === "MATCHED" ? "text-emerald-600 dark:text-emerald-400" : ""}`} />
+                        ) : (
+                          <X className="h-4 w-4 sm:h-5 sm:w-5 text-rose-600 dark:text-rose-400" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className={`text-[10px] font-black uppercase tracking-widest mb-2 ${
+                            paymentInfo.latestAttempt.status === "MATCHED" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                          }`}
+                        >
+                          PHẢN HỒI QUẢN TRỊ VIÊN
+                        </div>
+                        <p className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 break-words mb-3">
+                          {paymentInfo.latestAttempt.status === "MATCHED" 
+                            ? (paymentInfo.latestAttempt.rejectReason || "Thanh toán đã được xác nhận. Giao dịch hợp lệ.")
+                            : (paymentInfo.latestAttempt.rejectReason || "Minh chứng không hợp lệ.")}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                          {paymentInfo.latestAttempt.reviewedByAdminId && (
+                            <span>Người xử lý: Admin #{paymentInfo.latestAttempt.reviewedByAdminId}</span>
+                          )}
+                          {paymentInfo.latestAttempt.reviewedAt && (
+                            <span>Thời gian: {formatDate(paymentInfo.latestAttempt.reviewedAt)}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

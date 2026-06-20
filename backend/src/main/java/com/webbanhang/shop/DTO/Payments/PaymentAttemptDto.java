@@ -15,7 +15,12 @@ public record PaymentAttemptDto(
         String transferImageUrl,
         String transferNote,
         LocalDateTime customerConfirmedAt,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Integer reviewedByAdminId,
+        LocalDateTime reviewedAt,
+        String rejectReason,
+        String riskLevel,
+        Boolean isSuspicious
 ) {
     public static PaymentAttemptDto fromEntity(PaymentAttempt attempt) {
         return new PaymentAttemptDto(
@@ -28,7 +33,12 @@ public record PaymentAttemptDto(
                 attempt.getTransferImageUrl(),
                 attempt.getTransferNote(),
                 attempt.getCustomerConfirmedAt(),
-                attempt.getCreatedAt()
+                attempt.getCreatedAt(),
+                attempt.getReviewedByAdminId(),
+                attempt.getReviewedAt(),
+                attempt.getRejectReason(),
+                attempt.getRiskLevel(),
+                attempt.getIsSuspicious()
         );
     }
 }

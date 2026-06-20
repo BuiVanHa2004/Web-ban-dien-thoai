@@ -717,6 +717,54 @@ export default function PaymentPage() {
                         </div>
                       </div>
 
+                      {/* Admin Feedback Card - Only show when processed */}
+                      {(selectedAttempt.status === "MATCHED" || selectedAttempt.status === "REJECTED") && 
+                       (selectedAttempt.reviewedAt || selectedAttempt.rejectReason) && (
+                        <div
+                          className={`mb-6 sm:mb-8 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] flex gap-3 sm:gap-4 ${
+                            selectedAttempt.status === "MATCHED"
+                              ? "bg-emerald-50/5 border border-emerald-500/20"
+                              : "bg-rose-50/5 border border-rose-500/20"
+                          }`}
+                        >
+                          <div
+                            className={`p-2 sm:p-3 rounded-2xl h-fit shrink-0 ${
+                              selectedAttempt.status === "MATCHED"
+                                ? "bg-emerald-500/15"
+                                : "bg-rose-500/15"
+                            }`}
+                          >
+                            {selectedAttempt.status === "MATCHED" ? (
+                              <Check className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+                            ) : (
+                              <X className="h-4 w-4 sm:h-5 sm:w-5 text-rose-400" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div
+                              className={`text-[10px] font-black uppercase tracking-widest mb-2 ${
+                                selectedAttempt.status === "MATCHED" ? "text-emerald-400" : "text-rose-400"
+                              }`}
+                            >
+                              PHẢN HỒI QUẢN TRỊ VIÊN
+                            </div>
+                            <p className="text-xs sm:text-sm font-medium text-white/90 break-words mb-3">
+                              {selectedAttempt.status === "MATCHED" 
+                                ? (selectedAttempt.rejectReason || "Thanh toán đã được xác nhận. Giao dịch hợp lệ.")
+                                : (selectedAttempt.rejectReason || "Minh chứng không hợp lệ.")}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold text-white/50">
+                              {selectedAttempt.reviewedByAdminId && (
+                                <span>Người xử lý: Admin #{selectedAttempt.reviewedByAdminId}</span>
+                              )}
+                              {selectedAttempt.reviewedAt && (
+                                <span>Thời gian: {formatDate(selectedAttempt.reviewedAt)}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="mb-6 sm:mb-8">
                         <h4 className="text-xs font-black uppercase tracking-widest text-white/70 mb-4 flex items-center gap-2">
                           <History className="h-3.5 w-3.5" /> Lịch sử giao dịch

@@ -18,6 +18,9 @@ export interface PaymentAttempt {
   processingByAdminName: string | null;
   lockExpiresAt: string | null;
   createdAt: string;
+  reviewedByAdminId: number | null;
+  reviewedAt: string | null;
+  rejectReason: string | null;
 }
 
 export interface PaymentLog {

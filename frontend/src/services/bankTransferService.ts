@@ -16,6 +16,11 @@ export type PaymentAttemptDto = {
   processingByAdminId?: number | null;
   processingByAdminName?: string | null;
   createdAt: string;
+  reviewedByAdminId?: number | null;
+  reviewedAt?: string | null;
+  rejectReason?: string | null;
+  riskLevel?: string;
+  isSuspicious?: boolean;
 };
 
 export type PaymentQRResponse = {
