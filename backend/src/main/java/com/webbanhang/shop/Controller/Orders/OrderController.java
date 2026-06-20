@@ -114,17 +114,6 @@ public class OrderController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/{id:\\d+}/pay/online")
-    public ResponseEntity<OrderDto> payOnline(@PathVariable Integer id, @RequestBody PayOnlineRequest req) {
-        if (req == null || req.customerId() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        return orderService.payOnline(id, req.customerId())
-                .map(orderService::convertToDto)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
     @PostMapping("/{id:\\d+}/cancel")
     public ResponseEntity<OrderDto> cancelOrder(@PathVariable Integer id, @RequestBody CancelOrderRequest req) {
         return orderService.cancelOrder(id, req.getCustomerId(), req.getReasonId(), req.getCancelNote(), CancelledBy.CUSTOMER)

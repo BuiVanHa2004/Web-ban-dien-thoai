@@ -12,6 +12,9 @@ type Props = {
   accountName: string;
   accountNumber: string;
   bankBin: string;
+  orderStatus?: string;
+  paymentStatus?: string;
+  paymentMethod?: string;
   onSuccess: () => void;
 };
 
@@ -26,6 +29,9 @@ export default function BankTransferQr({
   qrUrl,
   accountName,
   accountNumber,
+  orderStatus,
+  paymentStatus,
+  paymentMethod,
   onSuccess 
 }: Props) {
   const [billImage, setBillImage] = useState<File | null>(null);
@@ -33,6 +39,13 @@ export default function BankTransferQr({
   const [transferNote, setTransferNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const canUploadBill = React.useMemo(() => {
+    if (paymentMethod !== "BANK_TRANSFER") return false;
+    if (paymentStatus === "PAID") return false;
+    const validStatuses = ["PENDING_CONFIRM", "PENDING_PAYMENT_CONFIRMATION", "CONFIRMED"];
+    return validStatuses.includes(orderStatus || "");
+  }, [orderStatus, paymentStatus, paymentMethod]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,6 +60,12 @@ export default function BankTransferQr({
       setError("Vui lòng tải lên ảnh minh chứng thanh toán (Bill).");
       return;
     }
+    
+    if (!canUploadBill) {
+      setError("Đơn hàng không ở trạng thái cho phép upload bill.");
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     try {
@@ -149,9 +168,15 @@ export default function BankTransferQr({
 
               {error && <p className="text-[11px] font-bold text-rose-500">{error}</p>}
 
+              {!canUploadBill && (
+                <p className="text-[11px] font-bold text-amber-600">
+                  ⚠️ Đơn hàng không thể upload bill ở trạng thái hiện tại
+                </p>
+              )}
+
               <button
                 onClick={handleConfirm}
-                disabled={loading || !billImage}
+                disabled={loading || !billImage || !canUploadBill}
                 className="w-full flex items-center justify-center gap-2 rounded-2xl bg-purple-600 py-4 text-sm font-black text-white shadow-xl shadow-purple-500/20 transition hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle className="h-5 w-5" />}

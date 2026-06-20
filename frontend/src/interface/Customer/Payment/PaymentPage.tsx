@@ -371,9 +371,8 @@ export default function PaymentPage() {
     try {
       const created = await createOrderFromDraft(customerId, draft, "BANK_TRANSFER");
       const qr = await bankTransferService.getQRInfo(created.orderId);
-      const updated = await orderService.payOnline(created.orderId, customerId);
 
-      setCreatedOrder(updated);
+      setCreatedOrder(created);
       setQrInfo(qr);
 
       await removeCheckedOutItemsFromCart(draft);
@@ -417,6 +416,9 @@ export default function PaymentPage() {
           accountName={qrInfo.accountName}
           accountNumber={qrInfo.accountNumber}
           bankBin={qrInfo.bankBin}
+          orderStatus={createdOrder.orderStatus || undefined}
+          paymentStatus={createdOrder.paymentStatus || undefined}
+          paymentMethod={createdOrder.paymentMethod || undefined}
           onSuccess={() => {
             showStatus(
               "Đã gửi xác nhận",

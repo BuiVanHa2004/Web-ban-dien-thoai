@@ -133,13 +133,6 @@ export const orderService = {
     });
   },
 
-  payOnline: async (orderId: number, customerId: number): Promise<OrderDto> => {
-    return request<OrderDto>(`/orders/${orderId}/pay/online`, {
-      method: "POST",
-      body: JSON.stringify({ customerId }),
-    });
-  },
-
   updateStatus: async (id: number, payload: UpdateOrderStatusPayload): Promise<void> => {
     await request<void>(`/orders/${id}/status`, {
       method: "PATCH",

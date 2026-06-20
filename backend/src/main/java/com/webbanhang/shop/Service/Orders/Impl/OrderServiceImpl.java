@@ -539,17 +539,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Optional<Order> payOnline(Integer orderId, Integer customerId) {
-        if (customerId == null) return Optional.empty();
-        return orderRepository.findById(orderId).filter(o -> customerId.equals(o.getCustomerId())).map(existing -> {
-            existing.setPaymentMethod("BANK_TRANSFER");
-            existing.setPaymentStatus(PaymentStatus.WAITING_CONFIRM);
-            existing.setOrderStatus(OrderStatus.PENDING_CONFIRM);
-            return orderRepository.save(existing);
-        });
-    }
-
-    @Override
     public List<Order> getOrdersEligibleForReconciliation() {
         return orderRepository.findByPaymentMethodInAndPaymentStatusNot(List.of("BANK_TRANSFER", "Banking"), PaymentStatus.PAID);
     }
@@ -636,6 +625,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setOrderStatus(OrderStatus.CANCELLED);
+        order.setPaymentStatus(PaymentStatus.FAILED);
         order.setCancelReasonId(reasonId);
         order.setCancelNote(cancelNote);
         order.setCancelledBy(cancelledBy);
@@ -698,6 +688,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 2. Update Order
         order.setOrderStatus(OrderStatus.CANCELLED);
+        order.setPaymentStatus(PaymentStatus.FAILED);
         order.setCancelReasonId(reasonId);
         order.setCancelNote(cancelNote);
         order.setCancelledBy(CancelledBy.ADMIN);

@@ -126,6 +126,21 @@ public class PaymentServiceImpl implements PaymentService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
         
+        // Validate payment method
+        if (!"BANK_TRANSFER".equals(order.getPaymentMethod())) {
+            throw new IllegalStateException("Chỉ đơn hàng chuyển khoản mới có QR code.");
+        }
+        
+        // Validate order status
+        List<OrderStatus> validStatuses = List.of(
+            OrderStatus.PENDING_CONFIRM,
+            OrderStatus.PENDING_PAYMENT_CONFIRMATION,
+            OrderStatus.CONFIRMED
+        );
+        if (!validStatuses.contains(order.getOrderStatus())) {
+            throw new IllegalStateException("Đơn hàng không ở trạng thái cần QR code.");
+        }
+        
         BankSetting bankSetting = bankSettingRepository.findByIsActiveTrue()
                 .orElseThrow(() -> new IllegalStateException("Active bank setting not found"));
         
@@ -151,6 +166,21 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentAttempt customerConfirmPayment(Integer orderId, String transferNote, MultipartFile billImage) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        
+        // Validate payment method
+        if (!"BANK_TRANSFER".equals(order.getPaymentMethod())) {
+            throw new IllegalStateException("Chỉ đơn hàng chuyển khoản mới được upload bill.");
+        }
+        
+        // Validate order status
+        List<OrderStatus> allowedStatuses = List.of(
+            OrderStatus.PENDING_CONFIRM,
+            OrderStatus.PENDING_PAYMENT_CONFIRMATION,
+            OrderStatus.CONFIRMED
+        );
+        if (!allowedStatuses.contains(order.getOrderStatus())) {
+            throw new IllegalStateException("Đơn hàng ở trạng thái " + order.getOrderStatus() + " không thể upload bill.");
+        }
         
         if (order.getPaymentStatus() == PaymentStatus.PAID) {
             throw new IllegalStateException("Đơn hàng này đã được xác nhận thanh toán.");

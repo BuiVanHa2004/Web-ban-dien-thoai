@@ -37,8 +37,6 @@ public interface OrderService {
     Optional<Order> updateStatus(Integer id, OrderStatus status);
 
     Optional<Order> payCod(Integer orderId, Integer customerId);
-
-    Optional<Order> payOnline(Integer orderId, Integer customerId);
     
     void deductInventory(Order order);
     
