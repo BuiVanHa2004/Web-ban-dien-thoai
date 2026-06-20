@@ -179,9 +179,9 @@ export default function OrderId() {
           orderId: data.orderId,
           orderStatus: data.orderStatus,
           paymentStatus: data.paymentStatus,
-          paymentNote: data.paymentNote,
-          paymentNoteAuthor: data.paymentNoteAuthor,
-          paymentNoteDate: data.paymentNoteDate
+          adminNote: data.adminNote,
+          adminNoteAuthor: data.adminNoteAuthor,
+          adminNoteDate: data.adminNoteDate
         });
         if (String(data.paymentMethod || "") === "BANK_TRANSFER") {
           try {
@@ -286,8 +286,8 @@ export default function OrderId() {
     if (waitingConfirm) return false; // Already uploaded, waiting for confirmation
     
     const paymentStatus = getRealPaymentStatus({ ...order, waitingConfirm });
-    // Show "Continue Payment" if unpaid OR if payment was rejected (has paymentNote from admin)
-    return paymentStatus !== "PAID" || (order.paymentNote && order.paymentNoteAuthor);
+    // Show "Continue Payment" if unpaid OR if payment was rejected (has adminNote from admin)
+    return paymentStatus !== "PAID" || (order.adminNote && order.adminNoteAuthor);
   }, [order, waitingConfirm]);
 
   const canReview = String(order?.orderStatus || "") === "DELIVERED";
@@ -544,8 +544,8 @@ export default function OrderId() {
         </motion.div>
       )}
 
-      {/* Payment Approval Note - Show when payment approved (PAID + has paymentNote) */}
-      {order?.orderStatus !== "CANCELLED" && order?.paymentStatus === "PAID" && order?.paymentNote && (
+      {/* Payment Approval Note - Show when payment approved (PAID + has adminNote) */}
+      {order?.orderStatus !== "CANCELLED" && order?.paymentStatus === "PAID" && order?.adminNote && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -560,21 +560,21 @@ export default function OrderId() {
               <div className="space-y-1">
                 <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Người xử lý</div>
                 <div className="text-sm font-bold text-slate-900 dark:text-white">
-                  {order.paymentNoteAuthor || "Admin"}
+                  {order.adminNoteAuthor || "Admin"}
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Thời gian</div>
                 <div className="text-sm font-bold text-slate-900 dark:text-white">
-                  {formatDate(order.paymentNoteDate) || "-"}
+                  {formatDate(order.adminNoteDate) || "-"}
                 </div>
               </div>
             </div>
-            {order.paymentNote && (
+            {order.adminNote && (
               <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
                 <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500 mb-2">Ghi chú</div>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {order.paymentNote}
+                  {order.adminNote}
                 </p>
               </div>
             )}
@@ -586,8 +586,8 @@ export default function OrderId() {
         </motion.div>
       )}
 
-      {/* Payment Rejection Warning - Show when payment rejected (CONFIRMED + UNPAID + has paymentNote) */}
-      {order?.orderStatus !== "CANCELLED" && order?.orderStatus === "CONFIRMED" && order?.paymentStatus === "UNPAID" && order?.paymentNote && (
+      {/* Payment Rejection Warning - Show when payment rejected (CONFIRMED + UNPAID + has adminNote) */}
+      {order?.orderStatus !== "CANCELLED" && order?.orderStatus === "CONFIRMED" && order?.paymentStatus === "UNPAID" && order?.adminNote && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -602,21 +602,21 @@ export default function OrderId() {
               <div className="space-y-1">
                 <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Người xử lý</div>
                 <div className="text-sm font-bold text-slate-900 dark:text-white">
-                  {order.paymentNoteAuthor || "Admin"}
+                  {order.adminNoteAuthor || "Admin"}
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Thời gian</div>
                 <div className="text-sm font-bold text-slate-900 dark:text-white">
-                  {formatDate(order.paymentNoteDate) || "-"}
+                  {formatDate(order.adminNoteDate) || "-"}
                 </div>
               </div>
             </div>
-            {order.paymentNote && (
+            {order.adminNote && (
               <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
                 <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500 mb-2">Lý do từ chối</div>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {order.paymentNote}
+                  {order.adminNote}
                 </p>
               </div>
             )}
@@ -748,8 +748,8 @@ export default function OrderId() {
         </motion.div>
       </div>
 
-      {/* Admin Payment Approval Note - Show when payment is approved (PAID + has paymentNote) */}
-      {order?.orderStatus !== "CANCELLED" && order?.paymentStatus === "PAID" && (order?.paymentNote || order?.paymentNoteAuthor) && (
+      {/* Admin Payment Approval Note - Show when payment is approved (PAID + has adminNote) */}
+      {order?.orderStatus !== "CANCELLED" && order?.paymentStatus === "PAID" && (order?.adminNote || order?.adminNoteAuthor) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -769,7 +769,7 @@ export default function OrderId() {
                     Xác nhận bởi
                   </div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white">
-                    {order.paymentNoteAuthor || "Admin"}
+                    {order.adminNoteAuthor || "Admin"}
                   </div>
                 </div>
                 <div className="space-y-1">
@@ -777,17 +777,17 @@ export default function OrderId() {
                     Thời gian
                   </div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white">
-                    {formatDate(order.paymentNoteDate) || "-"}
+                    {formatDate(order.adminNoteDate) || "-"}
                   </div>
                 </div>
               </div>
-              {order.paymentNote && (
+              {order.adminNote && (
                 <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
                   <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500 mb-2">
                     Ghi chú
                   </div>
                   <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {order.paymentNote}
+                    {order.adminNote}
                   </p>
                 </div>
               )}

@@ -136,9 +136,9 @@ export default function OrderId() {
         orderId: data.orderId,
         orderStatus: data.orderStatus,
         paymentStatus: data.paymentStatus,
-        paymentNote: data.paymentNote,
-        paymentNoteAuthor: data.paymentNoteAuthor,
-        paymentNoteDate: data.paymentNoteDate
+        adminNote: data.adminNote,
+        adminNoteAuthor: data.adminNoteAuthor,
+        adminNoteDate: data.adminNoteDate
       });
       const s = String(data.orderStatus || "PENDING_CONFIRM") as OrderStatus;
       setStatus(s);
@@ -354,7 +354,7 @@ export default function OrderId() {
           </div>
 
           {/* Admin Payment Note - Show for approved payments */}
-          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "PAID" && order.paymentNote && (
+          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "PAID" && order.adminNote && (
             <div className="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm backdrop-blur dark:border-emerald-500/20 dark:bg-emerald-500/5">
               <div className="mb-4 flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="h-5 w-5" />
@@ -364,13 +364,13 @@ export default function OrderId() {
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Xác nhận bởi</div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white">
-                    {order.paymentNoteAuthor || "Admin"}
+                    {order.adminNoteAuthor || "Admin"}
                   </div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Thời gian</div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white">
-                    {formatDate(order.paymentNoteDate) || "-"}
+                    {formatDate(order.adminNoteDate) || "-"}
                   </div>
                 </div>
                 <div className="space-y-1 lg:col-span-2">
@@ -379,11 +379,11 @@ export default function OrderId() {
                     Đã xác nhận thanh toán
                   </div>
                 </div>
-                {order.paymentNote && (
+                {order.adminNote && (
                   <div className="md:col-span-2 lg:col-span-4 space-y-1">
                     <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Ghi chú</div>
                     <div className="rounded-2xl bg-white/50 p-3 text-sm text-slate-700 dark:bg-black/20 dark:text-slate-300">
-                      {order.paymentNote}
+                      {order.adminNote}
                     </div>
                   </div>
                 )}
@@ -392,7 +392,7 @@ export default function OrderId() {
           )}
 
           {/* Admin Payment Rejection Note - Show for rejected payments (not cancelled) */}
-          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "UNPAID" && order.orderStatus === "CONFIRMED" && order.paymentNote && (
+          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "UNPAID" && order.orderStatus === "CONFIRMED" && order.adminNote && (
             <div className="rounded-3xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm backdrop-blur dark:border-amber-500/20 dark:bg-amber-500/5">
               <div className="mb-4 flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
                 <AlertCircle className="h-5 w-5" />
@@ -402,13 +402,13 @@ export default function OrderId() {
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Từ chối bởi</div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white">
-                    {order.paymentNoteAuthor || "Admin"}
+                    {order.adminNoteAuthor || "Admin"}
                   </div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Thời gian</div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white">
-                    {formatDate(order.paymentNoteDate) || "-"}
+                    {formatDate(order.adminNoteDate) || "-"}
                   </div>
                 </div>
                 <div className="space-y-1 lg:col-span-2">
@@ -417,11 +417,11 @@ export default function OrderId() {
                     Minh chứng bị từ chối
                   </div>
                 </div>
-                {order.paymentNote && (
+                {order.adminNote && (
                   <div className="md:col-span-2 lg:col-span-4 space-y-1">
                     <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Lý do từ chối</div>
                     <div className="rounded-2xl bg-white/50 p-3 text-sm text-slate-700 dark:bg-black/20 dark:text-slate-300">
-                      {order.paymentNote}
+                      {order.adminNote}
                     </div>
                   </div>
                 )}
