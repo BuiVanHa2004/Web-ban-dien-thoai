@@ -15,6 +15,9 @@ export type ProductVariantDto = {
   ramGb: number | null;
   storageGb: number | null;
   quantity?: number;
+  availableStock?: number; // Real available stock for display (total - reserved - sold)
+  reservedStock?: number; // Stock reserved for pending orders
+  soldStock?: number; // Stock already sold
   originalPrice?: number | null;
   discountType?: DiscountType | null;
   discountValue?: number | null;
