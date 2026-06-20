@@ -788,16 +788,6 @@ public class OrderServiceImpl implements OrderService {
         return Optional.of(savedOrder);
     }
 
-    /**
-     * ❌ DEPRECATED: Không còn sử dụng
-     * Thay vào đó dùng inventoryService.restoreStock()
-     */
-    @Deprecated
-    @Override
-    public void restoreInventory(Order order) {
-        System.err.println("⚠️ WARNING: restoreInventory() is deprecated. Use inventoryService.restoreStock()");
-    }
-
     @Override
     public com.webbanhang.shop.DTO.Orders.OrderDto convertToDto(Order order) {
         if (order == null) return null;

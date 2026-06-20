@@ -813,7 +813,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new IllegalStateException("Payment record not found"));
         payment.setPaymentMethod("COD");
         // paymentStatus giữ nguyên UNPAID
-        paymentRepository.save(order);
+        paymentRepository.save(payment);
         
         // ✅ KHÔNG trừ kho ở đây - COD sẽ trừ khi DELIVERED
         // Đơn COD chỉ có stock reserved, chưa confirm sale
