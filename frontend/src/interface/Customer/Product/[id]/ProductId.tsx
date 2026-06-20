@@ -197,7 +197,7 @@ export default function ProductId() {
     return (product?.productColors || []).reduce((sum, c) => {
       const variants = c.variants || [];
       if (variants.length > 0) {
-        return sum + variants.reduce((sub, v) => sub + (Number(v.quantity) || 0), 0);
+        return sum + variants.reduce((sub, v) => sub + (Number(v.availableStock) || 0), 0);
       }
       return sum + (Number(c.quantity) || 0);
     }, 0);
@@ -205,9 +205,9 @@ export default function ProductId() {
 
   const selectedStockQuantity = React.useMemo(() => {
     if (selectedColorId == null) return totalStockQuantity;
-    if (hasVariants) return Number(selectedVariant?.quantity ?? 0) || 0;
+    if (hasVariants) return Number(selectedVariant?.availableStock ?? 0) || 0;
     const variants = selectedColor?.variants || [];
-    if (variants.length > 0) return variants.reduce((s, v) => s + (Number(v.quantity) || 0), 0);
+    if (variants.length > 0) return variants.reduce((s, v) => s + (Number(v.availableStock) || 0), 0);
     return Number(selectedColor?.quantity) || 0;
   }, [selectedColor, selectedVariant, selectedColorId, totalStockQuantity, hasVariants]);
 

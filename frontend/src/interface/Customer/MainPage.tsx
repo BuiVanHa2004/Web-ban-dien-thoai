@@ -48,7 +48,7 @@ function getProductStockQuantity(product: ProductDto): number {
   return (product.productColors || []).reduce((sum, color) => {
     const variants = color.variants || [];
     if (variants.length > 0) {
-      const variantQty = variants.reduce((s, v) => s + (Number(v.quantity) || 0), 0);
+      const variantQty = variants.reduce((s, v) => s + (Number(v.availableStock) || 0), 0);
       return sum + variantQty;
     }
     return sum + (Number(color.quantity) || 0);

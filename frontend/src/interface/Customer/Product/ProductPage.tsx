@@ -385,11 +385,11 @@ export default function ProductPage() {
                     // Tất cả tên màu
                     const colorNames = (p.productColors || []).map(c => c.colorName).filter(Boolean);
 
-                    // Tổng số lượng
+                    // Tổng số lượng (use availableStock from backend)
                     const totalQty = (p.productColors || []).reduce((sum, c) => {
                       const variants = c.variants || [];
                       return sum + (variants.length > 0
-                        ? variants.reduce((s, v) => s + (Number(v.quantity) || 0), 0)
+                        ? variants.reduce((s, v) => s + (Number(v.availableStock) || 0), 0)
                         : (Number(c.quantity) || 0));
                     }, 0);
 
