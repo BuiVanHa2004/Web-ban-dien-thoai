@@ -1,6 +1,6 @@
 package com.webbanhang.shop.Repository.Orders;
 
-import com.webbanhang.shop.Model.Orders.OrderStockLog;
+import com.webbanhang.shop.Model.Inventory.OrderStockLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
