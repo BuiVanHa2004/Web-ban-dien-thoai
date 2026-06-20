@@ -199,7 +199,6 @@ export default function PaymentPage() {
 
   // Data
   const [attempts, setAttempts] = useState<PaymentAttempt[]>([]);
-  const [trashCount, setTrashCount] = useState<number>(0);
 
   // Selected state
   const [selectedAttempt, setSelectedAttempt] = useState<PaymentAttempt | null>(null);
@@ -244,12 +243,8 @@ export default function PaymentPage() {
       if (!silent) setLoading(true);
       try {
         const filterToUse = customFilter || attemptStatusFilter;
-        const [attemptRes, orderTrash] = await Promise.all([
-          adminManualPaymentService.getAttempts(filterToUse === "WAITING_CONFIRM" ? undefined : filterToUse),
-          orderService.getTrash().catch(() => []),
-        ]);
+        const attemptRes = await adminManualPaymentService.getAttempts(filterToUse === "WAITING_CONFIRM" ? undefined : filterToUse);
         setAttempts(attemptRes);
-        setTrashCount(orderTrash.length);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -420,21 +415,6 @@ export default function PaymentPage() {
             </svg>
             Làm mới
           </button>
-
-          <Link
-            href="/payments/trash"
-            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-3 py-2 sm:px-4 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-emerald-500 active:translate-y-0 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-1 dark:ring-emerald-400/20 dark:hover:bg-emerald-500/20 whitespace-nowrap"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M6 6l1 16h10l1-16" />
-            </svg>
-            Thùng rác
-            {trashCount > 0 && (
-              <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-xs font-black">
-                {trashCount}
-              </span>
-            )}
-          </Link>
         </div>
       </div>
 
@@ -754,7 +734,10 @@ export default function PaymentPage() {
                                 : (selectedAttempt.rejectReason || "Minh chứng không hợp lệ.")}
                             </p>
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold text-white/50">
-                              {selectedAttempt.reviewedByAdminId && (
+                              {selectedAttempt.reviewedByAdminName && (
+                                <span>Người xử lý: {selectedAttempt.reviewedByAdminName}</span>
+                              )}
+                              {!selectedAttempt.reviewedByAdminName && selectedAttempt.reviewedByAdminId && (
                                 <span>Người xử lý: Admin #{selectedAttempt.reviewedByAdminId}</span>
                               )}
                               {selectedAttempt.reviewedAt && (

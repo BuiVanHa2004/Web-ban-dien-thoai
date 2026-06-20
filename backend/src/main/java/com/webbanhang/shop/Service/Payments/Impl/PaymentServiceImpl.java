@@ -347,6 +347,7 @@ public class PaymentServiceImpl implements PaymentService {
         lockedAttempt.setLockedAt(null);
         lockedAttempt.setLockExpiresAt(null);
         lockedAttempt.setReviewedByAdminId(persistedAdminId);
+        lockedAttempt.setReviewedByAdminName(adminName);
         lockedAttempt.setReviewedAt(LocalDateTime.now());
         paymentAttemptRepository.save(lockedAttempt);
 
@@ -450,6 +451,7 @@ public class PaymentServiceImpl implements PaymentService {
         attempt.setLockedAt(null);
         attempt.setLockExpiresAt(null);
         attempt.setReviewedByAdminId(adminId);
+        attempt.setReviewedByAdminName(adminName);
         attempt.setReviewedAt(LocalDateTime.now());
         attempt.setRejectReason(adminNote);
         paymentAttemptRepository.save(attempt);

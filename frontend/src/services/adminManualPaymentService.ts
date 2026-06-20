@@ -19,6 +19,7 @@ export interface PaymentAttempt {
   lockExpiresAt: string | null;
   createdAt: string;
   reviewedByAdminId: number | null;
+  reviewedByAdminName: string | null;
   reviewedAt: string | null;
   rejectReason: string | null;
 }

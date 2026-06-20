@@ -17,6 +17,7 @@ export type PaymentAttemptDto = {
   processingByAdminName?: string | null;
   createdAt: string;
   reviewedByAdminId?: number | null;
+  reviewedByAdminName?: string | null;
   reviewedAt?: string | null;
   rejectReason?: string | null;
   riskLevel?: string;

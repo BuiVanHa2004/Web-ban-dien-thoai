@@ -70,6 +70,9 @@ public class PaymentAttempt {
     @Column(name = "reviewed_by_admin_id")
     private Integer reviewedByAdminId;
 
+    @Column(name = "reviewed_by_admin_name", length = 255)
+    private String reviewedByAdminName;
+
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
