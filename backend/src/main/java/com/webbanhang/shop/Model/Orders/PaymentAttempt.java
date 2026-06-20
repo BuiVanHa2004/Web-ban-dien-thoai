@@ -79,6 +79,9 @@ public class PaymentAttempt {
     @Column(name = "reject_reason", length = 500)
     private String rejectReason;
 
+    @Column(name = "archived_at")
+    private LocalDateTime archivedAt;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

@@ -71,4 +71,21 @@ public class AdminPaymentController {
         paymentService.updateOrderNote(orderId, payload.get("note"), payload.get("authorName"));
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/archived")
+    public ResponseEntity<List<PaymentAttempt>> getArchivedAttempts() {
+        return ResponseEntity.ok(paymentService.getArchivedAttempts());
+    }
+
+    @DeleteMapping("/archived/{attemptId}")
+    public ResponseEntity<?> deleteArchivedAttemptForever(@PathVariable Integer attemptId) {
+        paymentService.deleteArchivedAttemptForever(attemptId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/archived/all")
+    public ResponseEntity<?> deleteAllArchivedAttempts() {
+        paymentService.deleteAllArchivedAttempts();
+        return ResponseEntity.ok().build();
+    }
 }

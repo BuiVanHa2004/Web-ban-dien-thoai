@@ -30,4 +30,5 @@ public interface PaymentAttemptRepository extends JpaRepository<PaymentAttempt, 
 
     List<PaymentAttempt> findByStatusAndTransferImageUrlIsNotNullOrderByCreatedAtDesc(String status);
     List<PaymentAttempt> findAllByStatusInAndTransferImageUrlIsNotNullOrderByCreatedAtDesc(List<String> statuses);
+    List<PaymentAttempt> findAllByArchivedAtIsNotNullOrderByArchivedAtDesc();
 }

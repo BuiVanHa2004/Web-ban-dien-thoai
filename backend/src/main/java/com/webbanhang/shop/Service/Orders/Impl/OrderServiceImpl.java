@@ -38,6 +38,7 @@ import com.webbanhang.shop.Service.Inventory.InventoryService;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -416,10 +417,13 @@ public class OrderServiceImpl implements OrderService {
                     paymentLogRepository.deleteAll(logs);
                 }
 
-                // 2. Xóa các minh chứng thanh toán VietQR liên quan
+                // 2. Chuyển các minh chứng thanh toán VietQR vào kho lưu trữ thay vì xóa
                 List<PaymentAttempt> attempts = paymentAttemptRepository.findAllByOrderIdOrderByCreatedAtDesc(id);
                 if (attempts != null && !attempts.isEmpty()) {
-                    paymentAttemptRepository.deleteAll(attempts);
+                    for (PaymentAttempt attempt : attempts) {
+                        attempt.setArchivedAt(LocalDateTime.now());
+                        paymentAttemptRepository.save(attempt);
+                    }
                 }
 
                 // 3. Gỡ liên kết các giao dịch ngân hàng trong Sổ cái để chúng quay về trạng thái chưa khớp tự do

@@ -48,5 +48,11 @@ public interface PaymentService {
     BankTransferStatusDto getBankTransferStatus(Integer orderId);
 
     void updateOrderNote(Integer orderId, String note, String authorName);
+
+    List<PaymentAttempt> getArchivedAttempts();
+
+    void deleteArchivedAttemptForever(Integer attemptId);
+
+    void deleteAllArchivedAttempts();
 }
 

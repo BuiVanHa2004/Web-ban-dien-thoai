@@ -22,6 +22,7 @@ export interface PaymentAttempt {
   reviewedByAdminName: string | null;
   reviewedAt: string | null;
   rejectReason: string | null;
+  archivedAt: string | null;
 }
 
 export interface PaymentLog {
@@ -79,5 +80,18 @@ export const adminManualPaymentService = {
     request<void>(`/admin/payments/bank-transfer/order/${orderId}/note`, {
       method: "PATCH",
       body: JSON.stringify({ note, authorName }),
+    }),
+
+  getArchivedAttempts: () =>
+    request<PaymentAttempt[]>(`/admin/payments/bank-transfer/archived`),
+
+  deleteArchivedAttempt: (attemptId: number) =>
+    request<void>(`/admin/payments/bank-transfer/archived/${attemptId}`, {
+      method: "DELETE",
+    }),
+
+  deleteAllArchivedAttempts: () =>
+    request<void>(`/admin/payments/bank-transfer/archived/all`, {
+      method: "DELETE",
     }),
 };

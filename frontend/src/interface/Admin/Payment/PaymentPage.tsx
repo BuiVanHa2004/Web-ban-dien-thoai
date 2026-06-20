@@ -415,6 +415,18 @@ export default function PaymentPage() {
             </svg>
             Làm mới
           </button>
+
+          <Link
+            href="/payments/warehouse"
+            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-amber-600 px-3 py-2 sm:px-4 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-amber-500 active:translate-y-0 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-1 dark:ring-amber-400/20 dark:hover:bg-amber-500/20 whitespace-nowrap"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              <polyline points="3.29 7 12 12 20.71 7" />
+              <line x1="12" y1="22" x2="12" y2="12" />
+            </svg>
+            Kho lưu trữ
+          </Link>
         </div>
       </div>
 

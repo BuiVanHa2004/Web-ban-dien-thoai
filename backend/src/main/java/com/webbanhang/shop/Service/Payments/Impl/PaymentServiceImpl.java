@@ -822,4 +822,31 @@ public class PaymentServiceImpl implements PaymentService {
         notifyCustomer(order, NotificationAction.CONFIRM, 
             "Đơn hàng " + order.getOrderCode() + " đã được chuyển sang thanh toán COD và đã được xác nhận.");
     }
+
+    @Override
+    public List<PaymentAttempt> getArchivedAttempts() {
+        return paymentAttemptRepository.findAllByArchivedAtIsNotNullOrderByArchivedAtDesc();
+    }
+
+    @Override
+    @Transactional
+    public void deleteArchivedAttemptForever(Integer attemptId) {
+        PaymentAttempt attempt = paymentAttemptRepository.findById(attemptId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment attempt not found"));
+        
+        if (attempt.getArchivedAt() == null) {
+            throw new IllegalStateException("Chỉ có thể xóa vĩnh viễn bill đã được lưu trữ");
+        }
+        
+        paymentAttemptRepository.delete(attempt);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAllArchivedAttempts() {
+        List<PaymentAttempt> archived = paymentAttemptRepository.findAllByArchivedAtIsNotNullOrderByArchivedAtDesc();
+        if (!archived.isEmpty()) {
+            paymentAttemptRepository.deleteAll(archived);
+        }
+    }
 }
