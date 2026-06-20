@@ -440,13 +440,24 @@ public class OrderServiceImpl implements OrderService {
                     }
                 }
 
-                // 4. Xóa payment records liên quan
+                // 4. Lưu trữ bill trước khi xóa
+                List<PaymentAttempt> attempts = paymentAttemptRepository.findAllByOrderId(id);
+                if (attempts != null && !attempts.isEmpty()) {
+                    for (PaymentAttempt attempt : attempts) {
+                        if (attempt.getArchivedAt() == null) {
+                            attempt.setArchivedAt(LocalDateTime.now());
+                            paymentAttemptRepository.save(attempt);
+                        }
+                    }
+                }
+
+                // 5. Xóa payment records liên quan
                 List<Payment> payments = paymentRepository.findAllByOrderId(id);
                 if (payments != null && !payments.isEmpty()) {
                     paymentRepository.deleteAll(payments);
                 }
 
-                // 5. Xóa vĩnh viễn đơn hàng
+                // 6. Xóa vĩnh viễn đơn hàng
                 orderRepository.deleteById(id);
                 return true;
             } catch (Exception e) {

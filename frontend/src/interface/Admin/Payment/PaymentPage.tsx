@@ -739,12 +739,12 @@ export default function PaymentPage() {
                                 selectedAttempt.status === "MATCHED" ? "text-emerald-400" : "text-rose-400"
                               }`}
                             >
-                              PHẢN HỒI QUẢN TRỊ VIÊN
+                              GHI CHÚ CỦA QUẢN TRỊ VIÊN
                             </div>
                             <p className="text-xs sm:text-sm font-medium text-white/90 break-words mb-3">
                               {selectedAttempt.status === "MATCHED" 
-                                ? (detailOrder?.paymentNote || "Thanh toán đã được xác nhận. Giao dịch hợp lệ.")
-                                : (selectedAttempt.rejectReason || "Minh chứng không hợp lệ.")}
+                                ? (detailOrder?.paymentNote || "Không có ghi chú")
+                                : (selectedAttempt.rejectReason || "Không có ghi chú")}
                             </p>
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold text-white/50">
                               {selectedAttempt.reviewedByAdminName && (
