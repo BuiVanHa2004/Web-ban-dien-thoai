@@ -17,6 +17,8 @@ import com.webbanhang.shop.Repository.Brands.BrandRepository;
 import com.webbanhang.shop.Repository.Categories.CategoryRepository;
 import com.webbanhang.shop.Repository.Orders.OrderItemRepository;
 import com.webbanhang.shop.Repository.Products.ProductRepository;
+import com.webbanhang.shop.Repository.Products.ProductVariantRepository;
+import com.webbanhang.shop.Repository.Products.ProductColorRepository;
 import com.webbanhang.shop.Service.Products.ProductService;
 import com.webbanhang.shop.Service.Storage.MinioStorageService;
 import org.springframework.stereotype.Service;
@@ -39,21 +41,30 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
+    private final ProductVariantRepository productVariantRepository;
+    private final ProductColorRepository productColorRepository;
     private final MinioStorageService minioStorageService;
     private final OrderItemRepository orderItemRepository;
+    private final com.webbanhang.shop.Service.Inventory.InventoryService inventoryService;
 
     public ProductServiceImpl(
             ProductRepository productRepository,
             CategoryRepository categoryRepository,
             BrandRepository brandRepository,
+            ProductVariantRepository productVariantRepository,
+            ProductColorRepository productColorRepository,
             MinioStorageService minioStorageService,
-            OrderItemRepository orderItemRepository
+            OrderItemRepository orderItemRepository,
+            com.webbanhang.shop.Service.Inventory.InventoryService inventoryService
     ) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.brandRepository = brandRepository;
+        this.productVariantRepository = productVariantRepository;
+        this.productColorRepository = productColorRepository;
         this.minioStorageService = minioStorageService;
         this.orderItemRepository = orderItemRepository;
+        this.inventoryService = inventoryService;
     }
 
     @Override
@@ -140,12 +151,136 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Optional<Product> update(Integer id, ProductUpsertRequest req) {
         return productRepository.findByProductId(id).map(existing -> {
+            // ✅ PHASE 1: Collect OLD stock values BEFORE any changes
+            Map<Integer, Integer> oldStockMap = collectCurrentStockValues(existing);
+            
             applyRequest(existing, req);
             syncProductImages(existing, req.productImages());
             syncProductColors(existing, req.productColors());
             syncProductSpecs(existing, req.productSpec());
-            return productRepository.save(existing);
+            
+            Product savedProduct = productRepository.save(existing);
+            
+            // ✅ PHASE 2: Log stock adjustments AFTER save (compare old vs new)
+            postProcessStockAdjustments(savedProduct, req.productColors(), oldStockMap);
+            
+            return savedProduct;
         });
+    }
+    
+    /**
+     * ✅ Collect current stock values from product BEFORE sync
+     */
+    private Map<Integer, Integer> collectCurrentStockValues(Product product) {
+        Map<Integer, Integer> stockMap = new HashMap<>();
+        
+        if (product.getProductColors() != null) {
+            for (ProductColor color : product.getProductColors()) {
+                if (color.getVariants() != null) {
+                    for (ProductVariant variant : color.getVariants()) {
+                        if (variant.getVariantId() != null) {
+                            stockMap.put(variant.getVariantId(), variant.getTotalStock());
+                        }
+                    }
+                }
+            }
+        }
+        
+        return stockMap;
+    }
+    
+    /**
+     * ✅ NEW: Post-process stock adjustments after product save
+     * This logs all stock changes to inventory_transactions table
+     */
+    /**
+     * ✅ REFACTORED: Process stock adjustments using InventoryService
+     * Handles both positive and negative adjustments
+     */
+    private record StockAdjustment(Integer variantId, int adjustment, String reason) {}
+    
+    private void postProcessStockAdjustments(
+            Product product, 
+            List<ProductColorUpsertRequest> reqColors,
+            Map<Integer, Integer> oldStockMap
+    ) {
+        if (reqColors == null || reqColors.isEmpty()) {
+            return;
+        }
+        
+        List<StockAdjustment> adjustments = new ArrayList<>();
+        
+        // Collect all stock adjustments from request
+        for (ProductColorUpsertRequest colorReq : reqColors) {
+            if (colorReq.variants() == null) continue;
+            
+            for (com.webbanhang.shop.DTO.Products.ProductVariantUpsertRequest variantReq : colorReq.variants()) {
+                Integer variantId = variantReq.variantId();
+                if (variantId == null) continue; // Skip new variants (no adjustment needed)
+                
+                Integer stockAdjustment = variantReq.stockAdjustment();
+                if (stockAdjustment == null || stockAdjustment == 0) continue; // No adjustment
+                
+                String reason = variantReq.adjustmentReason();
+                if (reason == null || reason.isBlank()) {
+                    reason = stockAdjustment > 0 
+                        ? String.format("Admin tăng tồn kho +%d", stockAdjustment)
+                        : String.format("Admin giảm tồn kho %d", stockAdjustment);
+                }
+                
+                adjustments.add(new StockAdjustment(variantId, stockAdjustment, reason));
+            }
+        }
+        
+        // Apply all adjustments via InventoryService
+        for (StockAdjustment adj : adjustments) {
+            try {
+                // Fetch current stock
+                ProductVariant variant = productVariantRepository.findById(adj.variantId)
+                    .orElseThrow(() -> new IllegalArgumentException("Variant not found: " + adj.variantId));
+                
+                int currentStock = variant.getTotalStock();
+                int newStock = currentStock + adj.adjustment;
+                
+                // Validate: cannot go below 0
+                if (newStock < 0) {
+                    throw new IllegalStateException(
+                        String.format(
+                            "Không thể điều chỉnh làm tồn kho nhỏ hơn 0. Hiện tại: %d, Điều chỉnh: %d, Kết quả: %d",
+                            currentStock, adj.adjustment, newStock
+                        )
+                    );
+                }
+                
+                // Validate: cannot reduce below reserved + sold
+                int minAllowed = variant.getReservedStock() + variant.getSoldStock();
+                if (newStock < minAllowed) {
+                    throw new IllegalStateException(
+                        String.format(
+                            "Không thể giảm tồn kho xuống %d. Tối thiểu: %d (reserved: %d + sold: %d)",
+                            newStock, minAllowed, variant.getReservedStock(), variant.getSoldStock()
+                        )
+                    );
+                }
+                
+                // Apply adjustment via InventoryService
+                if (adj.adjustment > 0) {
+                    // Import stock (increase)
+                    inventoryService.importStock(adj.variantId, adj.adjustment, adj.reason, "ADMIN");
+                } else {
+                    // Manual reduction (use adjustStock)
+                    inventoryService.adjustStock(adj.variantId, newStock, adj.reason, "ADMIN");
+                }
+                
+                System.out.println(String.format(
+                    "[PRODUCT] ✅ Stock adjusted for variant %d: %d %+d = %d. Reason: %s",
+                    adj.variantId, currentStock, adj.adjustment, newStock, adj.reason
+                ));
+            } catch (Exception e) {
+                System.err.println("Failed to adjust stock for variant " + adj.variantId + ": " + e.getMessage());
+                throw new IllegalStateException("Không thể điều chỉnh tồn kho: " + e.getMessage());
+            }
+        }
     }
 
     private void syncProductSpecs(Product product, ProductSpecUpsertRequest reqSpec) {
@@ -334,6 +469,8 @@ public class ProductServiceImpl implements ProductService {
 
         for (com.webbanhang.shop.DTO.Products.ProductVariantUpsertRequest rv : desired) {
             ProductVariant variant = null;
+            boolean isNewVariant = false;
+            
             if (rv.variantId() != null) {
                 variant = byId.get(rv.variantId());
             }
@@ -341,11 +478,26 @@ public class ProductServiceImpl implements ProductService {
                 variant = new ProductVariant();
                 variant.setProductColor(color);
                 color.getVariants().add(variant);
+                isNewVariant = true;
             }
+            
             variant.setRamGb(rv.ramGb());
             variant.setStorageGb(rv.storageGb());
-            int qty = rv.quantity() != null ? Math.max(rv.quantity(), 0) : 0;
-            variant.setQuantity(qty);
+            
+            // ✅ CRITICAL CHANGE: Không cho phép set quantity trực tiếp
+            // Chỉ xử lý stockAdjustment cho existing variants
+            if (isNewVariant) {
+                // Variant mới: Khởi tạo với stock = 0
+                variant.setTotalStock(0);
+                variant.setReservedStock(0);
+                variant.setSoldStock(0);
+                variant.setQuantity(0); // Legacy field
+                System.out.println("[PRODUCT] New variant initialized with stock = 0");
+            } else {
+                // Existing variant: GIỮ NGUYÊN stock, không update
+                // stockAdjustment sẽ được xử lý sau trong postProcessStockAdjustments()
+                System.out.println("[PRODUCT] Existing variant - stock will be adjusted via InventoryService if needed");
+            }
 
             // Handle price fields per new schema
             BigDecimal originalPrice = rv.originalPrice() != null ? rv.originalPrice() : BigDecimal.ZERO;

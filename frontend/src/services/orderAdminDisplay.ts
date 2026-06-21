@@ -22,6 +22,8 @@ export const PAYMENT_LABEL: Record<string, string> = {
   FAILED: "Thất bại",
   PENDING: "Đang xử lý",
   REFUNDED: "Đã hoàn tiền",
+  REFUND_PENDING: "Đang chờ hoàn tiền",
+  PARTIAL_REFUNDED: "Hoàn tiền một phần",
   PARTIAL_PAID: "Thanh toán một phần",
   REOPENED: "Đã mở lại",
 };
@@ -52,6 +54,10 @@ export function paymentBadgeClass(status?: string | null) {
       return "bg-rose-500/15 text-rose-700 ring-1 ring-rose-500/25 dark:text-rose-200 dark:ring-rose-400/20";
     case "REFUNDED":
       return "bg-blue-500/15 text-blue-700 ring-1 ring-blue-500/25 dark:text-blue-200 dark:ring-blue-400/20";
+    case "REFUND_PENDING":
+      return "bg-orange-500/15 text-orange-700 ring-1 ring-orange-500/25 dark:text-orange-200 dark:ring-orange-400/20";
+    case "PARTIAL_REFUNDED":
+      return "bg-sky-500/15 text-sky-700 ring-1 ring-sky-500/25 dark:text-sky-200 dark:ring-sky-400/20";
     case "PARTIAL_PAID":
       return "bg-cyan-500/15 text-cyan-800 ring-1 ring-cyan-500/25 dark:text-cyan-200 dark:ring-cyan-400/20";
     case "PENDING":

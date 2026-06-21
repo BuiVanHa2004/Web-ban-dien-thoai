@@ -289,6 +289,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public void adminApprovePayment(Integer attemptId, Integer adminId, String adminNote) {
+        System.out.println("[SERVICE] adminApprovePayment called: attemptId=" + attemptId + ", adminId=" + adminId + ", adminNote='" + adminNote + "'");
+        
         // Load attempt first (no lock yet)
         PaymentAttempt attempt = paymentAttemptRepository.findById(attemptId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment attempt not found"));
@@ -355,9 +357,10 @@ public class PaymentServiceImpl implements PaymentService {
         order.setPaymentStatus(PaymentStatus.PAID);
         order.setOrderStatus(OrderStatus.CONFIRMED);
         order.setPaymentConfirmedAt(LocalDateTime.now());
-        if (adminNote != null && !adminNote.isBlank()) {
-            order.setPaymentNote(adminNote);
-        }
+        // Always save adminNote (even if empty) so frontend can display it
+        String noteToSave = adminNote != null ? adminNote : "";
+        System.out.println("[APPROVE] Setting paymentNote: '" + noteToSave + "' (original adminNote: '" + adminNote + "')");
+        order.setPaymentNote(noteToSave);
         order.setPaymentNoteAuthor(adminName);
         order.setPaymentNoteDate(LocalDateTime.now());
 
@@ -497,11 +500,13 @@ public class PaymentServiceImpl implements PaymentService {
     public List<PaymentAttempt> getPaymentAttempts(String status) {
         if (status == null || status.isEmpty() || "WAITING_CONFIRM".equals(status)) {
             // Return both waiting and processing so they don't disappear when locked
-            return paymentAttemptRepository.findAllByStatusInAndTransferImageUrlIsNotNullOrderByCreatedAtDesc(
+            // Exclude archived bills (from deleted orders) and soft deleted bills
+            return paymentAttemptRepository.findAllByStatusInAndTransferImageUrlIsNotNullAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(
                 List.of("WAITING_CONFIRM", "PROCESSING")
             );
         }
-        return paymentAttemptRepository.findByStatusAndTransferImageUrlIsNotNullOrderByCreatedAtDesc(status);
+        // Exclude archived bills (from deleted orders) and soft deleted bills
+        return paymentAttemptRepository.findByStatusAndTransferImageUrlIsNotNullAndArchivedAtIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(status);
     }
 
     private void notifyCustomer(Order order, NotificationAction action, String message) {
@@ -750,6 +755,11 @@ public class PaymentServiceImpl implements PaymentService {
     public List<PaymentLog> getLogsByOrderId(Integer orderId) {
         return paymentLogService.getLogsByOrderId(orderId);
     }
+    
+    @Override
+    public List<PaymentLog> getLogsByAttemptId(Integer attemptId) {
+        return paymentLogService.getLogsByAttemptId(attemptId);
+    }
 
     @Override
     @Transactional
@@ -825,7 +835,16 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public List<PaymentAttempt> getArchivedAttempts() {
-        return paymentAttemptRepository.findAllByArchivedAtIsNotNullOrderByArchivedAtDesc();
+        // Get archived attempts (exclude soft deleted ones in trash)
+        List<PaymentAttempt> archived = paymentAttemptRepository.findAllByArchivedAtIsNotNullAndDeletedAtIsNullAndTransferImageUrlIsNotNullOrderByArchivedAtDesc();
+        System.out.println("[WAREHOUSE] Found " + archived.size() + " archived payment attempts (excluding trash)");
+        for (PaymentAttempt attempt : archived) {
+            System.out.println("  - attemptId=" + attempt.getAttemptId() + 
+                             ", orderId=" + attempt.getOrderId() + 
+                             ", archivedAt=" + attempt.getArchivedAt() + 
+                             ", hasImage=" + (attempt.getTransferImageUrl() != null));
+        }
+        return archived;
     }
 
     @Override
@@ -844,9 +863,75 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public void deleteAllArchivedAttempts() {
-        List<PaymentAttempt> archived = paymentAttemptRepository.findAllByArchivedAtIsNotNullOrderByArchivedAtDesc();
+        List<PaymentAttempt> archived = paymentAttemptRepository.findAllByArchivedAtIsNotNullAndDeletedAtIsNullAndTransferImageUrlIsNotNullOrderByArchivedAtDesc();
         if (!archived.isEmpty()) {
-            paymentAttemptRepository.deleteAll(archived);
+            // Soft delete all archived bills
+            for (PaymentAttempt attempt : archived) {
+                attempt.setDeletedAt(LocalDateTime.now());
+            }
+            paymentAttemptRepository.saveAll(archived);
         }
     }
+    
+    // ============= TRASH MANAGEMENT (SOFT DELETE) =============
+    
+    @Override
+    public List<PaymentAttempt> getTrashedAttempts() {
+        return paymentAttemptRepository.findAllByDeletedAtIsNotNullOrderByDeletedAtDesc();
+    }
+    
+    @Override
+    @Transactional
+    public void softDeleteAttempt(Integer attemptId) {
+        PaymentAttempt attempt = paymentAttemptRepository.findById(attemptId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment attempt not found"));
+        
+        if (attempt.getDeletedAt() != null) {
+            throw new IllegalStateException("Bill này đã bị xóa rồi");
+        }
+        
+        attempt.setDeletedAt(LocalDateTime.now());
+        paymentAttemptRepository.save(attempt);
+        
+        System.out.println("✅ Soft deleted payment attempt: attemptId=" + attemptId);
+    }
+    
+    @Override
+    @Transactional
+    public void restoreAttempt(Integer attemptId) {
+        PaymentAttempt attempt = paymentAttemptRepository.findByAttemptIdAndDeletedAtIsNotNull(attemptId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment attempt not found in trash"));
+        
+        attempt.setDeletedAt(null);
+        paymentAttemptRepository.save(attempt);
+        
+        System.out.println("✅ Restored payment attempt: attemptId=" + attemptId);
+    }
+    
+    @Override
+    @Transactional
+    public void deleteAttemptForever(Integer attemptId) {
+        PaymentAttempt attempt = paymentAttemptRepository.findByAttemptIdAndDeletedAtIsNotNull(attemptId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment attempt not found in trash"));
+        
+        // Chuyển vào archived trước khi xóa vĩnh viễn
+        attempt.setArchivedAt(LocalDateTime.now());
+        attempt.setDeletedAt(null); // Clear soft delete flag
+        
+        // Lưu snapshot của order code và admin note nếu có
+        if (attempt.getOrderId() != null) {
+            orderRepository.findById(attempt.getOrderId()).ifPresent(order -> {
+                attempt.setArchivedOrderCode(order.getOrderCode());
+                attempt.setArchivedAdminNote(order.getPaymentNote()); // Use paymentNote instead
+            });
+        }
+        
+        // Unlink order (set orderId = null)
+        attempt.setOrderId(null);
+        
+        paymentAttemptRepository.save(attempt);
+        
+        System.out.println("✅ Archived payment attempt (deleted forever from trash): attemptId=" + attemptId);
+    }
 }
+

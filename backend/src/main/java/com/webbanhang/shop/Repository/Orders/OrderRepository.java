@@ -53,4 +53,29 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             String paymentMethod, 
             com.webbanhang.shop.Model.Orders.PaymentStatus paymentStatus
     );
+    
+    /**
+     * ✅ NEW: Find orders eligible for revenue calculation
+     * Revenue = DELIVERED + PAID + NOT (REFUNDED or REFUND_PENDING)
+     * 
+     * @param orderStatus Must be DELIVERED
+     * @param paymentStatus Must be PAID
+     * @param startDate Start date for filtering
+     * @param endDate End date for filtering
+     * @return List of completed paid orders
+     */
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT o FROM Order o WHERE " +
+        "o.orderStatus = :orderStatus AND " +
+        "o.paymentStatus = :paymentStatus AND " +
+        "o.deletedAt IS NULL AND " +
+        "o.createdAt >= :startDate AND " +
+        "o.createdAt <= :endDate"
+    )
+    List<Order> findRevenueOrders(
+        @org.springframework.data.repository.query.Param("orderStatus") com.webbanhang.shop.Model.Orders.OrderStatus orderStatus,
+        @org.springframework.data.repository.query.Param("paymentStatus") com.webbanhang.shop.Model.Orders.PaymentStatus paymentStatus,
+        @org.springframework.data.repository.query.Param("startDate") java.time.LocalDateTime startDate,
+        @org.springframework.data.repository.query.Param("endDate") java.time.LocalDateTime endDate
+    );
 }

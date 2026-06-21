@@ -22,9 +22,11 @@ function getProductStockQuantity(product: ProductDto): number {
   return (product.productColors || []).reduce((sum, color) => {
     const variants = color.variants || [];
     if (variants.length > 0) {
-      const variantQty = variants.reduce((s, v) => s + (Number(v.quantity) || 0), 0);
+      // Use availableStock from variants
+      const variantQty = variants.reduce((s, v) => s + (Number(v.availableStock) || 0), 0);
       return sum + variantQty;
     }
+    // Fallback to color-level quantity if no variants (legacy)
     return sum + (Number(color.quantity) || 0);
   }, 0);
 }
@@ -121,7 +123,7 @@ export default function CustomerProductCard({
         {meta ? <p className="mt-1 text-xs text-zinc-400">{meta}</p> : null}
 
         <div className="mt-3">
-          <div className="mt-1 text-[11px] text-zinc-500">Tồn kho: {stockQuantity}</div>
+          <div className="mt-1 text-[11px] text-zinc-500">Sản phẩm còn lại: {stockQuantity}</div>
         </div>
         <button
           type="button"

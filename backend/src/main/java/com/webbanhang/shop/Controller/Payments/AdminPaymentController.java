@@ -2,6 +2,7 @@ package com.webbanhang.shop.Controller.Payments;
 
 import com.webbanhang.shop.Service.Payments.PaymentService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -42,7 +43,9 @@ public class AdminPaymentController {
             @PathVariable Integer attemptId,
             @RequestParam Integer adminId,
             @RequestBody Map<String, String> payload) {
-        paymentService.adminApprovePayment(attemptId, adminId, payload.get("note"));
+        String note = payload.get("note");
+        System.out.println("[APPROVE] attemptId=" + attemptId + ", adminId=" + adminId + ", note='" + note + "'");
+        paymentService.adminApprovePayment(attemptId, adminId, note);
         return ResponseEntity.ok().build();
     }
 
@@ -65,6 +68,11 @@ public class AdminPaymentController {
     public ResponseEntity<List<PaymentLog>> getLogs(@PathVariable Integer orderId) {
         return ResponseEntity.ok(paymentService.getLogsByOrderId(orderId));
     }
+    
+    @GetMapping("/logs/attempt/{attemptId}")
+    public ResponseEntity<List<PaymentLog>> getLogsByAttemptId(@PathVariable Integer attemptId) {
+        return ResponseEntity.ok(paymentService.getLogsByAttemptId(attemptId));
+    }
 
     @PatchMapping("/order/{orderId}/note")
     public ResponseEntity<?> updateOrderNote(@PathVariable Integer orderId, @RequestBody Map<String, String> payload) {
@@ -78,14 +86,45 @@ public class AdminPaymentController {
     }
 
     @DeleteMapping("/archived/{attemptId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteArchivedAttemptForever(@PathVariable Integer attemptId) {
         paymentService.deleteArchivedAttemptForever(attemptId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/archived/all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteAllArchivedAttempts() {
         paymentService.deleteAllArchivedAttempts();
         return ResponseEntity.ok().build();
     }
+    
+    // ============= TRASH MANAGEMENT (SOFT DELETE) =============
+    
+    @GetMapping("/trash")
+    public ResponseEntity<List<PaymentAttempt>> getTrashedAttempts() {
+        return ResponseEntity.ok(paymentService.getTrashedAttempts());
+    }
+    
+    @DeleteMapping("/{attemptId}/soft")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> softDeleteAttempt(@PathVariable Integer attemptId) {
+        paymentService.softDeleteAttempt(attemptId);
+        return ResponseEntity.ok().build();
+    }
+    
+    @PatchMapping("/{attemptId}/restore")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> restoreAttempt(@PathVariable Integer attemptId) {
+        paymentService.restoreAttempt(attemptId);
+        return ResponseEntity.ok().build();
+    }
+    
+    @DeleteMapping("/{attemptId}/force")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteAttemptForever(@PathVariable Integer attemptId) {
+        paymentService.deleteAttemptForever(attemptId);
+        return ResponseEntity.ok().build();
+    }
 }
+

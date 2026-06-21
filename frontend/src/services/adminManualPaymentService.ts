@@ -4,7 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
 
 export interface PaymentAttempt {
   attemptId: number;
-  orderId: number;
+  orderId: number | null; // Allow null after unlink
   paymentMethod: string;
   status: string;
   qrContent: string;
@@ -23,6 +23,9 @@ export interface PaymentAttempt {
   reviewedAt: string | null;
   rejectReason: string | null;
   archivedAt: string | null;
+  archivedOrderCode?: string | null; // Snapshot when archived
+  archivedAdminNote?: string | null; // Snapshot when archived
+  deletedAt?: string | null; // Soft delete timestamp
 }
 
 export interface PaymentLog {
@@ -75,6 +78,9 @@ export const adminManualPaymentService = {
 
   getLogs: (orderId: number) =>
     request<PaymentLog[]>(`/admin/payments/bank-transfer/logs/${orderId}`),
+  
+  getLogsByAttemptId: (attemptId: number) =>
+    request<PaymentLog[]>(`/admin/payments/bank-transfer/logs/attempt/${attemptId}`),
 
   updateOrderNote: (orderId: number, note: string, authorName: string) =>
     request<void>(`/admin/payments/bank-transfer/order/${orderId}/note`, {
@@ -92,6 +98,26 @@ export const adminManualPaymentService = {
 
   deleteAllArchivedAttempts: () =>
     request<void>(`/admin/payments/bank-transfer/archived/all`, {
+      method: "DELETE",
+    }),
+
+  // ============= TRASH MANAGEMENT (SOFT DELETE) =============
+  
+  getTrashedAttempts: () =>
+    request<PaymentAttempt[]>(`/admin/payments/bank-transfer/trash`),
+
+  softDeleteAttempt: (attemptId: number) =>
+    request<void>(`/admin/payments/bank-transfer/${attemptId}/soft`, {
+      method: "DELETE",
+    }),
+
+  restoreAttempt: (attemptId: number) =>
+    request<void>(`/admin/payments/bank-transfer/${attemptId}/restore`, {
+      method: "PATCH",
+    }),
+
+  deleteAttemptForever: (attemptId: number) =>
+    request<void>(`/admin/payments/bank-transfer/${attemptId}/force`, {
       method: "DELETE",
     }),
 };

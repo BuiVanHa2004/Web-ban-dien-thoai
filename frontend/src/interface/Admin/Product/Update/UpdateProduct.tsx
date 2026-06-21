@@ -51,7 +51,9 @@ type VariantInput = {
   variantId?: number | null;
   ramGb: number | "";
   storageGb: number | "";
-  quantity: number | "";
+  currentStock?: number; // ✅ Tồn hiện tại (readonly)
+  stockAdjustment?: number | ""; // ✅ Điều chỉnh tồn kho (+/-)
+  adjustmentReason?: string; // Lý do điều chỉnh
   price: number | "";
 };
 
@@ -100,13 +102,17 @@ function createEmptyVariantInput(): VariantInput {
     variantId: null,
     ramGb: "",
     storageGb: "",
-    quantity: "",
+    currentStock: undefined,
+    stockAdjustment: "",
+    adjustmentReason: "",
     price: "",
   };
 }
 
 function isCompleteVariantInput(v: VariantInput) {
-  return v.ramGb !== "" && v.storageGb !== "" && v.quantity !== "" && v.price !== "";
+  // Variant mới: cần có ramGb, storageGb, price
+  // Variant cũ (có variantId): chỉ cần check ramGb, storageGb (stock là optional)
+  return v.ramGb !== "" && v.storageGb !== "" && v.price !== "";
 }
 
 function countCompleteVariants(variants: VariantInput[]) {
@@ -132,7 +138,8 @@ function toVariantPayload(variants: VariantInput[], discountType: DiscountType |
         variantId: v.variantId || null,
         ramGb: Number(v.ramGb),
         storageGb: Number(v.storageGb),
-        quantity: Math.max(Number(v.quantity) || 0, 0),
+        stockAdjustment: v.stockAdjustment !== "" && v.stockAdjustment !== undefined ? Number(v.stockAdjustment) : null,
+        adjustmentReason: v.adjustmentReason || undefined,
         originalPrice: original,
         discountType: (dt || "NONE") as DiscountType,
         discountValue: dv == null ? 0 : dv,
@@ -154,7 +161,8 @@ function minVariantPrice(productColors: ColorItem[]) {
 }
 
 function sumVariantQuantity(variants: VariantInput[]) {
-  return variants.reduce((sum, v) => sum + (Number(v.quantity) || 0), 0);
+  // ✅ Tính tổng dựa trên currentStock (tồn hiện tại)
+  return variants.reduce((sum, v) => sum + (Number(v.currentStock) || 0), 0);
 }
 
 function deriveVariantSpecValues(productColors: ColorItem[]): { ramSpecValue: string; storageSpecValue: string } {
@@ -217,7 +225,9 @@ function mapDtoToForm(dto: ProductDto) {
           variantId: v.variantId ?? null,
           ramGb: (v.ramGb ?? "") as number | "",
           storageGb: (v.storageGb ?? "") as number | "",
-          quantity: Number(v.quantity) || 0,
+          currentStock: v.availableStock ?? 0, // ✅ Tồn hiện tại (readonly)
+          stockAdjustment: "" as number | "", // ✅ Điều chỉnh (+/-)
+          adjustmentReason: "",
           price: (Number(v.originalPrice) || 0) as number | "",
         })),
         images: (c.images || []).map((u) => ({ key: u, type: "existing", url: u } as const)),
@@ -619,6 +629,36 @@ export default function UpdateProduct() {
     }
 
     if (!description.trim()) missingFields.push("Mô tả");
+
+    // ✅ NEW: Validate stock adjustment
+    for (const color of productColors) {
+      for (const variant of color.variants) {
+        if (variant.variantId && variant.stockAdjustment !== "" && variant.stockAdjustment !== undefined) {
+          const adjustment = Number(variant.stockAdjustment);
+          const currentStock = variant.currentStock ?? 0;
+          const newStock = currentStock + adjustment;
+          
+          // Không cho phép tồn kho < 0
+          if (newStock < 0) {
+            setError(
+              `Biến thể ${variant.ramGb}GB/${variant.storageGb}GB: Không thể điều chỉnh làm tồn kho nhỏ hơn 0. ` +
+              `Hiện tại: ${currentStock}, Điều chỉnh: ${adjustment}, Kết quả: ${newStock}`
+            );
+            setSubmitting(false);
+            return;
+          }
+          
+          // Bắt buộc nhập lý do khi có điều chỉnh
+          if (!variant.adjustmentReason || !variant.adjustmentReason.trim()) {
+            setError(
+              `Biến thể ${variant.ramGb}GB/${variant.storageGb}GB: Vui lòng nhập lý do điều chỉnh khi thay đổi số lượng tồn kho.`
+            );
+            setSubmitting(false);
+            return;
+          }
+        }
+      }
+    }
 
     if (missingFields.length > 0) {
       setValidationModal({ open: true, fields: missingFields });
@@ -1458,10 +1498,20 @@ export default function UpdateProduct() {
                       </svg>
                     </button>
                   </div>
-                  <div className="max-h-[70dvh] overflow-y-auto p-4 sm:p-5">
-                    {/* Header row — desktop only */}
-                    <div className="mb-2 hidden grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 pb-2 text-xs font-semibold text-white/60 sm:grid">
-                      <div>RAM (GB)</div><div>Bộ nhớ (GB)</div><div>Số lượng</div><div>Giá</div><div></div>
+                  <div className="max-h-[70dvh] overflow-y-auto p-5 sm:p-6">
+                    {/* Info banner */}
+                    <div className="mb-4 rounded-xl p-3.5 flex items-start gap-3" style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}>
+                      <svg className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div>
+                        <div className="text-sm font-semibold text-blue-300 mb-0.5">Điều chỉnh tồn kho (+/-)</div>
+                        <div className="text-xs text-blue-200/80 leading-relaxed">
+                          • <strong>Tồn hiện tại:</strong> Số lượng có thể bán (chỉ đọc)<br/>
+                          • <strong>Điều chỉnh:</strong> Nhập số dương để tăng (+50) hoặc số âm để giảm (-10)<br/>
+                          • <strong>Lý do:</strong> Bắt buộc nhập khi có thay đổi (VD: "Nhập thêm 50 máy từ NCC")
+                        </div>
+                      </div>
                     </div>
 
                     {(variantsModalMode === "draft" ? draftVariants : (productColors.find((x) => x.key === variantsModalColorKey)?.variants || [])).map((v, vIdx) => {
@@ -1498,53 +1548,179 @@ export default function UpdateProduct() {
                       };
 
                       return (
-                        <div key={v.key} className="mb-3 rounded-2xl bg-white/[0.04] p-3 sm:mb-0 sm:mt-3 sm:rounded-none sm:bg-transparent sm:p-0">
-                          <div className="mb-2 text-xs font-semibold text-white/50 sm:hidden">Biến thể {vIdx + 1}</div>
-                          <div className="grid grid-cols-2 gap-2 sm:hidden">
-                            <div>
-                              <label className="mb-1 block text-[11px] text-white/50">RAM (GB)</label>
-                              <input type="number" min={0} value={v.ramGb} onChange={(e) => updateVariant({ ramGb: e.target.value === "" ? "" : Number(e.target.value) })}
-                                className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="RAM" />
+                        <div key={v.key} className="mb-4 rounded-2xl p-4 sm:mb-4 sm:p-4" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                          {/* Mobile view */}
+                          <div className="sm:hidden">
+                            <div className="mb-3 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-white/80" style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.5), rgba(147,51,234,0.5))" }}>
+                                  {vIdx + 1}
+                                </div>
+                                <span className="text-sm font-semibold text-white/80">Biến thể {vIdx + 1}</span>
+                              </div>
+                              <button type="button" onClick={removeVariant}
+                                className="h-8 px-3 cursor-pointer rounded-xl text-xs font-semibold text-white transition hover:brightness-110 active:scale-95"
+                                style={{ background: "rgba(239,68,68,0.75)", border: "1px solid rgba(239,68,68,0.3)" }}>
+                                Xóa
+                              </button>
                             </div>
-                            <div>
-                              <label className="mb-1 block text-[11px] text-white/50">Bộ nhớ (GB)</label>
-                              <input type="number" min={0} value={v.storageGb} onChange={(e) => updateVariant({ storageGb: e.target.value === "" ? "" : Number(e.target.value) })}
-                                className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="Bộ nhớ" />
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div>
+                                <label className="mb-1.5 block text-[11px] font-medium text-white/60">RAM (GB)</label>
+                                <input type="number" min={0} value={v.ramGb} onChange={(e) => updateVariant({ ramGb: e.target.value === "" ? "" : Number(e.target.value) })}
+                                  className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-blue-400/50" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="RAM" />
+                              </div>
+                              <div>
+                                <label className="mb-1.5 block text-[11px] font-medium text-white/60">Bộ nhớ (GB)</label>
+                                <input type="number" min={0} value={v.storageGb} onChange={(e) => updateVariant({ storageGb: e.target.value === "" ? "" : Number(e.target.value) })}
+                                  className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-blue-400/50" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="Bộ nhớ" />
+                              </div>
+                              <div>
+                                <label className="mb-1.5 block text-[11px] font-medium text-white/60">Giá (VNĐ)</label>
+                                <input type="number" min={0} value={v.price} onChange={(e) => updateVariant({ price: e.target.value === "" ? "" : Number(e.target.value) })}
+                                  className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-blue-400/50" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="Giá" />
+                              </div>
+                              {v.variantId && (
+                                <div>
+                                  <label className="mb-1.5 block text-[11px] font-medium text-emerald-400">Tồn hiện tại</label>
+                                  <input type="number" value={v.currentStock ?? 0} readOnly disabled
+                                    className="h-10 w-full rounded-xl px-3 text-sm text-emerald-300 font-semibold outline-none cursor-not-allowed" style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)" }} />
+                                </div>
+                              )}
                             </div>
-                            <div>
-                              <label className="mb-1 block text-[11px] text-white/50">Số lượng</label>
-                              <input type="number" min={0} value={v.quantity} onChange={(e) => updateVariant({ quantity: e.target.value === "" ? "" : Number(e.target.value) })}
-                                className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="SL" />
-                            </div>
-                            <div>
-                              <label className="mb-1 block text-[11px] text-white/50">Giá</label>
-                              <input type="number" min={0} value={v.price} onChange={(e) => updateVariant({ price: e.target.value === "" ? "" : Number(e.target.value) })}
-                                className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="Giá" />
-                            </div>
+                            {/* Stock adjustment (mobile) */}
+                            {v.variantId && (
+                              <div className="mt-3 pt-3" style={{ borderTop: "1px dashed rgba(255,255,255,0.15)" }}>
+                                <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-amber-400">
+                                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                  </svg>
+                                  Điều chỉnh tồn kho (+/-)
+                                </label>
+                                <input
+                                  type="number"
+                                  value={v.stockAdjustment === "" ? "" : v.stockAdjustment}
+                                  onChange={(e) => updateVariant({ stockAdjustment: e.target.value === "" ? "" : Number(e.target.value) })}
+                                  className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/20"
+                                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+                                  placeholder="VD: +50 hoặc -10"
+                                />
+                                {v.stockAdjustment !== "" && v.stockAdjustment !== undefined && (
+                                  <div className="mt-1.5 text-xs font-medium text-amber-300">
+                                    Tồn sau điều chỉnh: {(v.currentStock ?? 0) + Number(v.stockAdjustment)}
+                                  </div>
+                                )}
+                                <div className="mt-2">
+                                  <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-blue-400">
+                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Lý do điều chỉnh
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={v.adjustmentReason || ""}
+                                    onChange={(e) => updateVariant({ adjustmentReason: e.target.value })}
+                                    className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
+                                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+                                    placeholder="VD: Nhập thêm 50 máy từ nhà cung cấp"
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <button type="button" onClick={removeVariant}
-                            className="mt-2 h-9 w-full cursor-pointer rounded-xl px-4 text-xs font-semibold text-white transition sm:hidden"
-                            style={{ background: "rgba(239,68,68,0.75)", border: "1px solid rgba(239,68,68,0.3)" }}>
-                            Xóa biến thể {vIdx + 1}
-                          </button>
-                          <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_1fr_1fr_auto] sm:gap-3 sm:items-center">
-                            <input type="number" min={0} value={v.ramGb} onChange={(e) => updateVariant({ ramGb: e.target.value === "" ? "" : Number(e.target.value) })}
-                              className="h-11 rounded-2xl px-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
-                              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="RAM (GB)" />
-                            <input type="number" min={0} value={v.storageGb} onChange={(e) => updateVariant({ storageGb: e.target.value === "" ? "" : Number(e.target.value) })}
-                              className="h-11 rounded-2xl px-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
-                              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="Bộ nhớ (GB)" />
-                            <input type="number" min={0} value={v.quantity} onChange={(e) => updateVariant({ quantity: e.target.value === "" ? "" : Number(e.target.value) })}
-                              className="h-11 rounded-2xl px-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
-                              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="Số lượng" />
-                            <input type="number" min={0} value={v.price} onChange={(e) => updateVariant({ price: e.target.value === "" ? "" : Number(e.target.value) })}
-                              className="h-11 rounded-2xl px-3 text-sm text-white/90 outline-none transition placeholder:text-white/30"
-                              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="Giá" />
-                            <button type="button" onClick={removeVariant}
-                              className="h-11 cursor-pointer rounded-2xl px-4 text-xs font-semibold text-white transition"
-                              style={{ background: "rgba(239,68,68,0.75)", border: "1px solid rgba(239,68,68,0.3)" }}>
-                              Xóa
-                            </button>
+                          
+                          {/* Desktop view */}
+                          <div className="hidden sm:block">
+                            <div className="mb-3 flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.6), rgba(147,51,234,0.6))" }}>
+                                  {vIdx + 1}
+                                </div>
+                                <span className="text-sm font-semibold text-white/90">Biến thể {vIdx + 1}</span>
+                              </div>
+                              <button type="button" onClick={removeVariant}
+                                className="h-9 px-4 cursor-pointer rounded-xl text-xs font-semibold text-white transition hover:brightness-110 active:scale-95"
+                                style={{ background: "rgba(239,68,68,0.75)", border: "1px solid rgba(239,68,68,0.3)" }}>
+                                Xóa biến thể
+                              </button>
+                            </div>
+                            <div className={v.variantId ? "grid grid-cols-4 gap-3" : "grid grid-cols-3 gap-3"}>
+                              <div>
+                                <label className="mb-1.5 block text-xs font-medium text-white/60">RAM (GB)</label>
+                                <input type="number" min={0} value={v.ramGb} onChange={(e) => updateVariant({ ramGb: e.target.value === "" ? "" : Number(e.target.value) })}
+                                  className="h-11 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
+                                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="RAM" />
+                              </div>
+                              <div>
+                                <label className="mb-1.5 block text-xs font-medium text-white/60">Bộ nhớ (GB)</label>
+                                <input type="number" min={0} value={v.storageGb} onChange={(e) => updateVariant({ storageGb: e.target.value === "" ? "" : Number(e.target.value) })}
+                                  className="h-11 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
+                                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="Bộ nhớ" />
+                              </div>
+                              <div>
+                                <label className="mb-1.5 block text-xs font-medium text-white/60">Giá (VNĐ)</label>
+                                <input type="number" min={0} value={v.price} onChange={(e) => updateVariant({ price: e.target.value === "" ? "" : Number(e.target.value) })}
+                                  className="h-11 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
+                                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} placeholder="Giá" />
+                              </div>
+                              {v.variantId && (
+                                <div>
+                                  <label className="mb-1.5 block text-xs font-medium text-emerald-400">Tồn hiện tại</label>
+                                  <input type="number" value={v.currentStock ?? 0} readOnly disabled
+                                    className="h-11 w-full rounded-xl px-3 text-sm text-emerald-300 font-semibold outline-none cursor-not-allowed"
+                                    style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)" }} />
+                                </div>
+                              )}
+                            </div>
+                            {/* Stock adjustment (desktop) */}
+                            {v.variantId && (
+                              <div className="mt-4 pt-4" style={{ borderTop: "1px dashed rgba(255,255,255,0.15)" }}>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <svg className="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                      </svg>
+                                      <span className="text-xs font-medium text-amber-400">
+                                        Điều chỉnh tồn kho (+/-)
+                                      </span>
+                                    </div>
+                                    <input
+                                      type="number"
+                                      value={v.stockAdjustment === "" ? "" : v.stockAdjustment}
+                                      onChange={(e) => updateVariant({ stockAdjustment: e.target.value === "" ? "" : Number(e.target.value) })}
+                                      className="h-11 w-full rounded-xl px-4 text-sm text-white/90 outline-none transition focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/20"
+                                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+                                      placeholder="VD: +50 hoặc -10"
+                                    />
+                                    {v.stockAdjustment !== "" && v.stockAdjustment !== undefined && (
+                                      <div className="mt-2 text-xs font-medium text-amber-300">
+                                        Tồn sau điều chỉnh: {(v.currentStock ?? 0) + Number(v.stockAdjustment)}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <svg className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                      <span className="text-xs font-medium text-blue-400">
+                                        Lý do điều chỉnh (bắt buộc nếu có thay đổi)
+                                      </span>
+                                    </div>
+                                    <input
+                                      type="text"
+                                      value={v.adjustmentReason || ""}
+                                      onChange={(e) => updateVariant({ adjustmentReason: e.target.value })}
+                                      className="h-11 w-full rounded-xl px-4 text-sm text-white/90 outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
+                                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+                                      placeholder="VD: Nhập thêm 50 máy từ nhà cung cấp, Điều chỉnh kiểm kê..."
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

@@ -7,6 +7,7 @@ import com.webbanhang.shop.Model.Orders.Order;
 import com.webbanhang.shop.Service.Orders.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -61,6 +62,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id:\\d+}")
+    @PreAuthorize("hasRole('ADMIN')") // ✅ Only ADMIN can soft delete orders
     public ResponseEntity<Void> softDelete(@PathVariable Integer id) {
         boolean ok = orderService.softDelete(id);
         if (!ok) {
@@ -70,6 +72,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{id:\\d+}/restore")
+    @PreAuthorize("hasRole('ADMIN')") // ✅ Only ADMIN can restore orders
     public ResponseEntity<Void> restore(@PathVariable Integer id) {
         boolean ok = orderService.restore(id);
         if (!ok) {
@@ -79,6 +82,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id:\\d+}/force")
+    @PreAuthorize("hasRole('ADMIN')") // ✅ Only ADMIN can delete orders forever
     public ResponseEntity<Void> deleteForever(@PathVariable Integer id) {
         boolean ok = orderService.deleteForever(id);
         if (!ok) {

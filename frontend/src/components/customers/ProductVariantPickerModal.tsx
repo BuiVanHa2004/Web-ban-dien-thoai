@@ -82,9 +82,12 @@ export default function ProductVariantPickerModal({
     null;
   const maxQty = hasVariants
     ? variants.length > 0
-      ? Number(selectedVariant?.quantity ?? 0) || 0
+      ? Number(selectedVariant?.availableStock ?? selectedVariant?.quantity ?? 0) || 0
       : 0
-    : (selectedColor?.variants ?? []).reduce((s, v) => s + (Number(v.quantity) || 0), 0) || (Number(selectedColor?.quantity) || 0);
+    : (selectedColor?.variants ?? []).reduce((s, v) => {
+        const stock = v.availableStock !== undefined ? v.availableStock : v.quantity;
+        return s + (Number(stock) || 0);
+      }, 0) || (Number(selectedColor?.quantity) || 0);
 
   const canSubmit = maxQty > 0 && quantity >= 1 && quantity <= maxQty;
 
@@ -187,7 +190,11 @@ export default function ProductVariantPickerModal({
                 {(product.productColors ?? []).map((c) => (
                   (() => {
                     const colorVariants = c.variants || [];
-                    const variantQty = colorVariants.reduce((sum, v) => sum + (Number(v.quantity) || 0), 0);
+                    // Use availableStock instead of quantity
+                    const variantQty = colorVariants.reduce((sum, v) => {
+                      const stock = v.availableStock !== undefined ? v.availableStock : v.quantity;
+                      return sum + (Number(stock) || 0);
+                    }, 0);
                     const colorQty = hasVariants ? variantQty : (variantQty || Number(c.quantity ?? 0) || 0);
                     const isOutColor = colorQty <= 0;
                     return (
@@ -220,7 +227,8 @@ export default function ProductVariantPickerModal({
                   {variants.length > 0 ? (
                     variants.map((v) => (
                       (() => {
-                        const isOutVariant = (Number(v.quantity) || 0) <= 0;
+                        const stock = v.availableStock !== undefined ? v.availableStock : v.quantity;
+                        const isOutVariant = (Number(stock) || 0) <= 0;
                         return (
                           <button
                             key={v.variantId}
@@ -233,7 +241,7 @@ export default function ProductVariantPickerModal({
                               } ${isOutVariant ? "cursor-not-allowed opacity-30 blur-[0.5px] line-through decoration-rose-500" : ""}`}
                             title={isOutVariant ? "Phiên bản này đã hết hàng" : undefined}
                           >
-                            {getVariantLabel(v)} {isOutVariant ? "(Hết hàng)" : `(${v.quantity ?? 0})`}
+                            {getVariantLabel(v)} {isOutVariant ? "(Hết hàng)" : `(${stock ?? 0})`}
                           </button>
                         );
                       })()
@@ -255,7 +263,7 @@ export default function ProductVariantPickerModal({
                 onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
                 className="h-10 w-24 rounded-2xl border border-zinc-500/50 bg-zinc-800/60 px-3 text-sm text-zinc-100 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30"
               />
-              <div className="mt-1 text-xs text-zinc-500">Tồn kho: {maxQty}</div>
+              <div className="mt-1 text-xs text-zinc-500">Còn lại: {maxQty}</div>
             </div>
           </div>
         </div>

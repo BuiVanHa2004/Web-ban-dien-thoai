@@ -94,6 +94,12 @@ const PAYMENT_CONFIG: Record<string, { label: string; color: string; bg: string 
   PENDING: { label: "Chờ thanh toán", color: "text-amber-600", bg: "bg-amber-50" },
   WAITING_CONFIRM: { label: "Chờ xác nhận chuyển khoản", color: "text-indigo-600", bg: "bg-indigo-50" },
   PAID: { label: "Đã thanh toán", color: "text-emerald-600", bg: "bg-emerald-50" },
+  FAILED: { label: "Thất bại", color: "text-rose-600", bg: "bg-rose-50" },
+  REFUND_PENDING: { label: "Đang chờ hoàn tiền", color: "text-orange-600", bg: "bg-orange-50" },
+  REFUNDED: { label: "Đã hoàn tiền", color: "text-blue-600", bg: "bg-blue-50" },
+  PARTIAL_REFUNDED: { label: "Hoàn tiền một phần", color: "text-sky-600", bg: "bg-sky-50" },
+  PARTIAL_PAID: { label: "Thanh toán một phần", color: "text-cyan-600", bg: "bg-cyan-50" },
+  REOPENED: { label: "Đã mở lại", color: "text-purple-600", bg: "bg-purple-50" },
 };
 
 function formatVnd(value: number) {
@@ -748,8 +754,8 @@ export default function OrderId() {
         </motion.div>
       </div>
 
-      {/* Admin Payment Approval Note - Show when payment is approved (PAID + has adminNote) */}
-      {order?.orderStatus !== "CANCELLED" && order?.paymentStatus === "PAID" && (order?.adminNote || order?.adminNoteAuthor) && (
+      {/* Admin Payment Approval Note - Show when payment is approved (PAID + has adminNoteAuthor) */}
+      {order?.orderStatus !== "CANCELLED" && order?.paymentStatus === "PAID" && order?.adminNoteAuthor && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -781,16 +787,14 @@ export default function OrderId() {
                   </div>
                 </div>
               </div>
-              {order.adminNote && (
-                <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
-                  <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500 mb-2">
-                    Ghi chú
-                  </div>
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {order.adminNote}
-                  </p>
+              <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500 mb-2">
+                  Ghi chú
                 </div>
-              )}
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {order.adminNote || "(Không có ghi chú)"}
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>

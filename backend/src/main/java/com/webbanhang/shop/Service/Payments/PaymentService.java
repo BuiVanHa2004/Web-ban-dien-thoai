@@ -35,6 +35,8 @@ public interface PaymentService {
     void logViewBill(Integer attemptId, Integer adminId);
 
     List<PaymentLog> getLogsByOrderId(Integer orderId);
+    
+    List<PaymentLog> getLogsByAttemptId(Integer attemptId);
 
     /**
      * Confirm bank transfer for an order after a bank transaction match.
@@ -54,5 +56,13 @@ public interface PaymentService {
     void deleteArchivedAttemptForever(Integer attemptId);
 
     void deleteAllArchivedAttempts();
+    
+    // Trash management (soft delete)
+    List<PaymentAttempt> getTrashedAttempts();
+    
+    void softDeleteAttempt(Integer attemptId);
+    
+    void restoreAttempt(Integer attemptId);
+    
+    void deleteAttemptForever(Integer attemptId);
 }
-

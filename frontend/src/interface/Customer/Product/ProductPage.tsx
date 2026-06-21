@@ -390,7 +390,7 @@ export default function ProductPage() {
                       const variants = c.variants || [];
                       return sum + (variants.length > 0
                         ? variants.reduce((s, v) => s + (Number(v.availableStock) || 0), 0)
-                        : (Number(c.quantity) || 0));
+                        : (Number(c.quantity) || 0)); // Fallback for legacy
                     }, 0);
 
                     // Giá min - max từ tất cả variants (finalPrice > 0 ưu tiên, fallback originalPrice)
@@ -428,7 +428,7 @@ export default function ProductPage() {
                                 {colorNames.join(" · ")}
                               </span>
                             )}
-                            <span className="text-[10px] text-slate-500">Kho: {totalQty}</span>
+                            <span className="text-[10px] text-slate-500">Còn lại: {totalQty}</span>
                           </div>
                           {minPrice > 0 && (
                             <div className="mt-0.5 text-[11px] font-bold text-emerald-400">

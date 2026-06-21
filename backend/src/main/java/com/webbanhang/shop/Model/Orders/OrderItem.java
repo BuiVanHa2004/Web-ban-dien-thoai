@@ -36,31 +36,31 @@ public class OrderItem {
     private Integer variantId;
 
     @Column(name = "product_name", length = 255)
-    private String productName;
+    private String productName;  // ✅ SNAPSHOT: Product name at order time
 
     @Column(name = "product_price", precision = 15, scale = 2)
-    private BigDecimal productPrice;
+    private BigDecimal productPrice;  // ✅ SNAPSHOT: Final price (after discount) at order time
 
     @Column(name = "original_price", precision = 15, scale = 2)
-    private BigDecimal originalPrice;
+    private BigDecimal originalPrice;  // ✅ SNAPSHOT: Original price before discount
 
     @Column(name = "ram_gb")
-    private Integer ramGb;
+    private Integer ramGb;  // ✅ SNAPSHOT: RAM specification
 
     @Column(name = "storage_gb")
-    private Integer storageGb;
+    private Integer storageGb;  // ✅ SNAPSHOT: Storage specification
 
     @Column(name = "color_name", length = 100)
-    private String colorName;
+    private String colorName;  // ✅ SNAPSHOT: Color name
 
     @Column(name = "quantity")
-    private Integer quantity = 1;
+    private Integer quantity = 1;  // ✅ SNAPSHOT: Quantity ordered
 
     @Column(name = "product_image", length = 1024)
-    private String productImage;
+    private String productImage;  // ✅ SNAPSHOT: Product image URL (legacy)
 
     @Column(name = "image_url", length = 500)
-    private String imageUrl;
+    private String imageUrl;  // ✅ SNAPSHOT: Image URL at order time
 
     @Column(name = "created_at")
     private java.time.LocalDateTime createdAt;

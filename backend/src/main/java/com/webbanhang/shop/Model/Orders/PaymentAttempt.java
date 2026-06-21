@@ -81,6 +81,17 @@ public class PaymentAttempt {
 
     @Column(name = "archived_at")
     private LocalDateTime archivedAt;
+    
+    // Lưu thông tin snapshot khi archive
+    @Column(name = "archived_order_code", length = 50)
+    private String archivedOrderCode;
+    
+    @Column(name = "archived_admin_note", length = 1000)
+    private String archivedAdminNote;
+    
+    // Soft delete support
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

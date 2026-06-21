@@ -284,12 +284,21 @@ export default function PaymentPage() {
     setShowDetailModal(true);
     try {
       adminManualPaymentService.logView(attempt.attemptId, currentAdminId);
-      const [logs, order] = await Promise.all([
-        adminManualPaymentService.getLogs(attempt.orderId),
-        orderService.getById(attempt.orderId),
-      ]);
+      
+      // Use attemptId to fetch logs (works even if orderId is null/archived)
+      const logs = await adminManualPaymentService.getLogsByAttemptId(attempt.attemptId);
       setAttemptLogs(logs);
-      setDetailOrder(order);
+      
+      // Try to fetch order if orderId exists and is valid
+      if (attempt.orderId !== null && attempt.orderId !== undefined) {
+        try {
+          const order = await orderService.getById(attempt.orderId);
+          setDetailOrder(order);
+        } catch (err) {
+          console.log("Order not found or deleted");
+          setDetailOrder(null);
+        }
+      }
     } catch (e) {
       console.error("Failed to fetch logs or order", e);
     }
@@ -305,8 +314,8 @@ export default function PaymentPage() {
       const match = updated.find((a) => a.attemptId === attemptId);
       if (match) {
         setSelectedAttempt(match);
-        // Reload logs
-        const logs = await adminManualPaymentService.getLogs(match.orderId);
+        // Reload logs using attemptId
+        const logs = await adminManualPaymentService.getLogsByAttemptId(attemptId);
         setAttemptLogs(logs);
       }
     } catch (err: any) {
@@ -322,7 +331,8 @@ export default function PaymentPage() {
       const match = updated.find((a) => a.attemptId === attemptId);
       if (match) {
         setSelectedAttempt(match);
-        const logs = await adminManualPaymentService.getLogs(match.orderId);
+        // Reload logs using attemptId
+        const logs = await adminManualPaymentService.getLogsByAttemptId(attemptId);
         setAttemptLogs(logs);
       }
     } catch (err: any) {
@@ -743,7 +753,7 @@ export default function PaymentPage() {
                             </div>
                             <p className="text-xs sm:text-sm font-medium text-white/90 break-words mb-3">
                               {selectedAttempt.status === "MATCHED" 
-                                ? (detailOrder?.paymentNote || "Không có ghi chú")
+                                ? (detailOrder?.adminNote || "Không có ghi chú")
                                 : (selectedAttempt.rejectReason || "Không có ghi chú")}
                             </p>
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold text-white/50">

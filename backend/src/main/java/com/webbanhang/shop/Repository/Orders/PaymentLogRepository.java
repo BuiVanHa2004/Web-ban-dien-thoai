@@ -10,4 +10,5 @@ import java.util.List;
 public interface PaymentLogRepository extends JpaRepository<PaymentLog, Long> {
     List<PaymentLog> findByOrderIdOrderByCreatedAtDesc(Integer orderId);
     List<PaymentLog> findByPaymentIdOrderByCreatedAtDesc(Integer paymentId);
+    List<PaymentLog> findByPaymentAttemptIdOrderByCreatedAtDesc(Integer paymentAttemptId);
 }

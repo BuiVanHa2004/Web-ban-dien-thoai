@@ -41,7 +41,7 @@ public class ProductVariant {
     private Integer storageGb;
 
     @Column(name = "quantity", nullable = false)
-    private Integer quantity = 0;
+    private Integer quantity = 0; // ❌ DEPRECATED: Use totalStock instead
 
     // New inventory management columns
     @Column(name = "total_stock", nullable = false)
@@ -52,10 +52,41 @@ public class ProductVariant {
 
     @Column(name = "sold_stock", nullable = false)
     private Integer soldStock = 0;
+    
+    /**
+     * ⚠️ DEPRECATED: Use reservedStock instead
+     * Kept for backward compatibility only
+     */
+    @Deprecated
+    @Column(name = "reserved_quantity", nullable = false)
+    private Integer reservedQuantity = 0;
 
     @jakarta.persistence.Version
     @Column(name = "version", nullable = false)
     private Integer version = 0;
+    
+    /**
+     * ✅ COMPUTED FIELD: Available stock for sale
+     * This should NEVER be stored in database
+     * 
+     * Formula: available_stock = total_stock - reserved_stock (NOT subtracting sold_stock)
+     * 
+     * Logic:
+     * - total_stock: Tổng hàng trong kho vật lý
+     * - reserved_stock: Hàng đang được giữ cho đơn hàng chờ xử lý
+     * - sold_stock: Hàng đã bán (chỉ để thống kê, KHÔNG ảnh hưởng available)
+     * 
+     * Khi RESERVE: reserved_stock tăng → available giảm
+     * Khi CONFIRM SALE: reserved_stock giảm, sold_stock tăng → available không đổi
+     * Khi RELEASE: reserved_stock giảm → available tăng
+     * 
+     * @return Available quantity that can be reserved for new orders
+     */
+    @jakarta.persistence.Transient
+    public Integer getAvailableStock() {
+        // ✅ CORRECT: available = total - reserved (sold_stock là số liệu thống kê)
+        return Math.max(0, totalStock - reservedStock);
+    }
 
     @Column(name = "original_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal originalPrice;

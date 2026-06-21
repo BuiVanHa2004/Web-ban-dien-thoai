@@ -48,6 +48,32 @@ public interface OrderService {
 
     void restoreInventory(Order order);
     
+    /**
+     * ✅ NEW: Update payment status for refund process
+     * 
+     * @param orderId Order ID
+     * @param paymentStatus New payment status (REFUND_PENDING, REFUNDED, PARTIAL_REFUNDED)
+     * @param note Admin note explaining the status change
+     * @param adminId Admin who performed the action
+     * @param adminName Admin name
+     * @return Updated order
+     */
+    Optional<Order> updatePaymentStatus(
+            Integer orderId, 
+            com.webbanhang.shop.Model.Orders.PaymentStatus paymentStatus, 
+            String note, 
+            Integer adminId, 
+            String adminName
+    );
+    
+    /**
+     * Get admin full name by admin ID
+     * 
+     * @param adminId Admin ID
+     * @return Admin full name or null if not found
+     */
+    String getAdminFullName(Integer adminId);
+    
     com.webbanhang.shop.DTO.Orders.OrderDto convertToDto(Order order);
     
     java.util.List<com.webbanhang.shop.DTO.Orders.OrderDto> convertToDtoList(java.util.List<Order> orders);

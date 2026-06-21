@@ -149,6 +149,7 @@ const MemoizedOrderRow = React.memo(({
   onToggleSelect,
   onView,
   onDelete,
+  userRole,
 }: {
   order: OrderRow;
   isViewed: boolean;
@@ -157,6 +158,7 @@ const MemoizedOrderRow = React.memo(({
   onToggleSelect: (id: string) => void;
   onView: (id: string) => void;
   onDelete: (id: string) => void;
+  userRole: string | null;
 }) => {
   return (
     <tr
@@ -169,14 +171,16 @@ const MemoizedOrderRow = React.memo(({
             : "bg-white hover:bg-slate-50 dark:bg-transparent dark:hover:bg-white/5")
       }
     >
-      <td className="px-5 py-4 text-center">
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => onToggleSelect(order.id)}
-          className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-        />
-      </td>
+      {userRole === "ADMIN" && (
+        <td className="px-5 py-4 text-center">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect(order.id)}
+            className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+          />
+        </td>
+      )}
       <td className="px-5 py-4 text-center">
         <div className="font-semibold text-slate-900 dark:text-slate-100">{order.code}</div>
       </td>
@@ -237,18 +241,20 @@ const MemoizedOrderRow = React.memo(({
             Xem chi tiết
           </button>
 
-          <button
-            type="button"
-            onClick={() => onDelete(order.id)}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white shadow-sm ring-1 ring-rose-600/20 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-rose-500 hover:shadow-md active:translate-y-0 dark:bg-rose-500/15 dark:text-rose-200 dark:ring-1 dark:ring-rose-400/20 dark:hover:bg-rose-500/20 dark:hover:ring-rose-400/30 dark:hover:shadow-black/30"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 6h18" />
-              <path d="M8 6V4h8v2" />
-              <path d="M6 6l1 16h10l1-16" />
-            </svg>
-            Xóa
-          </button>
+          {userRole === "ADMIN" && (
+            <button
+              type="button"
+              onClick={() => onDelete(order.id)}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white shadow-sm ring-1 ring-rose-600/20 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-rose-500 hover:shadow-md active:translate-y-0 dark:bg-rose-500/15 dark:text-rose-200 dark:ring-1 dark:ring-rose-400/20 dark:hover:bg-rose-500/20 dark:hover:ring-rose-400/30 dark:hover:shadow-black/30"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="M6 6l1 16h10l1-16" />
+              </svg>
+              Xóa
+            </button>
+          )}
         </div>
       </td>
     </tr>
@@ -268,6 +274,7 @@ export default function OrderPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [viewedIds, setViewedIds] = React.useState<Set<string>>(new Set());
+  const [userRole, setUserRole] = React.useState<string | null>(null);
 
   // Filter States
   const [statusFilter, setStatusFilter] = React.useState<string>("");
@@ -285,6 +292,16 @@ export default function OrderPage() {
       try {
         setViewedIds(new Set(JSON.parse(saved)));
       } catch { }
+    }
+    // Get user role
+    const userRaw = localStorage.getItem("user");
+    if (userRaw) {
+      try {
+        const user = JSON.parse(userRaw);
+        setUserRole(user.role?.toUpperCase() || null);
+      } catch {
+        // ignore
+      }
     }
   }, []);
 
@@ -456,7 +473,7 @@ export default function OrderPage() {
             Làm mới
           </button>
 
-          {selectedIds.size > 0 && (
+          {selectedIds.size > 0 && userRole === "ADMIN" && (
             <button
               onClick={handleBulkDelete}
               disabled={isBulkDeleting}
@@ -475,22 +492,24 @@ export default function OrderPage() {
             </button>
           )}
 
-          <Link
-            href="/orders/trash"
-            className="group inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-emerald-600/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-md active:translate-y-0 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-1 dark:ring-emerald-400/20 dark:hover:bg-emerald-500/20 dark:hover:ring-emerald-400/30 dark:hover:shadow-black/30"
-          >
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/15 transition-all duration-500 ease-out dark:bg-emerald-500/20 dark:ring-emerald-400/20">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 6h18" />
-                <path d="M8 6V4h8v2" />
-                <path d="M6 6l1 16h10l1-16" />
-              </svg>
-            </span>
-            Thùng rác
-            <span className="ml-1 inline-flex items-center rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold text-white ring-1 ring-white/15 transition-all duration-500 ease-out dark:bg-emerald-500/20 dark:text-emerald-200 dark:ring-1 dark:ring-emerald-400/20">
-              {trashCount}
-            </span>
-          </Link>
+          {userRole === "ADMIN" && (
+            <Link
+              href="/orders/trash"
+              className="group inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-emerald-600/20 transition-all duration-500 ease-out hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-md active:translate-y-0 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-1 dark:ring-emerald-400/20 dark:hover:bg-emerald-500/20 dark:hover:ring-emerald-400/30 dark:hover:shadow-black/30"
+            >
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/15 transition-all duration-500 ease-out dark:bg-emerald-500/20 dark:ring-emerald-400/20">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4h8v2" />
+                  <path d="M6 6l1 16h10l1-16" />
+                </svg>
+              </span>
+              Thùng rác
+              <span className="ml-1 inline-flex items-center rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold text-white ring-1 ring-white/15 transition-all duration-500 ease-out dark:bg-emerald-500/20 dark:text-emerald-200 dark:ring-1 dark:ring-emerald-400/20">
+                {trashCount}
+              </span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -675,14 +694,16 @@ export default function OrderPage() {
           <table ref={tableRef} className="min-w-full border-collapse text-center text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-700 dark:bg-slate-800 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
-                <th className="px-5 py-3 w-10 text-center">
-                  <input
-                    type="checkbox"
-                    checked={filtered.length > 0 && selectedIds.size === filtered.length}
-                    onChange={toggleSelectAll}
-                    className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                </th>
+                {userRole === "ADMIN" && (
+                  <th className="px-5 py-3 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      checked={filtered.length > 0 && selectedIds.size === filtered.length}
+                      onChange={toggleSelectAll}
+                      className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </th>
+                )}
                 <th className="px-5 py-3 text-center">Mã đơn hàng</th>
                 <th className="px-5 py-3 text-center">Khách hàng</th>
                 <th className="px-5 py-3 text-center">Sản phẩm</th>
@@ -721,6 +742,7 @@ export default function OrderPage() {
                       router.push(`/orders/${encodeURIComponent(id)}`);
                     }}
                     onDelete={softDelete}
+                    userRole={userRole}
                   />
                 ))
               )}

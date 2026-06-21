@@ -105,6 +105,12 @@ export default function OrderId() {
   const [selectedItem, setSelectedItem] = React.useState<NonNullable<OrderDto["items"]>[number] | null>(null);
   const [productMap, setProductMap] = React.useState<Record<number, ProductDto>>({});
   const [isAdminCancelOpen, setIsAdminCancelOpen] = React.useState(false);
+  const [isRefundModalOpen, setIsRefundModalOpen] = React.useState(false);
+  const [refundStatus, setRefundStatus] = React.useState<"REFUND_PENDING" | "REFUNDED" | "PARTIAL_REFUNDED">("REFUND_PENDING");
+  const [refundNote, setRefundNote] = React.useState("");
+  const [refundSaving, setRefundSaving] = React.useState(false);
+  const [openRefundDropdown, setOpenRefundDropdown] = React.useState(false);
+  const [userRole, setUserRole] = React.useState<string | null>(null);
 
   const items = React.useMemo(() => order?.items || [], [order]);
 
@@ -115,6 +121,21 @@ export default function OrderId() {
   const totalQuantity = React.useMemo(() => {
     return items.reduce((sum, it) => sum + toNumberSafe(it.quantity), 0);
   }, [items]);
+
+  React.useEffect(() => {
+    // Get user role from localStorage
+    if (typeof window !== "undefined") {
+      const userRaw = localStorage.getItem("user");
+      if (userRaw) {
+        try {
+          const user = JSON.parse(userRaw);
+          setUserRole(user.role?.toUpperCase() || null);
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }, []);
 
   React.useEffect(() => {
     if (!Number.isFinite(id) || Number.isNaN(id)) {
@@ -187,6 +208,56 @@ export default function OrderId() {
       setSaving(false);
     }
   }
+
+  async function saveRefundStatus() {
+    if (!Number.isFinite(id) || Number.isNaN(id)) return;
+    
+    if (!refundNote.trim()) {
+      setError("Vui lòng nhập lý do hoàn tiền.");
+      return;
+    }
+
+    setRefundSaving(true);
+    setError(null);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      
+      const response = await fetch(`${API_URL}/api/admin/orders/${id}/payment-status`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          paymentStatus: refundStatus,
+          note: refundNote,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Không thể cập nhật trạng thái thanh toán.");
+      }
+
+      await load();
+      setIsRefundModalOpen(false);
+      setRefundNote("");
+    } catch (e: any) {
+      setError(e?.message || "Không thể cập nhật trạng thái thanh toán.");
+    } finally {
+      setRefundSaving(false);
+    }
+  }
+
+  React.useEffect(() => {
+    if (!openRefundDropdown) return;
+    function onWindowClick() {
+      setOpenRefundDropdown(false);
+    }
+    window.addEventListener("click", onWindowClick);
+    return () => window.removeEventListener("click", onWindowClick);
+  }, [openRefundDropdown]);
 
   React.useEffect(() => {
     if (!openStatusDropdown) return;
@@ -309,7 +380,7 @@ export default function OrderId() {
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
                   Trạng thái thanh toán
                 </div>
-                <div className="mt-1">
+                <div className="mt-1 flex items-center gap-2">
                   <span
                     className={
                       "inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold " +
@@ -318,6 +389,19 @@ export default function OrderId() {
                   >
                     {paymentLabel(getRealPaymentStatus(order))}
                   </span>
+                  {/* Show refund button only for ADMIN (not STAFF) */}
+                  {userRole === "ADMIN" && order.paymentStatus === "PAID" && order.orderStatus !== "CANCELLED" && order.orderStatus !== "DELIVERED" && (
+                    <button
+                      onClick={() => setIsRefundModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 ring-1 ring-blue-200 transition-all hover:bg-blue-600 hover:text-white hover:ring-blue-600 active:scale-95 dark:bg-blue-500/10 dark:ring-blue-500/20 dark:hover:bg-blue-500"
+                      title="Cập nhật trạng thái hoàn tiền"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                      </svg>
+                      Hoàn tiền
+                    </button>
+                  )}
                 </div>
               </div>
               <div>
@@ -354,7 +438,7 @@ export default function OrderId() {
           </div>
 
           {/* Admin Payment Note - Show for approved payments */}
-          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "PAID" && order.adminNote && (
+          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "PAID" && order.adminNoteAuthor && (
             <div className="rounded-3xl border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm backdrop-blur dark:border-emerald-500/20 dark:bg-emerald-500/5">
               <div className="mb-4 flex items-center gap-2 font-bold text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="h-5 w-5" />
@@ -379,20 +463,77 @@ export default function OrderId() {
                     Đã xác nhận thanh toán
                   </div>
                 </div>
-                {order.adminNote && (
-                  <div className="md:col-span-2 lg:col-span-4 space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Ghi chú</div>
-                    <div className="rounded-2xl bg-white/50 p-3 text-sm text-slate-700 dark:bg-black/20 dark:text-slate-300">
-                      {order.adminNote}
-                    </div>
+                <div className="md:col-span-2 lg:col-span-4 space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Ghi chú</div>
+                  <div className="rounded-2xl bg-white/50 p-3 text-sm text-slate-700 dark:bg-black/20 dark:text-slate-300">
+                    {order.adminNote || "(Không có ghi chú)"}
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Refund Status Info - Show for refund pending/refunded orders */}
+          {order.orderStatus !== "CANCELLED" && (order.paymentStatus === "REFUND_PENDING" || order.paymentStatus === "REFUNDED" || order.paymentStatus === "PARTIAL_REFUNDED") && order.adminNoteAuthor && (
+            <div className="rounded-3xl border border-blue-200 bg-blue-50/50 p-5 shadow-sm backdrop-blur dark:border-blue-500/20 dark:bg-blue-500/5">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 font-bold text-blue-700 dark:text-blue-400">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  </svg>
+                  Thông tin hoàn tiền
+                </div>
+                {/* Show update button only for ADMIN and when status is REFUND_PENDING or PARTIAL_REFUNDED */}
+                {userRole === "ADMIN" && (order.paymentStatus === "REFUND_PENDING" || order.paymentStatus === "PARTIAL_REFUNDED") && (
+                  <button
+                    onClick={() => setIsRefundModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-600 ring-1 ring-blue-200 transition-all hover:bg-blue-600 hover:text-white hover:ring-blue-600 active:scale-95 dark:bg-blue-500/10 dark:ring-blue-500/20 dark:hover:bg-blue-500"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Cập nhật
+                  </button>
                 )}
+              </div>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-blue-400 dark:text-blue-500">Người xử lý</div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white">
+                    {order.adminNoteAuthor || "Admin"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-blue-400 dark:text-blue-500">Thời gian</div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white">
+                    {formatDate(order.adminNoteDate) || "-"}
+                  </div>
+                </div>
+                <div className="space-y-1 lg:col-span-2">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-blue-400 dark:text-blue-500">Trạng thái hiện tại</div>
+                  <div className="text-sm font-bold">
+                    <span
+                      className={
+                        "inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold " +
+                        paymentBadgeClass(order.paymentStatus)
+                      }
+                    >
+                      {paymentLabel(order.paymentStatus)}
+                    </span>
+                  </div>
+                </div>
+                <div className="md:col-span-2 lg:col-span-4 space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-blue-400 dark:text-blue-500">Ghi chú hoàn tiền</div>
+                  <div className="rounded-2xl bg-white/50 p-3 text-sm text-slate-700 dark:bg-black/20 dark:text-slate-300">
+                    {order.adminNote || "(Không có ghi chú)"}
+                  </div>
+                </div>
               </div>
             </div>
           )}
 
           {/* Admin Payment Rejection Note - Show for rejected payments (not cancelled) */}
-          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "UNPAID" && order.orderStatus === "CONFIRMED" && order.adminNote && (
+          {order.orderStatus !== "CANCELLED" && order.paymentStatus === "UNPAID" && order.orderStatus === "CONFIRMED" && order.adminNoteAuthor && (
             <div className="rounded-3xl border border-amber-200 bg-amber-50/50 p-5 shadow-sm backdrop-blur dark:border-amber-500/20 dark:bg-amber-500/5">
               <div className="mb-4 flex items-center gap-2 font-bold text-amber-700 dark:text-amber-400">
                 <AlertCircle className="h-5 w-5" />
@@ -417,14 +558,12 @@ export default function OrderId() {
                     Minh chứng bị từ chối
                   </div>
                 </div>
-                {order.adminNote && (
-                  <div className="md:col-span-2 lg:col-span-4 space-y-1">
-                    <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Lý do từ chối</div>
-                    <div className="rounded-2xl bg-white/50 p-3 text-sm text-slate-700 dark:bg-black/20 dark:text-slate-300">
-                      {order.adminNote}
-                    </div>
+                <div className="md:col-span-2 lg:col-span-4 space-y-1">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Lý do từ chối</div>
+                  <div className="rounded-2xl bg-white/50 p-3 text-sm text-slate-700 dark:bg-black/20 dark:text-slate-300">
+                    {order.adminNote || "(Không có lý do)"}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           )}
@@ -433,7 +572,8 @@ export default function OrderId() {
             <div className="rounded-3xl border border-rose-200 bg-rose-50/50 p-5 shadow-sm backdrop-blur dark:border-rose-500/20 dark:bg-rose-500/5">
               {(() => {
                 const isCustomer = order.cancelledBy === "CUSTOMER";
-                const isAdminOrderCancel = order.cancelledBy === "ADMIN";
+                const isAdmin = order.cancelledBy === "ADMIN";
+                const isSystem = order.cancelledBy === "SYSTEM";
 
                 let title = "Thông tin hủy đơn hàng";
                 let reasonLabel = "Lý do hủy đơn";
@@ -454,7 +594,9 @@ export default function OrderId() {
                 let noteValue = order.cancelNote;
                 let actorLabel = "Người thực hiện";
 
-                if (isAdminOrderCancel) {
+                if (isSystem) {
+                  title = "Thông tin hủy đơn hàng (Tự động)";
+                } else if (isAdmin) {
                   title = "Thông tin Quản trị viên hủy đơn";
                 } else if (isCustomer) {
                   title = "Thông tin Khách hàng hủy đơn";
@@ -482,7 +624,7 @@ export default function OrderId() {
                               <span className="text-[9px] font-black text-rose-400">({order.cancelledBy || "ADMIN"})</span>
                             </span>
                           ) : (
-                            order.cancelledBy === "CUSTOMER" ? "Khách hàng" : (order.cancelledBy || "Hệ thống")
+                            isCustomer ? "Khách hàng" : isSystem ? "Hệ thống" : (order.cancelledBy || "Hệ thống")
                           )}
                         </div>
                       </div>
@@ -889,6 +1031,269 @@ export default function OrderId() {
         }}
         orderId={id}
       />
+
+      {/* Refund Status Modal */}
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {isRefundModalOpen && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  if (!refundSaving) {
+                    setIsRefundModalOpen(false);
+                    setError(null);
+                  }
+                }}
+                className="absolute inset-0"
+                style={{
+                  backgroundColor: "rgba(15, 23, 42, 0.7)",
+                  backdropFilter: "blur(6px)",
+                  WebkitBackdropFilter: "blur(6px)",
+                }}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative flex w-full max-w-lg flex-col overflow-hidden rounded-[2rem]"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div
+                  className="flex items-start justify-between gap-3 px-6 py-5 shrink-0"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" }}
+                >
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wider text-cyan-400">Cập nhật hoàn tiền</div>
+                    <h3 className="mt-1 text-lg font-bold text-white/95">
+                      Cập nhật trạng thái hoàn tiền
+                    </h3>
+                    <p className="mt-1 text-sm text-white/70">
+                      Đơn hàng: {order?.orderCode}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!refundSaving) {
+                        setIsRefundModalOpen(false);
+                        setError(null);
+                      }
+                    }}
+                    disabled={refundSaving}
+                    className="inline-flex cursor-pointer h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-white/70 transition hover:-translate-y-0.5 hover:bg-rose-500 hover:text-white active:translate-y-0 disabled:opacity-50"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  >
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                  {error && (
+                    <div
+                      className="rounded-2xl p-4 text-sm text-rose-200"
+                      style={{ background: "rgba(244,63,94,0.15)", border: "1px solid rgba(244,63,94,0.2)" }}
+                    >
+                      {error}
+                    </div>
+                  )}
+
+                  {/* Current payment status */}
+                  <div
+                    className="rounded-[1.5rem] p-4"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  >
+                    <div className="text-xs font-bold uppercase tracking-wider text-white/50">
+                      Trạng thái thanh toán hiện tại
+                    </div>
+                    <div className="mt-2">
+                      <span
+                        className={
+                          "inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold " +
+                          paymentBadgeClass(order ? getRealPaymentStatus(order) : undefined)
+                        }
+                      >
+                        {paymentLabel(order ? getRealPaymentStatus(order) : undefined)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Refund status selector */}
+                  <div>
+                    <label className="block text-sm font-semibold text-white/90">
+                      Trạng thái hoàn tiền <span className="text-rose-400">*</span>
+                    </label>
+                    <div className="relative mt-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!refundSaving) {
+                            setOpenRefundDropdown((v) => !v);
+                          }
+                        }}
+                        disabled={refundSaving}
+                        className="flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-2xl px-4 text-left text-sm text-white/90 outline-none transition focus:ring-2 focus:ring-cyan-400/30 disabled:opacity-50"
+                        style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                      >
+                        <span className="truncate">
+                          {refundStatus === "REFUND_PENDING" && "Đang chờ hoàn tiền"}
+                          {refundStatus === "REFUNDED" && "Đã hoàn tiền"}
+                          {refundStatus === "PARTIAL_REFUNDED" && "Hoàn tiền một phần"}
+                        </span>
+                        <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-white/50" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M6 9l6 6 6-6" />
+                        </svg>
+                      </button>
+
+                      {openRefundDropdown && (
+                        <div
+                          className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-2xl shadow-lg animate-popover"
+                          style={{ background: "rgba(30,41,59,0.95)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="max-h-56 overflow-auto p-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRefundStatus("REFUND_PENDING");
+                                setOpenRefundDropdown(false);
+                              }}
+                              className={
+                                "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-white/10 " +
+                                (refundStatus === "REFUND_PENDING"
+                                  ? "bg-white/10 text-white"
+                                  : "text-white/80")
+                              }
+                            >
+                              Đang chờ hoàn tiền
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRefundStatus("REFUNDED");
+                                setOpenRefundDropdown(false);
+                              }}
+                              className={
+                                "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-white/10 " +
+                                (refundStatus === "REFUNDED"
+                                  ? "bg-white/10 text-white"
+                                  : "text-white/80")
+                              }
+                            >
+                              Đã hoàn tiền
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRefundStatus("PARTIAL_REFUNDED");
+                                setOpenRefundDropdown(false);
+                              }}
+                              className={
+                                "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-white/10 " +
+                                (refundStatus === "PARTIAL_REFUNDED"
+                                  ? "bg-white/10 text-white"
+                                  : "text-white/80")
+                              }
+                            >
+                              Hoàn tiền một phần
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Refund note */}
+                  <div>
+                    <label className="block text-sm font-semibold text-white/90">
+                      Ghi chú hoàn tiền <span className="text-rose-400">*</span>
+                    </label>
+                    <p className="mt-1 text-xs text-white/60">
+                      Nhập lý do hoàn tiền, số tiền hoàn, phương thức hoàn tiền...
+                    </p>
+                    <textarea
+                      value={refundNote}
+                      onChange={(e) => setRefundNote(e.target.value)}
+                      disabled={refundSaving}
+                      placeholder="Ví dụ: Hoàn tiền do sản phẩm lỗi. Số tiền: 10.000.000đ. Phương thức: Chuyển khoản ngân hàng..."
+                      rows={4}
+                      className="mt-2 block w-full rounded-2xl px-4 py-3 text-sm text-white/90 placeholder-white/40 outline-none transition focus:ring-2 focus:ring-cyan-400/30 disabled:opacity-50"
+                      style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                    />
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div
+                  className="flex items-center justify-end gap-3 px-6 py-4 shrink-0"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)" }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!refundSaving) {
+                        setIsRefundModalOpen(false);
+                        setError(null);
+                        setRefundNote("");
+                      }
+                    }}
+                    disabled={refundSaving}
+                    className="inline-flex cursor-pointer h-11 items-center justify-center rounded-2xl px-6 text-sm font-semibold text-white/80 transition-all hover:-translate-y-0.5 hover:text-white active:translate-y-0 disabled:opacity-50"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveRefundStatus}
+                    disabled={refundSaving || !refundNote.trim()}
+                    className="inline-flex cursor-pointer h-11 items-center justify-center gap-2 rounded-2xl px-6 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
+                    style={{ 
+                      background: refundSaving || !refundNote.trim() 
+                        ? "rgba(34,211,238,0.2)" 
+                        : "linear-gradient(135deg, rgba(34,211,238,0.3) 0%, rgba(6,182,212,0.3) 100%)",
+                      border: "1px solid rgba(34,211,238,0.3)",
+                      boxShadow: "0 0 20px rgba(34,211,238,0.15)"
+                    }}
+                  >
+                    {refundSaving ? (
+                      <>
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 6v6l4 2" />
+                        </svg>
+                        Đang lưu...
+                      </>
+                    ) : (
+                      <>
+                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M5 13l4 4L19 7" />
+                        </svg>
+                        Lưu thay đổi
+                      </>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

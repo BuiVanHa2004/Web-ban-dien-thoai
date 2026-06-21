@@ -313,6 +313,12 @@ export default function PaymentPage() {
       throw new Error("Vui lòng nhập đầy đủ thông tin giao hàng.");
     }
 
+    // Validate: variantId is required by backend
+    const invalidItems = checkoutDraft.items.filter(it => !it.productVariantId);
+    if (invalidItems.length > 0) {
+      throw new Error("Một số sản phẩm thiếu thông tin variant. Vui lòng thêm lại vào giỏ hàng.");
+    }
+
     const created = await orderService.create({
       customerId,
       receiverName,
@@ -320,11 +326,10 @@ export default function PaymentPage() {
       shippingAddress,
       items: checkoutDraft.items.map((it) => ({
         productId: it.productId,
-        productColorId: it.productColorId ?? null,
-        productVariantId: it.productVariantId ?? null,
-        productColor: it.productColor ?? null,
+        variantId: it.productVariantId!, // Backend yêu cầu @NotNull
+        colorName: it.productColor ?? undefined,
         quantity: Number(it.quantity || 1),
-        imageUrl: it.imageUrl ?? null,
+        imageUrl: it.imageUrl ?? undefined,
       })),
       paymentMethod,
     });
@@ -348,7 +353,13 @@ export default function PaymentPage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 100);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Không thể thanh toán COD.");
+      const errorMsg = e instanceof Error ? e.message : "Không thể thanh toán COD.";
+      // Improve stock error message
+      if (errorMsg.includes("Insufficient stock")) {
+        setError("Sản phẩm đã hết hàng hoặc không đủ số lượng. Vui lòng kiểm tra lại giỏ hàng.");
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setPaying(null);
     }
@@ -379,7 +390,13 @@ export default function PaymentPage() {
       clearCheckoutDraft();
       setSuccess("BANK_TRANSFER");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Không thể khởi tạo thanh toán.");
+      const errorMsg = e instanceof Error ? e.message : "Không thể khởi tạo thanh toán.";
+      // Improve stock error message
+      if (errorMsg.includes("Insufficient stock")) {
+        setError("Sản phẩm đã hết hàng hoặc không đủ số lượng. Vui lòng kiểm tra lại giỏ hàng.");
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setPaying(null);
     }

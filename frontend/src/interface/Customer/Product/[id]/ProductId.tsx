@@ -199,6 +199,7 @@ export default function ProductId() {
       if (variants.length > 0) {
         return sum + variants.reduce((sub, v) => sub + (Number(v.availableStock) || 0), 0);
       }
+      // Fallback to color-level quantity if no variants (legacy)
       return sum + (Number(c.quantity) || 0);
     }, 0);
   }, [product]);
@@ -585,7 +586,7 @@ export default function ProductId() {
                 </motion.div>
               </div>
               <div className="flex items-center gap-2 rounded-2xl bg-slate-100/50 px-3 py-1.5 dark:bg-white/5">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-tight">Tồn kho:</span>
+                <span className="text-xs font-bold text-zinc-400 uppercase tracking-tight">Còn lại:</span>
                 <span className="text-sm font-black text-slate-900 dark:text-white">{selectedStockQuantity}</span>
               </div>
             </div>

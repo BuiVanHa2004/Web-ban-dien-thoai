@@ -65,10 +65,9 @@ export type CreateOrderPayload = {
   receiverPhone: string;
   shippingAddress: string;
   items: Array<{
-    productId: number;
-    productColorId?: number | null;
-    productVariantId?: number | null;
-    productColor?: string | null; // legacy display field
+    productId?: number;
+    variantId: number;  // Bắt buộc - backend yêu cầu @NotNull
+    colorName?: string | null;
     quantity: number;
     imageUrl?: string | null;
   }>;

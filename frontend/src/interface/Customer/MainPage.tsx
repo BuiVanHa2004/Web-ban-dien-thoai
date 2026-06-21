@@ -51,6 +51,7 @@ function getProductStockQuantity(product: ProductDto): number {
       const variantQty = variants.reduce((s, v) => s + (Number(v.availableStock) || 0), 0);
       return sum + variantQty;
     }
+    // Fallback to color-level quantity if no variants (legacy)
     return sum + (Number(color.quantity) || 0);
   }, 0);
 }

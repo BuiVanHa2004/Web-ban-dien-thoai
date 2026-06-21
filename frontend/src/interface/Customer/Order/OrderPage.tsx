@@ -76,6 +76,13 @@ const PAYMENT_CONFIG: Record<string, { label: string; color: string }> = {
   UNPAID: { label: "Chưa thanh toán", color: "text-rose-600" },
   PENDING: { label: "Chờ thanh toán", color: "text-amber-600" },
   PAID: { label: "Đã thanh toán", color: "text-emerald-600" },
+  FAILED: { label: "Thất bại", color: "text-rose-600" },
+  WAITING_CONFIRM: { label: "Chờ xác nhận", color: "text-indigo-600" },
+  REFUND_PENDING: { label: "Đang chờ hoàn tiền", color: "text-orange-600" },
+  REFUNDED: { label: "Đã hoàn tiền", color: "text-blue-600" },
+  PARTIAL_REFUNDED: { label: "Hoàn tiền một phần", color: "text-sky-600" },
+  PARTIAL_PAID: { label: "Thanh toán một phần", color: "text-cyan-600" },
+  REOPENED: { label: "Đã mở lại", color: "text-purple-600" },
 };
 
 function getRealPaymentStatus(order: any) {

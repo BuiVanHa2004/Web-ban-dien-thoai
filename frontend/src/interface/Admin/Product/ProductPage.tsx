@@ -78,7 +78,11 @@ function mapDtoToProduct(dto: ProductDto): Product {
   const storageGbValues = Array.from(storageSet).sort((a, b) => a - b).map(String).join(", ");
 
   const stockQuantity = (dto.productColors || []).reduce((sum, c) => {
-    const variantSum = (c.variants || []).reduce((vSum, v) => vSum + (Number(v.quantity) || 0), 0);
+    // Use availableStock instead of deprecated quantity field
+    const variantSum = (c.variants || []).reduce((vSum, v) => {
+      const stock = v.availableStock !== undefined ? v.availableStock : v.quantity;
+      return vSum + (Number(stock) || 0);
+    }, 0);
     return sum + variantSum;
   }, 0);
 
@@ -843,7 +847,11 @@ export default function ProductPage() {
                           <div className="text-sm font-semibold text-white/90">Màu sắc / Biến thể</div>
                           <div className="space-y-2">
                             {selectedProductDetail.productColors?.map((c) => {
-                              const variantQuantity = (c.variants || []).reduce((sum, v) => sum + (Number(v.quantity) || 0), 0);
+                              // Use availableStock from variants instead of quantity
+                              const variantQuantity = (c.variants || []).reduce((sum, v) => {
+                                const stock = v.availableStock !== undefined ? v.availableStock : v.quantity;
+                                return sum + (Number(stock) || 0);
+                              }, 0);
                               return (
                                 <div
                                   key={c.productColorId}
@@ -862,7 +870,7 @@ export default function ProductPage() {
                                         </span>
                                       ) : null}
                                     </div>
-                                    <div className="text-sm text-white/80">Số lượng: {variantQuantity}</div>
+                                    <div className="text-sm text-white/80">Còn lại: {variantQuantity}</div>
                                   </div>
 
                                   {(c.images || []).length > 0 ? (
@@ -896,7 +904,7 @@ export default function ProductPage() {
                                           <tr>
                                             <th className="px-3 py-2 text-center">RAM</th>
                                             <th className="px-3 py-2 text-center">Bộ nhớ</th>
-                                            <th className="px-3 py-2 text-center">Số lượng</th>
+                                            <th className="px-3 py-2 text-center">Còn lại</th>
                                             <th className="px-3 py-2 text-center">Giá gốc</th>
                                             <th className="px-3 py-2 text-center">Giá giảm</th>
                                             <th className="px-3 py-2 text-center">Giá hiện tại</th>
@@ -921,7 +929,9 @@ export default function ProductPage() {
                                               <tr key={v.variantId}>
                                                 <td className="px-3 py-2 text-center text-white/90">{v.ramGb ?? "-"}</td>
                                                 <td className="px-3 py-2 text-center text-white/90">{v.storageGb ?? "-"}</td>
-                                                <td className="px-3 py-2 text-center text-white/90">{Number(v.quantity || 0)}</td>
+                                                <td className="px-3 py-2 text-center text-white/90">
+                                                  {v.availableStock !== undefined ? Number(v.availableStock) : Number(v.quantity || 0)}
+                                                </td>
                                                 <td className="px-3 py-2 text-center text-white/80">
                                                   {original > 0 ? (
                                                     <span className={hasDiscount ? "line-through" : ""}>

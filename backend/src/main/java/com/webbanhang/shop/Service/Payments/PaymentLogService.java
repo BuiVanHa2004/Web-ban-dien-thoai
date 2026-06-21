@@ -40,4 +40,8 @@ public class PaymentLogService {
     public List<PaymentLog> getLogsByOrderId(Integer orderId) {
         return paymentLogRepository.findByOrderIdOrderByCreatedAtDesc(orderId);
     }
+    
+    public List<PaymentLog> getLogsByAttemptId(Integer attemptId) {
+        return paymentLogRepository.findByPaymentAttemptIdOrderByCreatedAtDesc(attemptId);
+    }
 }
