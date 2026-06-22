@@ -11,4 +11,6 @@ public interface PriceSegmentRepository extends JpaRepository<PriceSegment, Inte
     List<PriceSegment> findAllByDeletedAtIsNullOrderByPriceSegmentIdAsc();
 
     Optional<PriceSegment> findFirstByDeletedAtIsNullAndMinPriceAndMaxPrice(BigDecimal minPrice, BigDecimal maxPrice);
+    
+    Optional<PriceSegment> findBySegmentNameAndDeletedAtIsNull(String segmentName);
 }

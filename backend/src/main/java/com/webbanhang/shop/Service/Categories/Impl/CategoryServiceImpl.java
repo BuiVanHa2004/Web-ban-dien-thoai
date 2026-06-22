@@ -62,6 +62,7 @@ public class CategoryServiceImpl implements CategoryService {
             return;
         }
 
+        // Try to find existing segment by minPrice and maxPrice first
         PriceSegment seg = priceSegmentRepository
                 .findFirstByDeletedAtIsNullAndMinPriceAndMaxPrice(minPrice, maxPrice)
                 .orElseGet(() -> {
@@ -91,8 +92,17 @@ public class CategoryServiceImpl implements CategoryService {
                         effectiveMinPrice = BigDecimal.ZERO;
                     }
                     
-                    created.setSegmentName(segmentName);
-                    created.setMinPrice(effectiveMinPrice);
+                    // Check if segment with this name already exists
+                    return priceSegmentRepository
+                            .findBySegmentNameAndDeletedAtIsNull(segmentName)
+                            .orElseGet(() -> {
+                                created.setSegmentName(segmentName);
+                                created.setMinPrice(effectiveMinPrice);
+                                created.setMaxPrice(maxPrice);
+                                created.setDeletedAt(null);
+                                return priceSegmentRepository.save(created);
+                            });
+                });
                     created.setMaxPrice(maxPrice);
                     created.setDeletedAt(null);
                     return priceSegmentRepository.save(created);
