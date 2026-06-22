@@ -69,19 +69,24 @@ public class CategoryServiceImpl implements CategoryService {
                     
                     // Generate segment name based on what's provided
                     String segmentName;
+                    BigDecimal effectiveMinPrice;
+                    
                     if (minPrice != null && maxPrice != null) {
                         // Both provided: "2000000-5000000"
                         segmentName = minPrice.toPlainString() + "-" + maxPrice.toPlainString();
+                        effectiveMinPrice = minPrice;
                     } else if (minPrice != null) {
                         // Only minPrice: "2000000+" (above 2M)
                         segmentName = minPrice.toPlainString() + "+";
+                        effectiveMinPrice = minPrice;
                     } else {
-                        // Only maxPrice: "2000000-" (below 2M)
-                        segmentName = maxPrice.toPlainString() + "-";
+                        // Only maxPrice: "0-2000000" (below 2M, starting from 0)
+                        segmentName = "0-" + maxPrice.toPlainString();
+                        effectiveMinPrice = BigDecimal.ZERO;
                     }
                     
                     created.setSegmentName(segmentName);
-                    created.setMinPrice(minPrice);
+                    created.setMinPrice(effectiveMinPrice);
                     created.setMaxPrice(maxPrice);
                     created.setDeletedAt(null);
                     return priceSegmentRepository.save(created);
