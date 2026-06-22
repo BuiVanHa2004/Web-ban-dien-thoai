@@ -39,52 +39,97 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<CategoryDto> create(@RequestBody CategoryUpsertRequest req) {
-        Category category = new Category();
-        category.setCategoryName(req.categoryName());
-        category.setSlug(req.slug());
-        category.setCategoryDescription(req.categoryDescription());
+    public ResponseEntity<?> create(@RequestBody CategoryUpsertRequest req) {
+        try {
+            Category category = new Category();
+            category.setCategoryName(req.categoryName());
+            category.setSlug(req.slug());
+            category.setCategoryDescription(req.categoryDescription());
 
-        Category created = categoryService.create(category);
+            Category created = categoryService.create(category);
 
-        // Save price segment range if at least one price is provided
-        if (req.priceSegmentMin() != null || req.priceSegmentMax() != null) {
-            categoryService.updatePriceSegmentRange(created.getCategoryId(), req.priceSegmentMin(), req.priceSegmentMax());
-            created = categoryService.findById(created.getCategoryId()).orElse(created);
+            // Save price segment range if at least one price is provided
+            if (req.priceSegmentMin() != null || req.priceSegmentMax() != null) {
+                categoryService.updatePriceSegmentRange(created.getCategoryId(), req.priceSegmentMin(), req.priceSegmentMax());
+                created = categoryService.findById(created.getCategoryId()).orElse(created);
+            }
+
+            // Save images if provided
+            if (req.categoryImages() != null && !req.categoryImages().isEmpty()) {
+                categoryService.updateImages(created.getCategoryId(), req.categoryImages());
+                created = categoryService.findById(created.getCategoryId()).orElse(created);
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(CategoryDto.fromEntity(created));
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            String message = e.getMessage();
+            if (message != null) {
+                if (message.contains("uk_category_name") || message.contains("category_name")) {
+                    return ResponseEntity.badRequest().body(
+                        java.util.Map.of("message", "Tên danh mục đã tồn tại")
+                    );
+                }
+                if (message.contains("uk_category_slug") || message.contains("slug")) {
+                    return ResponseEntity.badRequest().body(
+                        java.util.Map.of("message", "Slug đã tồn tại")
+                    );
+                }
+            }
+            return ResponseEntity.badRequest().body(
+                java.util.Map.of("message", "Dữ liệu không hợp lệ hoặc đã tồn tại")
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                java.util.Map.of("message", "Không thể tạo danh mục: " + e.getMessage())
+            );
         }
-
-        // Save images if provided
-        if (req.categoryImages() != null && !req.categoryImages().isEmpty()) {
-            categoryService.updateImages(created.getCategoryId(), req.categoryImages());
-            created = categoryService.findById(created.getCategoryId()).orElse(created);
-        }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(CategoryDto.fromEntity(created));
     }
 
     @PutMapping("/{id:\\d+}")
-    public ResponseEntity<CategoryDto> update(@PathVariable Integer id, @RequestBody CategoryUpsertRequest req) {
-        Category category = new Category();
-        category.setCategoryName(req.categoryName());
-        category.setSlug(req.slug());
-        category.setCategoryDescription(req.categoryDescription());
+    public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody CategoryUpsertRequest req) {
+        try {
+            Category category = new Category();
+            category.setCategoryName(req.categoryName());
+            category.setSlug(req.slug());
+            category.setCategoryDescription(req.categoryDescription());
 
-        return categoryService.update(id, category)
-                .map(updated -> {
-                    // Update price segment range if at least one price is provided
-                    if (req.priceSegmentMin() != null || req.priceSegmentMax() != null) {
-                        categoryService.updatePriceSegmentRange(id, req.priceSegmentMin(), req.priceSegmentMax());
-                        updated = categoryService.findById(id).orElse(updated);
-                    }
-                    // Update images if provided
-                    if (req.categoryImages() != null) {
-                        categoryService.updateImages(id, req.categoryImages());
-                        updated = categoryService.findById(id).orElse(updated);
-                    }
-                    return CategoryDto.fromEntity(updated);
-                })
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+            return categoryService.update(id, category)
+                    .map(updated -> {
+                        // Update price segment range if at least one price is provided
+                        if (req.priceSegmentMin() != null || req.priceSegmentMax() != null) {
+                            categoryService.updatePriceSegmentRange(id, req.priceSegmentMin(), req.priceSegmentMax());
+                            updated = categoryService.findById(id).orElse(updated);
+                        }
+                        // Update images if provided
+                        if (req.categoryImages() != null) {
+                            categoryService.updateImages(id, req.categoryImages());
+                            updated = categoryService.findById(id).orElse(updated);
+                        }
+                        return ResponseEntity.ok((Object) CategoryDto.fromEntity(updated));
+                    })
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            String message = e.getMessage();
+            if (message != null) {
+                if (message.contains("uk_category_name") || message.contains("category_name")) {
+                    return ResponseEntity.badRequest().body(
+                        java.util.Map.of("message", "Tên danh mục đã tồn tại")
+                    );
+                }
+                if (message.contains("uk_category_slug") || message.contains("slug")) {
+                    return ResponseEntity.badRequest().body(
+                        java.util.Map.of("message", "Slug đã tồn tại")
+                    );
+                }
+            }
+            return ResponseEntity.badRequest().body(
+                java.util.Map.of("message", "Dữ liệu không hợp lệ hoặc đã tồn tại")
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                java.util.Map.of("message", "Không thể cập nhật danh mục: " + e.getMessage())
+            );
+        }
     }
 
     @PatchMapping("/{id:\\d+}/soft-delete")
