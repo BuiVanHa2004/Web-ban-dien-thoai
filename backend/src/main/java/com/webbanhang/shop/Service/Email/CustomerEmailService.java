@@ -126,6 +126,8 @@ public class CustomerEmailService {
             String subject = "MyPhone Store - Đơn hàng " + order.getOrderCode() + " đã giao thành công";
 
             if (certificatePdf != null && certificatePdf.length > 0) {
+                log.info("Sending order delivered email with PDF attachment ({} bytes) to {} for order {}", 
+                        certificatePdf.length, order.getEmail(), order.getOrderCode());
                 gmailApiService.sendEmailWithAttachment(
                         order.getEmail(),
                         subject,
@@ -133,10 +135,15 @@ public class CustomerEmailService {
                         certificatePdf,
                         "Chung-nhan-don-hang-" + order.getOrderCode() + ".pdf"
                 );
+                log.info("Successfully sent order delivered email WITH PDF to {} for order {}", 
+                        order.getEmail(), order.getOrderCode());
             } else {
+                log.warn("PDF certificate is NULL or empty for order {}, sending email WITHOUT attachment", 
+                        order.getOrderCode());
                 gmailApiService.sendHtmlEmail(order.getEmail(), subject, htmlContent);
+                log.info("Sent order delivered email WITHOUT PDF to {} for order {}", 
+                        order.getEmail(), order.getOrderCode());
             }
-            log.info("Sent order delivered email to {} for order {}", order.getEmail(), order.getOrderCode());
         } catch (Exception ex) {
             log.error("Failed to send order delivered email to {} for order {}",
                     order.getEmail(), order.getOrderCode(), ex);

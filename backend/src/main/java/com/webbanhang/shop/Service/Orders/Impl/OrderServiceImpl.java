@@ -626,7 +626,13 @@ public class OrderServiceImpl implements OrderService {
                 try {
                     if (status == OrderStatus.DELIVERED) {
                         // Generate PDF certificate and send with delivered email
+                        System.out.println("[ORDER] Generating delivery certificate PDF for order " + savedOrder.getOrderCode());
                         byte[] certificatePdf = deliveryCertificateService.generateDeliveryCertificate(savedOrder);
+                        if (certificatePdf != null && certificatePdf.length > 0) {
+                            System.out.println("[ORDER] PDF generated successfully: " + certificatePdf.length + " bytes");
+                        } else {
+                            System.err.println("[ORDER] WARNING: PDF generation returned NULL or empty for order " + savedOrder.getOrderCode());
+                        }
                         customerEmailService.sendOrderDeliveredEmail(savedOrder, certificatePdf);
                     } else {
                         // Send regular status change email
