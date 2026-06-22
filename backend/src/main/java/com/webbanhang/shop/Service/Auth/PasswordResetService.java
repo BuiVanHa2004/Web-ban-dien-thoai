@@ -9,11 +9,11 @@ import com.webbanhang.shop.Repository.Customers.CustomerAccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -133,8 +133,8 @@ public class PasswordResetService {
         entity.setExpiresAt(now.plus(CODE_TTL));
         passwordResetCodeRepository.save(entity);
 
-        // Gửi email bất đồng bộ để không block request
-        sendOtpEmailAsync(email, code);
+        // Gửi email sau khi commit transaction để OTP không bị rollback nếu SMTP lỗi
+        scheduleOtpEmailAfterCommit(email, code);
     }
 
     public void verifyCode(String usernameOrEmail, String code) {
@@ -257,13 +257,32 @@ public class PasswordResetService {
         return String.valueOf(n);
     }
 
-    @Async
-    private void sendOtpEmailAsync(String to, String code) {
+    private void scheduleOtpEmailAfterCommit(String to, String code) {
+        if (!mailPasswordProvided) {
+            log.error(
+                    "Cannot send password reset OTP to {}: spring.mail.password is not configured.",
+                    to
+            );
+            return;
+        }
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sendOtpEmail(to, code);
+                }
+            });
+            return;
+        }
+
+        sendOtpEmail(to, code);
+    }
+
+    private void sendOtpEmail(String to, String code) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            if (mailFrom != null && !mailFrom.isBlank()) {
-                message.setFrom(mailFrom);
-            }
+            message.setFrom(resolveFromAddress());
             message.setTo(to);
             message.setSubject("MyPhone Store - Mã xác thực đặt lại mật khẩu");
             message.setText(
@@ -275,9 +294,18 @@ public class PasswordResetService {
 
             mailSender.send(message);
             log.info("Sent password reset OTP to {}", to);
-        } catch (MailException ex) {
+        } catch (Exception ex) {
             log.error("Failed to send password reset OTP email to {}", to, ex);
-            // Không throw exception vì đây là async - chỉ log lỗi
         }
+    }
+
+    private String resolveFromAddress() {
+        if (mailFrom != null && !mailFrom.isBlank()) {
+            return mailFrom;
+        }
+        if (mailUsername != null && !mailUsername.isBlank()) {
+            return mailUsername;
+        }
+        throw new IllegalStateException("Mail sender address is not configured.");
     }
 }
