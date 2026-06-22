@@ -472,12 +472,63 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
         // Create preview URL
         const previewUrl = URL.createObjectURL(file);
         setImagePreview({ file, url: previewUrl });
-        // Scroll is handled by useEffect
         
         // Reset file input
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+    };
+
+    const compressImage = async (file: File): Promise<File> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Max dimension 1920px (good quality, reasonable size)
+                    const maxDimension = 1920;
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = (height / width) * maxDimension;
+                            width = maxDimension;
+                        } else {
+                            width = (width / height) * maxDimension;
+                            height = maxDimension;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to WebP with 85% quality (best balance)
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) {
+                                const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), {
+                                    type: 'image/webp',
+                                    lastModified: Date.now(),
+                                });
+                                resolve(compressedFile);
+                            } else {
+                                reject(new Error('Compression failed'));
+                            }
+                        },
+                        'image/webp',
+                        0.85
+                    );
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
     };
 
     const handleConfirmImage = async () => {
@@ -486,8 +537,13 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
         try {
             setIsUploading(true);
             
+            // Compress image before upload (faster upload + less storage)
+            console.log('Original size:', (imagePreview.file.size / 1024 / 1024).toFixed(2), 'MB');
+            const compressedFile = await compressImage(imagePreview.file);
+            console.log('Compressed size:', (compressedFile.size / 1024 / 1024).toFixed(2), 'MB');
+            
             // Upload to MinIO
-            const uploadResult = await chatService.uploadChatImage(imagePreview.file, token);
+            const uploadResult = await chatService.uploadChatImage(compressedFile, token);
             
             const request = {
                 chatRoomId: selectedRoom.id,
@@ -498,7 +554,10 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                 attachmentUrl: uploadResult.url,
             };
 
-            await chatService.sendAdminMessage(request, token);
+            const sentMessage = await chatService.sendAdminMessage(request, token);
+            
+            // Add message to UI immediately
+            setMessages(prev => [...prev, sentMessage]);
             
             // Cleanup
             URL.revokeObjectURL(imagePreview.url);
