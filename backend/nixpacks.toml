@@ -6,4 +6,6 @@ nixPkgs = ["maven", "jdk17"]
 cmds = ["mvn clean package -DskipTests"]
 
 [start]
-cmd = "java -Xmx400m -Xms256m -jar target/*.jar"
+# Disable Railway's automatic JAVA_TOOL_OPTIONS to avoid warnings
+# Explicitly set JVM options for Railway's 512MB RAM limit
+cmd = "java -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Xms256m -XX:+UseSerialGC -Xss512k -jar target/*.jar"

@@ -334,6 +334,12 @@ public class CustomerEmailService {
         html.append(".content { padding: 20px; background-color: #f9f9f9; }");
         html.append(".success-box { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 20px; margin: 15px 0; border-radius: 5px; text-align: center; }");
         html.append(".order-info { background-color: white; padding: 15px; margin: 15px 0; border-radius: 5px; }");
+        html.append(".status-box { background-color: #fff3cd; border: 2px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 5px; }");
+        html.append(".status-item { display: flex; justify-content: space-between; margin: 10px 0; padding: 10px; background-color: #f8f9fa; border-radius: 3px; }");
+        html.append(".status-label { font-weight: bold; color: #495057; }");
+        html.append(".status-value { color: #28a745; font-weight: bold; }");
+        html.append(".status-value.payment { color: #007bff; }");
+        html.append(".pdf-notice { background-color: #e7f3ff; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; }");
         html.append(".footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }");
         html.append("</style>");
         html.append("</head>");
@@ -355,24 +361,56 @@ public class CustomerEmailService {
         html.append("<p>Đơn hàng <strong>").append(order.getOrderCode()).append("</strong> đã được giao đến địa chỉ của bạn.</p>");
         html.append("</div>");
         
+        // Status information box
+        html.append("<div class='status-box'>");
+        html.append("<h3 style='margin-top: 0;'>📊 Trạng thái đơn hàng</h3>");
+        
+        html.append("<div class='status-item'>");
+        html.append("<span class='status-label'>🚚 Trạng thái giao hàng:</span>");
+        html.append("<span class='status-value'>").append(getOrderStatusText(order.getOrderStatus())).append("</span>");
+        html.append("</div>");
+        
+        html.append("<div class='status-item'>");
+        html.append("<span class='status-label'>💳 Trạng thái thanh toán:</span>");
+        html.append("<span class='status-value payment'>").append(getPaymentStatusText(order.getPaymentStatus())).append("</span>");
+        html.append("</div>");
+        
+        html.append("<div class='status-item'>");
+        html.append("<span class='status-label'>💰 Phương thức thanh toán:</span>");
+        html.append("<span>").append(getPaymentMethodText(order.getPaymentMethod())).append("</span>");
+        html.append("</div>");
+        
+        html.append("</div>");
+        
         // Order info
         html.append("<div class='order-info'>");
-        html.append("<h3>Thông tin đơn hàng</h3>");
+        html.append("<h3>📦 Thông tin đơn hàng</h3>");
         html.append("<p><strong>Mã đơn hàng:</strong> ").append(order.getOrderCode()).append("</p>");
-        html.append("<p><strong>Ngày giao:</strong> ").append(formatDateTime(order.getUpdatedAt())).append("</p>");
-        html.append("<p><strong>Tổng tiền:</strong> ").append(formatCurrency(order.getTotalAmount())).append("</p>");
+        html.append("<p><strong>Ngày đặt hàng:</strong> ").append(formatDateTime(order.getCreatedAt())).append("</p>");
+        html.append("<p><strong>Ngày giao hàng:</strong> ").append(formatDateTime(order.getUpdatedAt())).append("</p>");
+        html.append("<p><strong>Tổng tiền:</strong> <strong style='color: #28a745; font-size: 18px;'>").append(formatCurrency(order.getTotalAmount())).append("</strong></p>");
+        html.append("<p><strong>Người nhận:</strong> ").append(escapeHtml(order.getReceiverName() != null ? order.getReceiverName() : order.getCustomerName())).append("</p>");
+        html.append("<p><strong>Số điện thoại:</strong> ").append(escapeHtml(order.getReceiverPhone() != null ? order.getReceiverPhone() : order.getCustomerPhone())).append("</p>");
         html.append("<p><strong>Địa chỉ giao hàng:</strong> ").append(escapeHtml(order.getShippingAddress())).append("</p>");
         html.append("</div>");
         
-        html.append("<p><strong>📎 Chứng nhận đơn hàng:</strong> Vui lòng xem file PDF đính kèm để có chứng nhận giao hàng đầy đủ.</p>");
-        html.append("<p>Cảm ơn bạn đã mua sắm tại MyPhone Store! Chúng tôi hy vọng bạn hài lòng với sản phẩm.</p>");
-        html.append("<p>Nếu có bất kỳ vấn đề gì, vui lòng liên hệ với chúng tôi ngay.</p>");
+        // PDF notice
+        html.append("<div class='pdf-notice'>");
+        html.append("<h3 style='margin-top: 0;'>📎 Chứng nhận giao hàng</h3>");
+        html.append("<p><strong>File PDF đính kèm:</strong> <code>Chung-nhan-don-hang-").append(order.getOrderCode()).append(".pdf</code></p>");
+        html.append("<p>Vui lòng tải xuống file PDF đính kèm trong email này để xem chứng nhận giao hàng đầy đủ.</p>");
+        html.append("<p style='font-size: 12px; color: #666;'>📄 File PDF bao gồm: thông tin đơn hàng, sản phẩm, giá tiền, và xác nhận giao hàng thành công.</p>");
+        html.append("</div>");
+        
+        html.append("<p style='margin-top: 20px;'>Cảm ơn bạn đã mua sắm tại <strong>MyPhone Store</strong>! Chúng tôi hy vọng bạn hài lòng với sản phẩm.</p>");
+        html.append("<p>Nếu có bất kỳ vấn đề gì về sản phẩm, vui lòng liên hệ với chúng tôi trong vòng 7 ngày để được hỗ trợ đổi trả.</p>");
         html.append("</div>");
         
         // Footer
         html.append("<div class='footer'>");
         html.append("<p><strong>MyPhone Store</strong></p>");
         html.append("<p>Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx</p>");
+        html.append("<p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</p>");
         html.append("<p>&copy; 2024 MyPhone Store. All rights reserved.</p>");
         html.append("</div>");
         
@@ -381,6 +419,44 @@ public class CustomerEmailService {
         html.append("</html>");
         
         return html.toString();
+    }
+    
+    private String getPaymentMethodText(String method) {
+        if (method == null || method.isEmpty()) return "Chưa xác định";
+        return switch (method.toUpperCase()) {
+            case "COD" -> "Thanh toán khi nhận hàng (COD)";
+            case "BANK_TRANSFER" -> "Chuyển khoản ngân hàng";
+            default -> method;
+        };
+    }
+    
+    private String getOrderStatusText(OrderStatus status) {
+        if (status == null) return "Chưa xác định";
+        return switch (status) {
+            case PENDING_CONFIRM -> "Chờ xác nhận";
+            case PENDING_PAYMENT_CONFIRMATION -> "Chờ xác nhận thanh toán";
+            case CONFIRMED -> "Đã xác nhận";
+            case SHIPPING -> "Đang giao hàng";
+            case PENDING_PICKUP -> "Chờ lấy hàng";
+            case PENDING_SHIPPING -> "Chờ giao hàng";
+            case DELIVERED -> "Đã giao hàng";
+            case CANCELLED -> "Đã hủy";
+        };
+    }
+    
+    private String getPaymentStatusText(PaymentStatus status) {
+        if (status == null) return "Chưa xác định";
+        return switch (status) {
+            case UNPAID -> "Chưa thanh toán";
+            case WAITING_CONFIRM -> "Chờ xác nhận thanh toán";
+            case PAID -> "Đã thanh toán";
+            case FAILED -> "Thanh toán thất bại";
+            case REOPENED -> "Mở lại";
+            case REFUND_PENDING -> "Đang chờ hoàn tiền";
+            case REFUNDED -> "Đã hoàn tiền";
+            case PARTIAL_REFUNDED -> "Hoàn một phần";
+            case PARTIAL_PAID -> "Thanh toán một phần";
+        };
     }
 
     private String buildPaymentStatusChangeEmailHtml(
