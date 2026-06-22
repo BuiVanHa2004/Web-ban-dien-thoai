@@ -80,8 +80,8 @@ public class CategoryServiceImpl implements CategoryService {
                         segmentName = minPrice.toPlainString() + "+";
                         effectiveMinPrice = minPrice;
                     } else {
-                        // Only maxPrice: "0-2000000" (below 2M, starting from 0)
-                        segmentName = "0-" + maxPrice.toPlainString();
+                        // Only maxPrice: "5000000-" (below 5M)
+                        segmentName = maxPrice.toPlainString() + "-";
                         effectiveMinPrice = BigDecimal.ZERO;
                     }
                     
