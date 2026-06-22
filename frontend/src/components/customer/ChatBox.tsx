@@ -491,8 +491,16 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
 
             const sentMessage = await chatService.sendCustomerMessage(request, token);
             
-            // Add message to UI immediately
-            setMessages(prev => [...prev, sentMessage]);
+            // Add message to UI immediately (WebSocket will update it, not duplicate)
+            setMessages(prev => {
+                // Check if message already exists (from WebSocket)
+                const exists = prev.some(m => m.id === sentMessage.id);
+                if (exists) {
+                    console.log('Message already exists from WebSocket, skip adding');
+                    return prev;
+                }
+                return [...prev, sentMessage];
+            });
             
             // Cleanup
             URL.revokeObjectURL(imagePreview.url);
