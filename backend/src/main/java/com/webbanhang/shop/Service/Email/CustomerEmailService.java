@@ -3,14 +3,11 @@ package com.webbanhang.shop.Service.Email;
 import com.webbanhang.shop.Model.Orders.Order;
 import com.webbanhang.shop.Model.Orders.OrderItem;
 import com.webbanhang.shop.Model.Orders.OrderStatus;
+import com.webbanhang.shop.Model.Orders.PaymentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import jakarta.mail.internet.MimeMessage;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -24,17 +21,24 @@ public class CustomerEmailService {
 
     private static final Logger log = LoggerFactory.getLogger(CustomerEmailService.class);
 
-    private final JavaMailSender mailSender;
-    private final String mailFrom;
+    private final GmailApiService gmailApiService;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
 
-    public CustomerEmailService(
-            JavaMailSender mailSender,
-            @Value("${mail.from:}") String mailFrom
-    ) {
-        this.mailSender = mailSender;
-        this.mailFrom = mailFrom;
+    public CustomerEmailService(GmailApiService gmailApiService) {
+        this.gmailApiService = gmailApiService;
+    }
+
+    private void sendHtmlEmail(String to, String subject, String htmlContent) {
+        if (to == null || to.isBlank()) {
+            log.warn("Cannot send email - recipient address is empty");
+            return;
+        }
+        try {
+            gmailApiService.sendHtmlEmail(to, subject, htmlContent);
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to send email to " + to, ex);
+        }
     }
 
     @Async
@@ -45,22 +49,15 @@ public class CustomerEmailService {
         }
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            if (mailFrom != null && !mailFrom.isBlank()) {
-                helper.setFrom(mailFrom, "MyPhone Store");
-            }
-            helper.setTo(order.getEmail());
-            helper.setSubject("MyPhone Store - Đơn hàng " + order.getOrderCode() + " đã được tạo thành công");
-
             String htmlContent = buildOrderConfirmationEmailHtml(order);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
+            sendHtmlEmail(
+                    order.getEmail(),
+                    "MyPhone Store - Đơn hàng " + order.getOrderCode() + " đã được tạo thành công",
+                    htmlContent
+            );
             log.info("Sent order confirmation email to {} for order {}", order.getEmail(), order.getOrderCode());
         } catch (Exception ex) {
-            log.error("Failed to send order confirmation email to {} for order {}", 
+            log.error("Failed to send order confirmation email to {} for order {}",
                     order.getEmail(), order.getOrderCode(), ex);
         }
     }
@@ -73,23 +70,46 @@ public class CustomerEmailService {
         }
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            if (mailFrom != null && !mailFrom.isBlank()) {
-                helper.setFrom(mailFrom, "MyPhone Store");
-            }
-            helper.setTo(order.getEmail());
-            helper.setSubject("MyPhone Store - Đơn hàng " + order.getOrderCode() + " đã cập nhật trạng thái");
-
             String htmlContent = buildOrderStatusChangeEmailHtml(order, oldStatus, newStatus);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            log.info("Sent order status change email to {} for order {} ({} -> {})", 
+            sendHtmlEmail(
+                    order.getEmail(),
+                    "MyPhone Store - Đơn hàng " + order.getOrderCode() + " đã cập nhật trạng thái",
+                    htmlContent
+            );
+            log.info("Sent order status change email to {} for order {} ({} -> {})",
                     order.getEmail(), order.getOrderCode(), oldStatus, newStatus);
         } catch (Exception ex) {
-            log.error("Failed to send order status change email to {} for order {}", 
+            log.error("Failed to send order status change email to {} for order {}",
+                    order.getEmail(), order.getOrderCode(), ex);
+        }
+    }
+
+    @Async
+    public void sendPaymentStatusChangeEmail(
+            Order order,
+            PaymentStatus oldStatus,
+            PaymentStatus newStatus,
+            String note
+    ) {
+        if (order.getEmail() == null || order.getEmail().isBlank()) {
+            log.warn("Cannot send payment status change email - no email address for order {}", order.getOrderCode());
+            return;
+        }
+        if (oldStatus == newStatus) {
+            return;
+        }
+
+        try {
+            String htmlContent = buildPaymentStatusChangeEmailHtml(order, oldStatus, newStatus, note);
+            sendHtmlEmail(
+                    order.getEmail(),
+                    "MyPhone Store - Đơn hàng " + order.getOrderCode() + " cập nhật trạng thái thanh toán",
+                    htmlContent
+            );
+            log.info("Sent payment status change email to {} for order {} ({} -> {})",
+                    order.getEmail(), order.getOrderCode(), oldStatus, newStatus);
+        } catch (Exception ex) {
+            log.error("Failed to send payment status change email to {} for order {}",
                     order.getEmail(), order.getOrderCode(), ex);
         }
     }
@@ -102,28 +122,23 @@ public class CustomerEmailService {
         }
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            if (mailFrom != null && !mailFrom.isBlank()) {
-                helper.setFrom(mailFrom, "MyPhone Store");
-            }
-            helper.setTo(order.getEmail());
-            helper.setSubject("MyPhone Store - Đơn hàng " + order.getOrderCode() + " đã giao thành công");
-
             String htmlContent = buildOrderDeliveredEmailHtml(order);
-            helper.setText(htmlContent, true);
+            String subject = "MyPhone Store - Đơn hàng " + order.getOrderCode() + " đã giao thành công";
 
             if (certificatePdf != null && certificatePdf.length > 0) {
-                helper.addAttachment("Chung-nhan-don-hang-" + order.getOrderCode() + ".pdf", 
-                        () -> new java.io.ByteArrayInputStream(certificatePdf));
+                gmailApiService.sendEmailWithAttachment(
+                        order.getEmail(),
+                        subject,
+                        htmlContent,
+                        certificatePdf,
+                        "Chung-nhan-don-hang-" + order.getOrderCode() + ".pdf"
+                );
+            } else {
+                gmailApiService.sendHtmlEmail(order.getEmail(), subject, htmlContent);
             }
-
-            mailSender.send(message);
-            log.info("Sent order delivered email with certificate to {} for order {}", 
-                    order.getEmail(), order.getOrderCode());
+            log.info("Sent order delivered email to {} for order {}", order.getEmail(), order.getOrderCode());
         } catch (Exception ex) {
-            log.error("Failed to send order delivered email to {} for order {}", 
+            log.error("Failed to send order delivered email to {} for order {}",
                     order.getEmail(), order.getOrderCode(), ex);
         }
     }
@@ -136,19 +151,8 @@ public class CustomerEmailService {
         }
 
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            if (mailFrom != null && !mailFrom.isBlank()) {
-                helper.setFrom(mailFrom, "MyPhone Store");
-            }
-            helper.setTo(customerEmail);
-            helper.setSubject("MyPhone Store - Phản hồi liên hệ của bạn");
-
             String htmlContent = buildContactReplyEmailHtml(customerName, subject, replyContent);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
+            sendHtmlEmail(customerEmail, "MyPhone Store - Phản hồi liên hệ của bạn", htmlContent);
             log.info("Sent contact reply email to {}", customerEmail);
         } catch (Exception ex) {
             log.error("Failed to send contact reply email to {}", customerEmail, ex);
@@ -194,6 +198,7 @@ public class CustomerEmailService {
         html.append("<p><strong>Mã đơn hàng:</strong> ").append(order.getOrderCode()).append("</p>");
         html.append("<p><strong>Ngày đặt:</strong> ").append(formatDateTime(order.getCreatedAt())).append("</p>");
         html.append("<p><strong>Trạng thái:</strong> ").append(translateStatus(order.getOrderStatus())).append("</p>");
+        html.append("<p><strong>Trạng thái thanh toán:</strong> ").append(translatePaymentStatus(order.getPaymentStatus())).append("</p>");
         html.append("<p><strong>Phương thức thanh toán:</strong> ").append(translatePaymentMethod(order.getPaymentMethod())).append("</p>");
         html.append("</div>");
         
@@ -378,6 +383,74 @@ public class CustomerEmailService {
         return html.toString();
     }
 
+    private String buildPaymentStatusChangeEmailHtml(
+            Order order,
+            PaymentStatus oldStatus,
+            PaymentStatus newStatus,
+            String note
+    ) {
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html>");
+        html.append("<html>");
+        html.append("<head>");
+        html.append("<meta charset='UTF-8'>");
+        html.append("<style>");
+        html.append("body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }");
+        html.append(".container { max-width: 600px; margin: 0 auto; padding: 20px; }");
+        html.append(".header { background-color: #007bff; color: white; padding: 20px; text-align: center; }");
+        html.append(".content { padding: 20px; background-color: #f9f9f9; }");
+        html.append(".status-box { background-color: white; padding: 20px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #007bff; }");
+        html.append(".order-info { background-color: white; padding: 15px; margin: 15px 0; border-radius: 5px; }");
+        html.append(".footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }");
+        html.append("</style>");
+        html.append("</head>");
+        html.append("<body>");
+        html.append("<div class='container'>");
+
+        html.append("<div class='header'>");
+        html.append("<h1>MyPhone Store</h1>");
+        html.append("<p>Cập nhật trạng thái thanh toán</p>");
+        html.append("</div>");
+
+        html.append("<div class='content'>");
+        html.append("<h2>Xin chào ").append(escapeHtml(order.getCustomerName())).append(",</h2>");
+        html.append("<p>Đơn hàng <strong>").append(order.getOrderCode()).append("</strong> của bạn đã được cập nhật trạng thái thanh toán.</p>");
+
+        html.append("<div class='status-box'>");
+        html.append("<h3 style='margin-top: 0;'>Trạng thái thanh toán mới: <span style='color: #007bff;'>")
+                .append(translatePaymentStatus(newStatus)).append("</span></h3>");
+        if (oldStatus != null) {
+            html.append("<p><small>Trạng thái trước: ").append(translatePaymentStatus(oldStatus)).append("</small></p>");
+        }
+        html.append("<p>").append(getPaymentStatusDescription(newStatus)).append("</p>");
+        if (note != null && !note.isBlank()) {
+            html.append("<p><strong>Ghi chú:</strong> ").append(escapeHtml(note)).append("</p>");
+        }
+        html.append("</div>");
+
+        html.append("<div class='order-info'>");
+        html.append("<p><strong>Mã đơn hàng:</strong> ").append(order.getOrderCode()).append("</p>");
+        html.append("<p><strong>Trạng thái đơn hàng:</strong> ").append(translateStatus(order.getOrderStatus())).append("</p>");
+        html.append("<p><strong>Tổng tiền:</strong> ").append(formatCurrency(order.getTotalAmount())).append("</p>");
+        html.append("<p><strong>Phương thức thanh toán:</strong> ").append(translatePaymentMethod(order.getPaymentMethod())).append("</p>");
+        html.append("</div>");
+
+        html.append("<p>Cảm ơn bạn đã tin tưởng MyPhone Store!</p>");
+        html.append("</div>");
+
+        html.append("<div class='footer'>");
+        html.append("<p><strong>MyPhone Store</strong></p>");
+        html.append("<p>Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx</p>");
+        html.append("<p>&copy; 2024 MyPhone Store. All rights reserved.</p>");
+        html.append("</div>");
+
+        html.append("</div>");
+        html.append("</body>");
+        html.append("</html>");
+
+        return html.toString();
+    }
+
     private String buildContactReplyEmailHtml(String customerName, String subject, String replyContent) {
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html>");
@@ -466,6 +539,36 @@ public class CustomerEmailService {
     private String translatePaymentMethod(String method) {
         if (method == null) return "COD";
         return "COD".equalsIgnoreCase(method) ? "Thanh toán khi nhận hàng (COD)" : "Chuyển khoản ngân hàng";
+    }
+
+    private String translatePaymentStatus(PaymentStatus status) {
+        if (status == null) return "";
+        return switch (status) {
+            case UNPAID -> "Chưa thanh toán";
+            case WAITING_CONFIRM -> "Chờ xác nhận thanh toán";
+            case PAID -> "Đã thanh toán";
+            case FAILED -> "Thanh toán thất bại";
+            case REOPENED -> "Đã mở lại";
+            case REFUND_PENDING -> "Đang chờ hoàn tiền";
+            case REFUNDED -> "Đã hoàn tiền";
+            case PARTIAL_REFUNDED -> "Hoàn tiền một phần";
+            case PARTIAL_PAID -> "Thanh toán một phần";
+        };
+    }
+
+    private String getPaymentStatusDescription(PaymentStatus status) {
+        if (status == null) return "";
+        return switch (status) {
+            case UNPAID -> "Đơn hàng chưa được thanh toán. Vui lòng hoàn tất thanh toán theo hướng dẫn.";
+            case WAITING_CONFIRM -> "Chúng tôi đã nhận minh chứng thanh toán và đang xác nhận.";
+            case PAID -> "Thanh toán đã được xác nhận thành công.";
+            case FAILED -> "Thanh toán không thành công hoặc đã bị từ chối.";
+            case REOPENED -> "Đơn hàng đã được mở lại để thanh toán lại.";
+            case REFUND_PENDING -> "Yêu cầu hoàn tiền đang được xử lý.";
+            case REFUNDED -> "Số tiền đã được hoàn trả.";
+            case PARTIAL_REFUNDED -> "Một phần số tiền đã được hoàn trả.";
+            case PARTIAL_PAID -> "Đơn hàng đã được thanh toán một phần.";
+        };
     }
 
     private String getStatusDescription(OrderStatus status) {

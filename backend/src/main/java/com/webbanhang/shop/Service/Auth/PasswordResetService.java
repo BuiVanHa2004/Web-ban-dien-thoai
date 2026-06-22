@@ -6,14 +6,10 @@ import com.webbanhang.shop.Model.Customers.CustomerAccount;
 import com.webbanhang.shop.Repository.Admins.AdminAccountRepository;
 import com.webbanhang.shop.Repository.Auth.PasswordResetCodeRepository;
 import com.webbanhang.shop.Repository.Customers.CustomerAccountRepository;
+import com.webbanhang.shop.Service.Email.GmailApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,20 +35,14 @@ public class PasswordResetService {
     private final PasswordResetCodeRepository passwordResetCodeRepository;
     private final PasswordEncoder passwordEncoder;
     private final BCryptPasswordEncoder otpEncoder; // Encoder riêng cho OTP với cost thấp hơn
-    private final JavaMailSender mailSender;
-    private final String mailFrom;
-    private final String mailUsername;
-    private final boolean mailPasswordProvided;
+    private final GmailApiService gmailApiService;
 
     public PasswordResetService(
             CustomerAccountRepository customerAccountRepository,
             AdminAccountRepository adminAccountRepository,
             PasswordResetCodeRepository passwordResetCodeRepository,
             PasswordEncoder passwordEncoder,
-            JavaMailSender mailSender,
-            @Value("${mail.from:}") String mailFrom,
-            @Value("${spring.mail.username:}") String mailUsername,
-            @Value("${spring.mail.password:}") String mailPassword
+            GmailApiService gmailApiService
     ) {
         this.customerAccountRepository = customerAccountRepository;
         this.adminAccountRepository = adminAccountRepository;
@@ -60,17 +50,8 @@ public class PasswordResetService {
         this.passwordEncoder = passwordEncoder;
         // OTP chỉ sống 10 phút nên dùng cost=4 thay vì 10 (mặc định) để nhanh hơn ~64 lần
         this.otpEncoder = new BCryptPasswordEncoder(4);
-        this.mailSender = mailSender;
-        this.mailFrom = mailFrom;
-        this.mailUsername = mailUsername;
-        this.mailPasswordProvided = mailPassword != null && !mailPassword.isBlank();
-
-        log.info(
-                "Mail config loaded: username='{}', from='{}', passwordProvided={}.",
-                this.mailUsername,
-                this.mailFrom,
-                this.mailPasswordProvided
-        );
+        this.gmailApiService = gmailApiService;
+        log.info("PasswordResetService initialized with Gmail API.");
     }
 
     @Transactional
@@ -83,6 +64,7 @@ public class PasswordResetService {
         String email = resolveEmail(key);
         if (email == null || email.isBlank()) {
             // Không tiết lộ thông tin tài khoản: luôn trả về thành công ở controller.
+            log.warn("Password reset skipped: no account found for identifier '{}'", maskIdentifier(key));
             return;
         }
 
@@ -133,8 +115,7 @@ public class PasswordResetService {
         entity.setExpiresAt(now.plus(CODE_TTL));
         passwordResetCodeRepository.save(entity);
 
-        // Gửi email sau khi commit transaction để OTP không bị rollback nếu SMTP lỗi
-        scheduleOtpEmailAfterCommit(email, code);
+        sendOtpEmail(email, code);
     }
 
     public void verifyCode(String usernameOrEmail, String code) {
@@ -257,55 +238,40 @@ public class PasswordResetService {
         return String.valueOf(n);
     }
 
-    private void scheduleOtpEmailAfterCommit(String to, String code) {
-        if (!mailPasswordProvided) {
-            log.error(
-                    "Cannot send password reset OTP to {}: spring.mail.password is not configured.",
-                    to
-            );
-            return;
-        }
-
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    sendOtpEmail(to, code);
-                }
-            });
-            return;
-        }
-
-        sendOtpEmail(to, code);
-    }
-
     private void sendOtpEmail(String to, String code) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(resolveFromAddress());
-            message.setTo(to);
-            message.setSubject("MyPhone Store - Mã xác thực đặt lại mật khẩu");
-            message.setText(
-                    "Bạn vừa yêu cầu đặt lại mật khẩu.\n\n" +
-                            "Mã xác thực của bạn là: " + code + "\n\n" +
-                            "Mã có hiệu lực trong " + CODE_TTL.toMinutes() + " phút.\n" +
-                            "Nếu bạn không yêu cầu, hãy bỏ qua email này."
+            String htmlContent = buildOtpEmailHtml(code);
+            gmailApiService.sendHtmlEmail(
+                    to,
+                    "MyPhone Store - Mã xác thực đặt lại mật khẩu",
+                    htmlContent
             );
-
-            mailSender.send(message);
             log.info("Sent password reset OTP to {}", to);
         } catch (Exception ex) {
             log.error("Failed to send password reset OTP email to {}", to, ex);
         }
     }
 
-    private String resolveFromAddress() {
-        if (mailFrom != null && !mailFrom.isBlank()) {
-            return mailFrom;
-        }
-        if (mailUsername != null && !mailUsername.isBlank()) {
-            return mailUsername;
-        }
-        throw new IllegalStateException("Mail sender address is not configured.");
+    private String buildOtpEmailHtml(String code) {
+        return "<!DOCTYPE html>" +
+                "<html><head><meta charset='UTF-8'></head><body>" +
+                "<div style='max-width:600px;margin:0 auto;font-family:Arial,sans-serif'>" +
+                "<div style='background:#007bff;color:white;padding:20px;text-align:center'>" +
+                "<h1>MyPhone Store</h1>" +
+                "<p>Đặt lại mật khẩu</p></div>" +
+                "<div style='padding:20px;background:#f9f9f9'>" +
+                "<p>Bạn vừa yêu cầu đặt lại mật khẩu.</p>" +
+                "<div style='background:white;padding:20px;border-radius:8px;text-align:center;margin:20px 0;border:2px solid #007bff'>" +
+                "<p style='color:#666;margin:0'>Mã xác thực của bạn là:</p>" +
+                "<h2 style='color:#007bff;letter-spacing:8px;font-size:36px;margin:10px 0'>" + code + "</h2>" +
+                "<p style='color:#666;margin:0'>Mã có hiệu lực trong " + CODE_TTL.toMinutes() + " phút.</p>" +
+                "</div>" +
+                "<p>Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.</p>" +
+                "</div>" +
+                "<div style='text-align:center;padding:20px;color:#666;font-size:12px'>" +
+                "<p><strong>MyPhone Store</strong></p>" +
+                "<p>&copy; 2024 MyPhone Store. All rights reserved.</p>" +
+                "</div>" +
+                "</div></body></html>";
     }
 }
