@@ -62,23 +62,33 @@ public class CategoryController {
 
             return ResponseEntity.status(HttpStatus.CREATED).body(CategoryDto.fromEntity(created));
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            String message = e.getMessage();
-            if (message != null) {
-                if (message.contains("uk_category_name") || message.contains("category_name")) {
-                    return ResponseEntity.badRequest().body(
-                        java.util.Map.of("message", "Tên danh mục đã tồn tại")
-                    );
-                }
-                if (message.contains("uk_category_slug") || message.contains("slug")) {
-                    return ResponseEntity.badRequest().body(
-                        java.util.Map.of("message", "Slug đã tồn tại")
-                    );
-                }
+            String message = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            
+            if (message.contains("category_name") || message.contains("uk_category_name")) {
+                return ResponseEntity.badRequest().body(
+                    java.util.Map.of("message", "Tên danh mục '" + req.categoryName() + "' đã tồn tại")
+                );
             }
+            if (message.contains("slug") || message.contains("uk_category_slug") || message.contains("uc_category_slug")) {
+                return ResponseEntity.badRequest().body(
+                    java.util.Map.of("message", "Slug '" + req.slug() + "' đã tồn tại")
+                );
+            }
+            
+            // Log chi tiết để debug
+            System.err.println("DataIntegrityViolationException: " + e.getMessage());
+            e.printStackTrace();
+            
             return ResponseEntity.badRequest().body(
-                java.util.Map.of("message", "Dữ liệu không hợp lệ hoặc đã tồn tại")
+                java.util.Map.of(
+                    "message", "Dữ liệu không hợp lệ hoặc đã tồn tại",
+                    "detail", e.getMostSpecificCause().getMessage()
+                )
             );
         } catch (Exception e) {
+            System.err.println("Unexpected error creating category: " + e.getMessage());
+            e.printStackTrace();
+            
             return ResponseEntity.badRequest().body(
                 java.util.Map.of("message", "Không thể tạo danh mục: " + e.getMessage())
             );
