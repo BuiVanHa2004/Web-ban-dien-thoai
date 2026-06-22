@@ -4,7 +4,7 @@ import Link from "next/link";
 import React from "react";
 import { ChevronLeft, RotateCcw, ShieldAlert } from "lucide-react";
 
-import TrashView, { TrashItem } from "@/components/admins/trash";
+import TrashView, { TrashItem } from "@/components/admin/trash";
 import { bannerService } from "@/services/bannerService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
 

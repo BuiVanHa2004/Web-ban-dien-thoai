@@ -17,7 +17,7 @@ import {
   Clock
 } from "lucide-react";
 import Image from "next/image";
-import SocialQrContact from "@/components/customers/SocialQrContact";
+import SocialQrContact from "@/components/customer/SocialQrContact";
 
 const stats = [
   { icon: Users, label: "Khách hàng tin tưởng", value: "50,000+", color: "from-blue-500 to-cyan-500" },

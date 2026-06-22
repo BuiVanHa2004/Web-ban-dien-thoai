@@ -10,8 +10,8 @@ import React, {
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle, CheckCircle2, Info } from "lucide-react";
-import ConfirmModal from "@/components/admins/ConfirmModal";
-import StatusModal, { type ModalType } from "@/components/admins/StatusModal";
+import ConfirmModal from "@/components/admin/ConfirmModal";
+import StatusModal, { type ModalType } from "@/components/admin/StatusModal";
 
 type ToastType = "success" | "error" | "info";
 

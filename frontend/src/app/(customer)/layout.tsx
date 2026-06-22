@@ -1,6 +1,6 @@
 import React from "react";
 
-import CustomerLayout from "@/components/customers/layout";
+import CustomerLayout from "@/components/customer/layout";
 
 export default function Layout({
   children,

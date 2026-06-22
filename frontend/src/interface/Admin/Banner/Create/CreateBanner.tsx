@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import AdminActionBar from "@/components/admins/AdminActionBar";
+import AdminActionBar from "@/components/admin/AdminActionBar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { bannerService, BannerPosition } from "@/services/bannerService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
-import ValidationModal from "@/components/admins/ValidationModal";
+import ValidationModal from "@/components/admin/ValidationModal";
 
 type ImageItem = {
   id: string;

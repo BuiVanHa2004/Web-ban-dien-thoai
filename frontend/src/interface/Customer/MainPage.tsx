@@ -19,10 +19,10 @@ import { categoryService, type CategoryDto } from "@/services/categoryService";
 import { productService, type ProductDto } from "@/services/productService";
 import { bannerService, type BannerDto } from "@/services/bannerService";
 import { addProductToCart, flyProductToCart } from "@/common/cartClient";
-import ProductVariantPickerModal from "@/components/customers/ProductVariantPickerModal";
-import CustomerProductCard from "@/components/customers/CustomerProductCard";
-import SocialQrContact from "@/components/customers/SocialQrContact";
-import CustomerBannerCarousel from "@/components/customers/CustomerBannerCarousel";
+import ProductVariantPickerModal from "@/components/customer/ProductVariantPickerModal";
+import CustomerProductCard from "@/components/customer/CustomerProductCard";
+import SocialQrContact from "@/components/customer/SocialQrContact";
+import CustomerBannerCarousel from "@/components/customer/CustomerBannerCarousel";
 import Image from "next/image";
 import { resolveImageUrl } from "@/common/resolveImageUrl";
 

@@ -1,14 +1,49 @@
 package com.webbanhang.shop.Exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", 400);
+        body.put("error", "Validation Failed");
+        
+        // Lấy tất cả lỗi validation
+        String errorMessage = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(", "));
+        
+        body.put("message", errorMessage.isEmpty() ? "Dữ liệu không hợp lệ" : errorMessage);
+        
+        // Thêm chi tiết lỗi từng field (optional)
+        Map<String, String> fieldErrors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                    FieldError::getField,
+                    error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Invalid value",
+                    (existing, replacement) -> existing
+                ));
+        
+        if (!fieldErrors.isEmpty()) {
+            body.put("fieldErrors", fieldErrors);
+        }
+        
+        return ResponseEntity.status(400).body(body);
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException e) {

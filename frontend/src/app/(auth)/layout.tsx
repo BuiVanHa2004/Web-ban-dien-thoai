@@ -4,7 +4,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
-import { Logo } from "@/components/customers/Logo";
+import { Logo } from "@/components/customer/Logo";
 
 export default function AuthLayout({
   children,

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React from "react";
 
-import TrashView, { type TrashItem } from "@/components/admins/trash";
+import TrashView, { type TrashItem } from "@/components/admin/trash";
 import { contactService } from "@/services/contactService";
 
 type ContactTrashDto = {

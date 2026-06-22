@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import AdminActionBar from "@/components/admins/AdminActionBar";
+import AdminActionBar from "@/components/admin/AdminActionBar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import ModalPortal from "@/components/admins/ModalPortal";
-import ValidationModal from "@/components/admins/ValidationModal";
+import ModalPortal from "@/components/admin/ModalPortal";
+import ValidationModal from "@/components/admin/ValidationModal";
 
 import { categoryService } from "@/services/categoryService";
 import { fileUploadService } from "@/services/fileUploadService";

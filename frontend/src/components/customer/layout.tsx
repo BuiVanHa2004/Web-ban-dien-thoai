@@ -3,12 +3,12 @@
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 
-import CustomerFooter from "@/components/customers/footer";
-import PremiumHeader from "@/components/customers/header";
-import UnifiedAiWidget from "@/components/customers/UnifiedAiWidget";
-import AuthModal from "@/components/customers/AuthModal";
-import CustomerPageTransition from "@/components/customers/CustomerPageTransition";
-import ChatBox from "@/components/customers/ChatBox";
+import CustomerFooter from "@/components/customer/footer";
+import PremiumHeader from "@/components/customer/header";
+import UnifiedAiWidget from "@/components/customer/UnifiedAiWidget";
+import AuthModal from "@/components/customer/AuthModal";
+import CustomerPageTransition from "@/components/customer/CustomerPageTransition";
+import ChatBox from "@/components/customer/ChatBox";
 import { settingService } from "@/services/settingService";
 
 type CustomerLayoutProps = {

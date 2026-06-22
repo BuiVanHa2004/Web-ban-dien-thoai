@@ -24,7 +24,7 @@ import {
 import type { User } from "@/common/types/auth";
 import { customerAccountService } from "@/services/customerAccountService";
 import { contactService } from "@/services/contactService";
-import SocialQrContact from "@/components/customers/SocialQrContact";
+import SocialQrContact from "@/components/customer/SocialQrContact";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
 import { resolveImageUrl } from "@/common/resolveImageUrl";
 

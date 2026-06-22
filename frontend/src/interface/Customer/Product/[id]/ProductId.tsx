@@ -12,8 +12,8 @@ import {
 } from "@/services/evaluateService";
 import { addProductToCart, flyProductToCart } from "@/common/cartClient";
 import { writeCheckoutDraft } from "@/common/checkoutDraft";
-import ProductVariantPickerModal from "@/components/customers/ProductVariantPickerModal";
-import SocialQrContact from "@/components/customers/SocialQrContact";
+import ProductVariantPickerModal from "@/components/customer/ProductVariantPickerModal";
+import SocialQrContact from "@/components/customer/SocialQrContact";
 import { motion, AnimatePresence } from "framer-motion";
 import { resolveImageUrl } from "@/common/resolveImageUrl";
 

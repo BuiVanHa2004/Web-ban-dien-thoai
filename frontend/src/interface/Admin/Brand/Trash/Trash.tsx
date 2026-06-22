@@ -4,7 +4,7 @@
 import Link from "next/link";
 import React from "react";
 
-import TrashView, { TrashItem } from "@/components/admins/trash";
+import TrashView, { TrashItem } from "@/components/admin/trash";
 
 import { brandService } from "@/services/brandService";
 

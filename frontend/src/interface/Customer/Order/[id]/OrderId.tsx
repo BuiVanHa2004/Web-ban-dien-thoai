@@ -24,7 +24,7 @@ import {
   AlertCircle,
   CreditCard,
 } from "lucide-react";
-import { CancelOrderModal } from "@/components/customers/CancelOrderModal";
+import { CancelOrderModal } from "@/components/customer/CancelOrderModal";
 
 import {
   evaluateService,

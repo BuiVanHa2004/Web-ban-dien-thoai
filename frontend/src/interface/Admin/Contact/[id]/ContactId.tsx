@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import AdminActionBar from "@/components/admins/AdminActionBar";
+import AdminActionBar from "@/components/admin/AdminActionBar";
 import { usePathname } from "next/navigation";
 import React from "react";
 import { createPortal } from "react-dom";

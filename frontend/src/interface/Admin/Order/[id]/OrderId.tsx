@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import AdminActionBar from "@/components/admins/AdminActionBar";
+import AdminActionBar from "@/components/admin/AdminActionBar";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,7 +26,7 @@ import {
 
 import { orderService, type OrderDto, type OrderStatus } from "@/services/orderService";
 import { productService, type ProductDto, type ProductSpecDto } from "@/services/productService";
-import { AdminCancelOrderModal } from "@/components/admins/AdminCancelOrderModal";
+import { AdminCancelOrderModal } from "@/components/admin/AdminCancelOrderModal";
 import {
   STATUS_OPTIONS,
   getRealPaymentStatus,

@@ -9,8 +9,8 @@ import { categoryService, type CategoryDto } from "@/services/categoryService";
 import { brandService, type BrandDto } from "@/services/brandService";
 import { productService, type ProductDto } from "@/services/productService";
 import { addProductToCart, flyProductToCart } from "@/common/cartClient";
-import ProductVariantPickerModal from "@/components/customers/ProductVariantPickerModal";
-import CustomerProductCard from "@/components/customers/CustomerProductCard";
+import ProductVariantPickerModal from "@/components/customer/ProductVariantPickerModal";
+import CustomerProductCard from "@/components/customer/CustomerProductCard";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { resolveImageUrl } from "@/common/resolveImageUrl";

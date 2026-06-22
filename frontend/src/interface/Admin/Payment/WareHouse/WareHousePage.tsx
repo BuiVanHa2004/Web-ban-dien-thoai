@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import StatusModal, { type ModalType } from "@/components/admins/StatusModal";
-import ConfirmModal from "@/components/admins/ConfirmModal";
+import StatusModal, { type ModalType } from "@/components/admin/StatusModal";
+import ConfirmModal from "@/components/admin/ConfirmModal";
 
 // --- Utilities ---
 const formatVnd = (value: number) =>

@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import AdminActionBar from "@/components/admins/AdminActionBar";
+import AdminActionBar from "@/components/admin/AdminActionBar";
 import { useRouter } from "next/navigation";
 import React from "react";
 
 import { customerAccountService } from "@/services/customerAccountService";
-import ValidationModal from "@/components/admins/ValidationModal";
+import ValidationModal from "@/components/admin/ValidationModal";
 import AvatarUploadField from "@/components/avatar/AvatarUploadField";
 
 export default function CreateAccount() {

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { authService } from "@/services/authService";
 import { ensureGoogleScriptLoaded } from "@/common/googleAuthClient";
-import { GoogleLogoMark } from "@/components/customers/GoogleLogoMark";
+import { GoogleLogoMark } from "@/components/customer/GoogleLogoMark";
 import {
   authBadgeClass,
   authErrorBoxClass,

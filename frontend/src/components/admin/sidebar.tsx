@@ -18,7 +18,7 @@ import {
   Image as ImageIcon
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Logo } from "@/components/customers/Logo";
+import { Logo } from "@/components/customer/Logo";
 
 type SidebarProps = {
   collapsed: boolean;

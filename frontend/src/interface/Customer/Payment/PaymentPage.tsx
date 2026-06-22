@@ -24,7 +24,7 @@ import { clearCheckoutDraft, readCheckoutDraft, type CheckoutDraft } from "@/com
 import { emitCartUpdated, getActiveCartStorageKey } from "@/common/cartClient";
 import { cartService } from "@/services/cartService";
 import { customerAccountService } from "@/services/customerAccountService";
-import BankTransferQr from "@/components/customers/BankTransferQr";
+import BankTransferQr from "@/components/customer/BankTransferQr";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
 import { resolveImageUrl } from "@/common/resolveImageUrl";
 

@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function MaintenancePage() {
+export default function Maintenance() {
   const router = useRouter();
   const [role, setRole] = React.useState<string | null>(null);
   const [userType, setUserType] = React.useState<string | null>(null);

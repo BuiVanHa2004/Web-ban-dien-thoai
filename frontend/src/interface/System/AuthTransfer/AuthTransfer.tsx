@@ -36,7 +36,7 @@ function AuthTransferContent() {
   );
 }
 
-export default function AuthTransferPage() {
+export default function AuthTransfer() {
   return (
     <Suspense
       fallback={

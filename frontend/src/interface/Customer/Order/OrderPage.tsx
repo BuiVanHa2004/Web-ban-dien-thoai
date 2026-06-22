@@ -20,7 +20,7 @@ import {
 
 import { orderService, type OrderDto } from "@/services/orderService";
 import { productService, type ProductDto } from "@/services/productService";
-import { CancelOrderModal } from "@/components/customers/CancelOrderModal";
+import { CancelOrderModal } from "@/components/customer/CancelOrderModal";
 import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 function normalizeText(txt: any): string | null {

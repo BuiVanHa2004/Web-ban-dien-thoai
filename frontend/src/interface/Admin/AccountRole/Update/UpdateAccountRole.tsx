@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import AdminActionBar from "@/components/admins/AdminActionBar";
+import AdminActionBar from "@/components/admin/AdminActionBar";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 
 import { adminAccountService, roleService, RoleDto } from "@/services/adminAccountService";
-import ValidationModal from "@/components/admins/ValidationModal";
+import ValidationModal from "@/components/admin/ValidationModal";
 import AvatarUploadField from "@/components/avatar/AvatarUploadField";
 import Avatar from "@/components/avatar/Avatar";
 

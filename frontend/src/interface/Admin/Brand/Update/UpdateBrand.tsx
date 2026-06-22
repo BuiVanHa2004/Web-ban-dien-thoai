@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import AdminActionBar from "@/components/admins/AdminActionBar";
+import AdminActionBar from "@/components/admin/AdminActionBar";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import ModalPortal from "@/components/admins/ModalPortal";
+import ModalPortal from "@/components/admin/ModalPortal";
 
 import { brandService } from "@/services/brandService";
 import { useAppNotification } from "@/providers/AppNotificationProvider";
-import ValidationModal from "@/components/admins/ValidationModal";
+import ValidationModal from "@/components/admin/ValidationModal";
 import { resolveImageUrl } from "@/common/resolveImageUrl";
 
 export default function UpdateBrand() {
