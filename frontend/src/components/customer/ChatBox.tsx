@@ -376,8 +376,9 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                 message: text,
                 messageType: 'TEXT' as const,
             };
-            await chatService.sendCustomerMessage(request, token);
-            // WebSocket sẽ trả về message thật và replace optimistic message
+            const sentMessage = await chatService.sendCustomerMessage(request, token);
+            // CRITICAL FIX: Use API response immediately, don't wait for WebSocket
+            setMessages(prev => prev.map(m => m.id === tempId ? sentMessage : m));
         } catch (error) {
             console.error('Failed to send message:', error);
             // Xóa optimistic message nếu lỗi, khôi phục input
