@@ -89,7 +89,7 @@ export default function UpdateCategory() {
     if (!n) missingFields.push("Tên danh mục");
     if (!s) missingFields.push("Slug (URL)");
     if (imageItems.length === 0) missingFields.push("Hình ảnh danh mục");
-    if (segmentMin === "") missingFields.push("Phân khúc giá (Giá thấp nhất)");
+    if (segmentMin === "" && segmentMax === "") missingFields.push("Phân khúc giá (ít nhất nhập 1 giá)");
     if (!description.trim()) missingFields.push("Mô tả");
 
     if (missingFields.length > 0) {
@@ -329,7 +329,7 @@ export default function UpdateCategory() {
                     onChange={(e) => setSegmentMin(e.target.value === "" ? "" : Number(e.target.value))}
                     type="number"
                     min={0}
-                    placeholder="Giá thấp nhất"
+                    placeholder="Giá thấp nhất (tùy chọn)"
                     className="h-11 w-full rounded-2xl bg-slate-100 px-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:ring-cyan-400/25"
                   />
                   <input
@@ -337,7 +337,7 @@ export default function UpdateCategory() {
                     onChange={(e) => setSegmentMax(e.target.value === "" ? "" : Number(e.target.value))}
                     type="number"
                     min={0}
-                    placeholder="Giá cao nhất ( Có thể để trống )"
+                    placeholder="Giá cao nhất (tùy chọn)"
                     className="h-11 w-full rounded-2xl bg-slate-100 px-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:ring-cyan-400/25"
                   />
                 </div>
@@ -453,7 +453,15 @@ export default function UpdateCategory() {
                       Slug: {slug.trim() || "-"}
                     </div>
                     <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-                      Phân khúc: {segmentMin === "" ? "-" : `${Number(segmentMin).toLocaleString("vi-VN")}đ${segmentMax === "" ? "+" : ` - ${Number(segmentMax).toLocaleString("vi-VN")}đ`}`}
+                      Phân khúc: {
+                        segmentMin === "" && segmentMax === "" 
+                          ? "-" 
+                          : segmentMin !== "" && segmentMax !== ""
+                            ? `${Number(segmentMin).toLocaleString("vi-VN")}đ - ${Number(segmentMax).toLocaleString("vi-VN")}đ`
+                            : segmentMin !== ""
+                              ? `${Number(segmentMin).toLocaleString("vi-VN")}đ+`
+                              : `${Number(segmentMax).toLocaleString("vi-VN")}đ-`
+                      }
                     </div>
                   </div>
                 </div>
