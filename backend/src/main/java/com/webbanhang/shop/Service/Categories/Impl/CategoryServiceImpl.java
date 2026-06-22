@@ -71,7 +71,11 @@ public class CategoryServiceImpl implements CategoryService {
                     String segmentName;
                     BigDecimal effectiveMinPrice;
                     
+                    // Use Vietnamese number format with dot separator
                     java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
+                    java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.forLanguageTag("vi-VN"));
+                    symbols.setGroupingSeparator('.');
+                    formatter.setDecimalFormatSymbols(symbols);
                     
                     if (minPrice != null && maxPrice != null) {
                         // Both provided: "2.000.000-5.000.000"
