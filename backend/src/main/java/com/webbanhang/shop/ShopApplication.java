@@ -105,6 +105,27 @@ public class ShopApplication {
             } catch (Exception e) {
                 System.err.println("[STARTUP] Failed to migrate admin names: " + e.getMessage());
             }
+
+            // Bảng OTP quên mật khẩu (production dùng ddl-auto=none nên phải tạo thủ công)
+            try {
+                jdbcTemplate.execute("""
+                    CREATE TABLE IF NOT EXISTS password_reset_codes (
+                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        email VARCHAR(255) NOT NULL,
+                        code_hash VARCHAR(255) NOT NULL,
+                        created_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+                        expires_at TIMESTAMP(6) NOT NULL,
+                        verified_at TIMESTAMP(6) NULL,
+                        used_at TIMESTAMP(6) NULL,
+                        INDEX idx_prc_email_created (email, created_at),
+                        INDEX idx_prc_expires_at (expires_at),
+                        INDEX idx_prc_used_at (used_at)
+                    )
+                    """);
+                System.out.println("[STARTUP] password_reset_codes table ensured.");
+            } catch (Exception e) {
+                System.err.println("[STARTUP] Failed to ensure password_reset_codes table: " + e.getMessage());
+            }
         };
     }
 

@@ -37,6 +37,7 @@ import com.webbanhang.shop.Model.Orders.PaymentLog;
 import com.webbanhang.shop.Model.Roles.RoleName;
 import com.webbanhang.shop.Service.Inventory.InventoryService;
 import com.webbanhang.shop.Model.Orders.OrderItem;
+import com.webbanhang.shop.Service.Email.CustomerEmailService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -59,6 +60,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final BankTransactionRepository bankTransactionRepository;
     private final SettingRepository settingRepository;
     private final InventoryService inventoryService;
+    private final CustomerEmailService customerEmailService;
 
     public PaymentServiceImpl(
             OrderRepository orderRepository,
@@ -73,7 +75,8 @@ public class PaymentServiceImpl implements PaymentService {
             AdminAccountRepository adminAccountRepository,
             BankTransactionRepository bankTransactionRepository,
             SettingRepository settingRepository,
-            InventoryService inventoryService
+            InventoryService inventoryService,
+            CustomerEmailService customerEmailService
     ) {
         this.orderRepository = orderRepository;
         this.paymentAttemptRepository = paymentAttemptRepository;
@@ -88,6 +91,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.bankTransactionRepository = bankTransactionRepository;
         this.settingRepository = settingRepository;
         this.inventoryService = inventoryService;
+        this.customerEmailService = customerEmailService;
     }
 
     private BigDecimal getApproveThreshold() {
@@ -212,11 +216,25 @@ public class PaymentServiceImpl implements PaymentService {
         }
         
         PaymentAttempt saved = paymentAttemptRepository.save(attempt);
-        
+
+        OrderStatus previousOrderStatus = order.getOrderStatus();
+        PaymentStatus previousPaymentStatus = order.getPaymentStatus();
+
         // Update Order Status
         order.setOrderStatus(OrderStatus.PENDING_PAYMENT_CONFIRMATION);
         order.setPaymentStatus(PaymentStatus.WAITING_CONFIRM);
         orderRepository.save(order);
+
+        notifyCustomerPaymentChange(
+                order,
+                previousOrderStatus,
+                OrderStatus.PENDING_PAYMENT_CONFIRMATION,
+                previousPaymentStatus,
+                PaymentStatus.WAITING_CONFIRM,
+                transferNote,
+                NotificationAction.CONFIRM,
+                "Minh chứng thanh toán cho đơn hàng " + order.getOrderCode() + " đã được gửi. Chúng tôi đang xác nhận."
+        );
         
         paymentLogService.log(orderId, null, saved.getAttemptId(), null,
                 null, "KHACH_HANG", "CUSTOMER_CONFIRM", "PENDING", "WAITING_CONFIRM",
@@ -335,6 +353,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         String oldStatus = lockedAttempt.getStatus();
+        PaymentStatus previousPaymentStatus = order.getPaymentStatus();
+        OrderStatus previousOrderStatus = order.getOrderStatus();
 
         Integer persistedAdminId = systemActor ? null : adminId;
         String adminName = systemActor
@@ -410,7 +430,16 @@ public class PaymentServiceImpl implements PaymentService {
                 adminNote, null);
 
         // Notify customer
-        notifyCustomer(order, NotificationAction.CONFIRM, "Đơn hàng " + order.getOrderCode() + " đã được xác nhận thanh toán.");
+        notifyCustomerPaymentChange(
+                order,
+                previousOrderStatus,
+                OrderStatus.CONFIRMED,
+                previousPaymentStatus,
+                PaymentStatus.PAID,
+                adminNote,
+                NotificationAction.CONFIRM,
+                "Đơn hàng " + order.getOrderCode() + " đã được xác nhận thanh toán."
+        );
         
         paymentNotificationService.notifyPaymentUpdate(attemptId, "MATCHED", adminId != null ? adminId : 0);
     }
@@ -447,6 +476,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         String oldStatus = attempt.getStatus();
+        PaymentStatus previousPaymentStatus = order.getPaymentStatus();
+        OrderStatus previousOrderStatus = order.getOrderStatus();
         String adminName = adminAccountRepository.findById(adminId)
                 .map(AdminAccount::getFullName).orElse("Admin #" + adminId);
 
@@ -491,7 +522,16 @@ public class PaymentServiceImpl implements PaymentService {
                 adminNote, null);
 
         // Notify customer
-        notifyCustomer(order, NotificationAction.CANCEL, "Minh chứng thanh toán cho đơn hàng " + order.getOrderCode() + " đã bị từ chối.");
+        notifyCustomerPaymentChange(
+                order,
+                previousOrderStatus,
+                OrderStatus.CONFIRMED,
+                previousPaymentStatus,
+                PaymentStatus.UNPAID,
+                adminNote,
+                NotificationAction.CANCEL,
+                "Minh chứng thanh toán cho đơn hàng " + order.getOrderCode() + " đã bị từ chối."
+        );
         
         paymentNotificationService.notifyPaymentUpdate(attemptId, "REJECTED", adminId);
     }
@@ -523,6 +563,28 @@ public class PaymentServiceImpl implements PaymentService {
             customerNotificationService.createNotification(notif);
         } catch (Exception e) {
             System.err.println("Failed to notify customer: " + e.getMessage());
+        }
+    }
+
+    private void notifyCustomerPaymentChange(
+            Order order,
+            OrderStatus previousOrderStatus,
+            OrderStatus newOrderStatus,
+            PaymentStatus previousPaymentStatus,
+            PaymentStatus newPaymentStatus,
+            String note,
+            NotificationAction action,
+            String message
+    ) {
+        notifyCustomer(order, action, message);
+
+        try {
+            if (previousOrderStatus != newOrderStatus) {
+                customerEmailService.sendOrderStatusChangeEmail(order, previousOrderStatus, newOrderStatus);
+            }
+            customerEmailService.sendPaymentStatusChangeEmail(order, previousPaymentStatus, newPaymentStatus, note);
+        } catch (Exception e) {
+            System.err.println("Failed to send payment/order update email: " + e.getMessage());
         }
     }
 
@@ -625,6 +687,9 @@ public class PaymentServiceImpl implements PaymentService {
                     : adminAccountRepository.findById(actingAdminId)
                             .map(AdminAccount::getFullName).orElse("Admin #" + actingAdminId);
 
+            PaymentStatus previousPaymentStatus = order.getPaymentStatus();
+            OrderStatus previousOrderStatus = order.getOrderStatus();
+
             order.setPaymentStatus(PaymentStatus.PAID);
             order.setOrderStatus(OrderStatus.CONFIRMED);
             order.setPaymentConfirmedAt(LocalDateTime.now());
@@ -668,7 +733,16 @@ public class PaymentServiceImpl implements PaymentService {
                     approveAsAdminId, logActorName, "AUTO_MATCH", PaymentStatus.UNPAID.name(), PaymentStatus.PAID.name(),
                     matchNote, null);
 
-            notifyCustomer(order, NotificationAction.CONFIRM, "Đơn hàng " + order.getOrderCode() + " đã được xác nhận thanh toán tự động.");
+            notifyCustomerPaymentChange(
+                    order,
+                    previousOrderStatus,
+                    OrderStatus.CONFIRMED,
+                    previousPaymentStatus,
+                    PaymentStatus.PAID,
+                    matchNote,
+                    NotificationAction.CONFIRM,
+                    "Đơn hàng " + order.getOrderCode() + " đã được xác nhận thanh toán tự động."
+            );
         }
     }
 
@@ -698,6 +772,7 @@ public class PaymentServiceImpl implements PaymentService {
                 : "Hệ thống";
 
         PaymentStatus oldStatus = order.getPaymentStatus();
+        OrderStatus previousOrderStatus = order.getOrderStatus();
         String oldStatusStr = (oldStatus != null) ? oldStatus.name() : "UNKNOWN";
 
         // Update Order
@@ -735,7 +810,17 @@ public class PaymentServiceImpl implements PaymentService {
                 note != null ? note : "Giao dịch ngân hàng bị từ chối", null);
         });
 
-        notifyCustomer(order, NotificationAction.REJECT, "Xác nhận thanh toán cho đơn hàng " + order.getOrderCode() + " đã bị từ chối bởi quản trị viên.");
+        String rejectionNote = note != null ? note : "Giao dịch bị từ chối";
+        notifyCustomerPaymentChange(
+                order,
+                previousOrderStatus,
+                OrderStatus.CANCELLED,
+                oldStatus,
+                PaymentStatus.FAILED,
+                rejectionNote,
+                NotificationAction.REJECT,
+                "Xác nhận thanh toán cho đơn hàng " + order.getOrderCode() + " đã bị từ chối bởi quản trị viên."
+        );
     }
 
     @Override
@@ -811,6 +896,8 @@ public class PaymentServiceImpl implements PaymentService {
         if (!order.getPaymentStatus().equals(PaymentStatus.UNPAID)) {
             throw new IllegalStateException("Không thể đổi sang COD cho đơn hàng đã thanh toán");
         }
+
+        OrderStatus previousOrderStatus = order.getOrderStatus();
         
         // Cập nhật Order
         order.setPaymentMethod("COD");
@@ -829,8 +916,16 @@ public class PaymentServiceImpl implements PaymentService {
         // Đơn COD chỉ có stock reserved, chưa confirm sale
         
         // Gửi notification cho khách hàng
-        notifyCustomer(order, NotificationAction.CONFIRM, 
-            "Đơn hàng " + order.getOrderCode() + " đã được chuyển sang thanh toán COD và đã được xác nhận.");
+        notifyCustomerPaymentChange(
+                order,
+                previousOrderStatus,
+                OrderStatus.CONFIRMED,
+                PaymentStatus.UNPAID,
+                PaymentStatus.UNPAID,
+                null,
+                NotificationAction.CONFIRM,
+                "Đơn hàng " + order.getOrderCode() + " đã được chuyển sang thanh toán COD và đã được xác nhận."
+        );
     }
 
     @Override

@@ -19,7 +19,7 @@ MINIO_SECRET_KEY        | 12345678
 MINIO_BUCKET_NAME       | myphone
 MINIO_URL_PREFIX        | https://datn-backend.onrender.com/api/files
 
-CORS_ALLOWED_ORIGINS    | https://datn-frontend.vercel.app
+CORS_ALLOWED_ORIGINS    | https://myphone-store.vercel.app,https://myphone-store-admin.vercel.app
 
 JWT_SECRET              | [tạo bằng: openssl rand -base64 32]
 JWT_EXPIRATION_MS       | 86400000

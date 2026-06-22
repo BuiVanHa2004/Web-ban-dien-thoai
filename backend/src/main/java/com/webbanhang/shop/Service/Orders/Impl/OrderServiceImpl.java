@@ -544,6 +544,7 @@ public class OrderServiceImpl implements OrderService {
     public Optional<Order> updateStatus(Integer id, OrderStatus status) {
         return orderRepository.findById(id).map(existing -> {
             OrderStatus previousStatus = existing.getOrderStatus();
+            PaymentStatus previousPaymentStatus = existing.getPaymentStatus();
             
             // ⚠️ TEMPORARY: Log validation but don't block (for testing)
             try {
@@ -561,7 +562,6 @@ public class OrderServiceImpl implements OrderService {
 
             if ("COD".equalsIgnoreCase(existing.getPaymentMethod()) || existing.getPaymentMethod() == null) {
                 if (status == OrderStatus.DELIVERED) {
-                    PaymentStatus previousPaymentStatus = existing.getPaymentStatus();
                     PaymentStatus newPaymentStatus = PaymentStatus.PAID;
                     
                     // ✅ Validate payment status transition
@@ -631,6 +631,15 @@ public class OrderServiceImpl implements OrderService {
                     } else {
                         // Send regular status change email
                         customerEmailService.sendOrderStatusChangeEmail(savedOrder, previousStatus, status);
+                    }
+
+                    if (previousPaymentStatus != savedOrder.getPaymentStatus()) {
+                        customerEmailService.sendPaymentStatusChangeEmail(
+                                savedOrder,
+                                previousPaymentStatus,
+                                savedOrder.getPaymentStatus(),
+                                savedOrder.getPaymentNote()
+                        );
                     }
                 } catch (Exception e) {
                     System.err.println("Failed to send order status change email: " + e.getMessage());
@@ -774,6 +783,9 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("Vui lòng nhập lý do chi tiết.");
         }
 
+        OrderStatus previousStatus = order.getOrderStatus();
+        PaymentStatus previousPaymentStatus = order.getPaymentStatus();
+
         order.setOrderStatus(OrderStatus.CANCELLED);
         order.setPaymentStatus(PaymentStatus.FAILED);
         order.setCancelReasonId(reasonId);
@@ -824,6 +836,18 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         notificationService.notifyAllAdmins(notif);
 
+        try {
+            customerEmailService.sendOrderStatusChangeEmail(savedOrder, previousStatus, OrderStatus.CANCELLED);
+            customerEmailService.sendPaymentStatusChangeEmail(
+                    savedOrder,
+                    previousPaymentStatus,
+                    PaymentStatus.FAILED,
+                    cancelNote
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send order cancellation email: " + e.getMessage());
+        }
+
         return Optional.of(savedOrder);
     }
 
@@ -850,6 +874,9 @@ public class OrderServiceImpl implements OrderService {
         if (Boolean.TRUE.equals(reason.getAllowInput()) && (cancelNote == null || cancelNote.isBlank())) {
             throw new RuntimeException("Cancel note is required for this reason");
         }
+
+        OrderStatus previousStatus = order.getOrderStatus();
+        PaymentStatus previousPaymentStatus = order.getPaymentStatus();
 
         // 2. Update Order
         order.setOrderStatus(OrderStatus.CANCELLED);
@@ -910,6 +937,20 @@ public class OrderServiceImpl implements OrderService {
                         .orderId(savedOrder.getOrderId())
                         .build()
         );
+
+        try {
+            if (previousStatus != OrderStatus.CANCELLED) {
+                customerEmailService.sendOrderStatusChangeEmail(savedOrder, previousStatus, OrderStatus.CANCELLED);
+            }
+            customerEmailService.sendPaymentStatusChangeEmail(
+                    savedOrder,
+                    previousPaymentStatus,
+                    PaymentStatus.FAILED,
+                    cancelNote
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send admin cancellation email: " + e.getMessage());
+        }
 
         return Optional.of(savedOrder);
     }
@@ -1126,6 +1167,12 @@ public class OrderServiceImpl implements OrderService {
                         .orderId(savedOrder.getOrderId())
                         .build()
         );
+
+        try {
+            customerEmailService.sendPaymentStatusChangeEmail(savedOrder, currentStatus, newPaymentStatus, note);
+        } catch (Exception e) {
+            System.err.println("Failed to send payment status update email: " + e.getMessage());
+        }
 
         System.out.println(String.format(
             "[ORDER] Payment status updated for order %s: %s -> %s by %s",

@@ -176,22 +176,26 @@ public class ContactServiceImpl implements ContactService {
                     .message("Shop đã phản hồi liên hệ của bạn về: " + contact.getSubject())
                     .build();
             customerNotificationService.createNotification(notif);
-            
-            // Send email notification
-            try {
-                String customerEmail = contact.getCustomer().getEmail();
-                String customerName = contact.getCustomer().getFullName();
-                if (customerEmail != null && !customerEmail.isBlank()) {
-                    customerEmailService.sendContactReplyEmail(
-                        customerEmail, 
-                        customerName != null ? customerName : contact.getFullName(),
-                        contact.getSubject(), 
+        }
+
+        // Send email notification
+        try {
+            String customerEmail = contact.getCustomer() != null && contact.getCustomer().getEmail() != null
+                    ? contact.getCustomer().getEmail()
+                    : contact.getEmail();
+            String customerName = contact.getCustomer() != null && contact.getCustomer().getFullName() != null
+                    ? contact.getCustomer().getFullName()
+                    : contact.getFullName();
+            if (customerEmail != null && !customerEmail.isBlank()) {
+                customerEmailService.sendContactReplyEmail(
+                        customerEmail,
+                        customerName != null ? customerName : "Khách hàng",
+                        contact.getSubject(),
                         savedReply.getReplyContent()
-                    );
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to send contact reply email: " + e.getMessage());
+                );
             }
+        } catch (Exception e) {
+            System.err.println("Failed to send contact reply email: " + e.getMessage());
         }
 
         List<String> imageUrls = new ArrayList<>();

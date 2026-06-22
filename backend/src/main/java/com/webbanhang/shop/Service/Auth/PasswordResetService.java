@@ -274,4 +274,12 @@ public class PasswordResetService {
                 "</div>" +
                 "</div></body></html>";
     }
+
+    private String maskIdentifier(String identifier) {
+        if (identifier == null || identifier.length() <= 2) {
+            return "***";
+        }
+        int visibleChars = Math.min(2, identifier.length() / 3);
+        return identifier.substring(0, visibleChars) + "***" + identifier.substring(identifier.length() - visibleChars);
+    }
 }
