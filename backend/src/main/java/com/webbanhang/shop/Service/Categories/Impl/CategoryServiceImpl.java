@@ -71,17 +71,19 @@ public class CategoryServiceImpl implements CategoryService {
                     String segmentName;
                     BigDecimal effectiveMinPrice;
                     
+                    java.text.DecimalFormat formatter = new java.text.DecimalFormat("#,###");
+                    
                     if (minPrice != null && maxPrice != null) {
-                        // Both provided: "2000000-5000000"
-                        segmentName = minPrice.toPlainString() + "-" + maxPrice.toPlainString();
+                        // Both provided: "2.000.000-5.000.000"
+                        segmentName = formatter.format(minPrice.longValue()) + "-" + formatter.format(maxPrice.longValue());
                         effectiveMinPrice = minPrice;
                     } else if (minPrice != null) {
-                        // Only minPrice: "2000000+" (above 2M)
-                        segmentName = minPrice.toPlainString() + "+";
+                        // Only minPrice: "2.000.000+" (above 2M)
+                        segmentName = formatter.format(minPrice.longValue()) + "+";
                         effectiveMinPrice = minPrice;
                     } else {
-                        // Only maxPrice: "5000000-" (below 5M)
-                        segmentName = maxPrice.toPlainString() + "-";
+                        // Only maxPrice: "5.000.000-" (below 5M)
+                        segmentName = formatter.format(maxPrice.longValue()) + "-";
                         effectiveMinPrice = BigDecimal.ZERO;
                     }
                     
