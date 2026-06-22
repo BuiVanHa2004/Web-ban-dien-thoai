@@ -432,13 +432,28 @@ export default function CategoryPage() {
                         <div className="mt-1 text-sm text-white/85">
                           {selectedCategory.priceSegments && selectedCategory.priceSegments.length > 0
                             ? selectedCategory.priceSegments.map((s) => {
-                              const min = Number(s.minPrice);
+                              const min = s.minPrice == null ? null : Number(s.minPrice);
                               const max = s.maxPrice == null ? null : Number(s.maxPrice);
-                              if (isNaN(min)) return "-";
-                              const minFormatted = min.toLocaleString("vi-VN");
-                              if (max == null || isNaN(max)) return `${minFormatted}+`;
-                              const maxFormatted = max.toLocaleString("vi-VN");
-                              return `${minFormatted} - ${maxFormatted}`;
+                              
+                              // Both null - no segment
+                              if (min == null && max == null) return "-";
+                              
+                              // Both have values - range
+                              if (min != null && max != null && !isNaN(min) && !isNaN(max)) {
+                                return `${min.toLocaleString("vi-VN")}đ - ${max.toLocaleString("vi-VN")}đ`;
+                              }
+                              
+                              // Only min - above
+                              if (min != null && !isNaN(min) && (max == null || isNaN(max))) {
+                                return `${min.toLocaleString("vi-VN")}đ+`;
+                              }
+                              
+                              // Only max - below
+                              if (max != null && !isNaN(max) && (min == null || isNaN(min))) {
+                                return `${max.toLocaleString("vi-VN")}đ-`;
+                              }
+                              
+                              return "-";
                             }).join(", ")
                             : "-"}
                         </div>
