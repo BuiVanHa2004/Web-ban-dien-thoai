@@ -47,8 +47,8 @@ public class CategoryController {
 
         Category created = categoryService.create(category);
 
-        // Save price segment range if provided
-        if (req.priceSegmentMin() != null) {
+        // Save price segment range if at least one price is provided
+        if (req.priceSegmentMin() != null || req.priceSegmentMax() != null) {
             categoryService.updatePriceSegmentRange(created.getCategoryId(), req.priceSegmentMin(), req.priceSegmentMax());
             created = categoryService.findById(created.getCategoryId()).orElse(created);
         }
@@ -71,8 +71,8 @@ public class CategoryController {
 
         return categoryService.update(id, category)
                 .map(updated -> {
-                    // Update price segment range if provided
-                    if (req.priceSegmentMin() != null) {
+                    // Update price segment range if at least one price is provided
+                    if (req.priceSegmentMin() != null || req.priceSegmentMax() != null) {
                         categoryService.updatePriceSegmentRange(id, req.priceSegmentMin(), req.priceSegmentMax());
                         updated = categoryService.findById(id).orElse(updated);
                     }
