@@ -103,10 +103,6 @@ public class CategoryServiceImpl implements CategoryService {
                                 return priceSegmentRepository.save(created);
                             });
                 });
-                    created.setMaxPrice(maxPrice);
-                    created.setDeletedAt(null);
-                    return priceSegmentRepository.save(created);
-                });
 
         if (category.getCategoryPriceSegments() == null) {
             category.setCategoryPriceSegments(new LinkedHashSet<>());
