@@ -25,6 +25,8 @@ import com.webbanhang.shop.DTO.Notifications.NotificationDto;
 import com.webbanhang.shop.Model.Notifications.NotificationType;
 import com.webbanhang.shop.Model.Notifications.NotificationAction;
 import com.webbanhang.shop.Model.Notifications.ActorType;
+import com.webbanhang.shop.Service.Email.CustomerEmailService;
+import com.webbanhang.shop.Service.PDF.DeliveryCertificateService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.webbanhang.shop.Repository.Orders.PaymentAttemptRepository;
@@ -72,6 +74,9 @@ public class OrderServiceImpl implements OrderService {
     private final BankTransactionRepository bankTransactionRepository;
     private final com.webbanhang.shop.Repository.Orders.PaymentRepository paymentRepository;
     private final InventoryService inventoryService;
+    
+    private final CustomerEmailService customerEmailService;
+    private final DeliveryCertificateService deliveryCertificateService;
 
     public OrderServiceImpl(
             OrderRepository orderRepository,
@@ -86,7 +91,9 @@ public class OrderServiceImpl implements OrderService {
             PaymentLogRepository paymentLogRepository,
             BankTransactionRepository bankTransactionRepository,
             com.webbanhang.shop.Repository.Orders.PaymentRepository paymentRepository,
-            InventoryService inventoryService
+            InventoryService inventoryService,
+            CustomerEmailService customerEmailService,
+            DeliveryCertificateService deliveryCertificateService
     ) {
         this.orderRepository = orderRepository;
         this.customerAccountRepository = customerAccountRepository;
@@ -101,6 +108,8 @@ public class OrderServiceImpl implements OrderService {
         this.bankTransactionRepository = bankTransactionRepository;
         this.paymentRepository = paymentRepository;
         this.inventoryService = inventoryService;
+        this.customerEmailService = customerEmailService;
+        this.deliveryCertificateService = deliveryCertificateService;
     }
 
     @Override
@@ -243,6 +252,13 @@ public class OrderServiceImpl implements OrderService {
                 .message("Bạn có đơn hàng mới từ khách hàng " + customer.getFullName())
                 .build();
         notificationService.notifyAllAdmins(notif);
+
+        // Send order confirmation email to customer
+        try {
+            customerEmailService.sendOrderConfirmationEmail(savedOrder);
+        } catch (Exception e) {
+            System.err.println("Failed to send order confirmation email: " + e.getMessage());
+        }
 
         return savedOrder;
     }
@@ -603,6 +619,21 @@ public class OrderServiceImpl implements OrderService {
                     customerNotificationService.createNotification(notif);
                 } catch (Exception e) {
                     System.err.println("Failed to create customer notification: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                
+                // Send email notification for status change
+                try {
+                    if (status == OrderStatus.DELIVERED) {
+                        // Generate PDF certificate and send with delivered email
+                        byte[] certificatePdf = deliveryCertificateService.generateDeliveryCertificate(savedOrder);
+                        customerEmailService.sendOrderDeliveredEmail(savedOrder, certificatePdf);
+                    } else {
+                        // Send regular status change email
+                        customerEmailService.sendOrderStatusChangeEmail(savedOrder, previousStatus, status);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to send order status change email: " + e.getMessage());
                     e.printStackTrace();
                 }
             }

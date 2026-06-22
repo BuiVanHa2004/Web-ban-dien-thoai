@@ -125,23 +125,23 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public Map<String, String> forgotPassword(@RequestBody ForgotPasswordRequest req) {
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody ForgotPasswordRequest req) {
         String key = req.usernameOrEmail() != null && !req.usernameOrEmail().isBlank()
                 ? req.usernameOrEmail()
                 : req.email();
 
         if (key == null || key.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập email.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng nhập email."));
         }
 
         try {
             passwordResetService.requestReset(key);
         } catch (IllegalArgumentException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
         }
 
         // Luôn trả về thành công để tránh lộ thông tin tài khoản
-        return Map.of("message", "Nếu email tồn tại, mã xác thực sẽ được gửi trong vài phút.");
+        return ResponseEntity.ok(Map.of("message", "Nếu email tồn tại, mã xác thực sẽ được gửi trong vài phút."));
     }
 
     @PostMapping("/forgot-password/verify")

@@ -17,6 +17,7 @@ import com.webbanhang.shop.Service.Contacts.ContactService;
 import com.webbanhang.shop.Service.Storage.MinioStorageService;
 import com.webbanhang.shop.Service.Notifications.NotificationService;
 import com.webbanhang.shop.Service.Notifications.CustomerNotificationService;
+import com.webbanhang.shop.Service.Email.CustomerEmailService;
 import com.webbanhang.shop.DTO.Notifications.NotificationDto;
 import com.webbanhang.shop.Model.Notifications.NotificationType;
 import com.webbanhang.shop.Model.Notifications.NotificationAction;
@@ -40,6 +41,7 @@ public class ContactServiceImpl implements ContactService {
     private final MinioStorageService minioStorageService;
     private final NotificationService notificationService;
     private final CustomerNotificationService customerNotificationService;
+    private final CustomerEmailService customerEmailService;
 
     public ContactServiceImpl(
             ContactRepository contactRepository,
@@ -48,7 +50,8 @@ public class ContactServiceImpl implements ContactService {
             CustomerAccountRepository customerAccountRepository,
             MinioStorageService minioStorageService,
             NotificationService notificationService,
-            CustomerNotificationService customerNotificationService
+            CustomerNotificationService customerNotificationService,
+            CustomerEmailService customerEmailService
     ) {
         this.contactRepository = contactRepository;
         this.contactReplyRepository = contactReplyRepository;
@@ -57,6 +60,7 @@ public class ContactServiceImpl implements ContactService {
         this.minioStorageService = minioStorageService;
         this.notificationService = notificationService;
         this.customerNotificationService = customerNotificationService;
+        this.customerEmailService = customerEmailService;
     }
 
     @Override
@@ -172,6 +176,22 @@ public class ContactServiceImpl implements ContactService {
                     .message("Shop đã phản hồi liên hệ của bạn về: " + contact.getSubject())
                     .build();
             customerNotificationService.createNotification(notif);
+            
+            // Send email notification
+            try {
+                String customerEmail = contact.getCustomer().getEmail();
+                String customerName = contact.getCustomer().getFullName();
+                if (customerEmail != null && !customerEmail.isBlank()) {
+                    customerEmailService.sendContactReplyEmail(
+                        customerEmail, 
+                        customerName != null ? customerName : contact.getFullName(),
+                        contact.getSubject(), 
+                        savedReply.getReplyContent()
+                    );
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to send contact reply email: " + e.getMessage());
+            }
         }
 
         List<String> imageUrls = new ArrayList<>();

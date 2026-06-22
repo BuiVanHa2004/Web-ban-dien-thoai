@@ -17,7 +17,7 @@ type AdminLayoutProps = {
 export default function AdminLayout({ children, userName }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [adminUser, setAdminUser] = React.useState<{ id: number; fullName: string; username: string } | null>(null);
+  const [adminUser, setAdminUser] = React.useState<{ id: number; fullName: string; username: string; avatarUrl?: string | null } | null>(null);
   const [adminToken, setAdminToken] = React.useState<string | null>(null);
   const [isVerifying, setIsVerifying] = React.useState(true);
   const router = useRouter();
@@ -164,6 +164,7 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
         <div className="min-w-0 flex-1">
           <Topbar
             userName={userName}
+            userAvatarUrl={adminUser?.avatarUrl}
             onToggleSidebar={() => {
               // mobile: mở drawer, desktop: collapse
               if (window.innerWidth < 640) {

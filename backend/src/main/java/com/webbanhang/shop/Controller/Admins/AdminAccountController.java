@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin-accounts")
@@ -87,6 +88,22 @@ public class AdminAccountController {
         return adminAccountService.update(id, req)
                 .map(AdminAccountDto::fromEntity)
                 .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // Debug endpoint to test avatar URL
+    @GetMapping("/{id:\\d+}/avatar")
+    public ResponseEntity<Map<String, String>> getAvatar(@PathVariable Integer id) {
+        return adminAccountService.findById(id)
+                .map(admin -> {
+                    String avatarUrl = admin.getAvatarUrl();
+                    return ResponseEntity.ok(Map.of(
+                            "accountId", String.valueOf(admin.getAccountId()),
+                            "fullName", admin.getFullName() != null ? admin.getFullName() : "",
+                            "avatarUrl", avatarUrl != null ? avatarUrl : "",
+                            "hasAvatar", String.valueOf(avatarUrl != null && !avatarUrl.isBlank())
+                    ));
+                })
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 

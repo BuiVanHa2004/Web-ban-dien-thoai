@@ -7,6 +7,7 @@ import com.webbanhang.shop.Model.PriceSegments.PriceSegment;
 import com.webbanhang.shop.Repository.Categories.CategoryImageRepository;
 import com.webbanhang.shop.Repository.Categories.CategoryRepository;
 import com.webbanhang.shop.Repository.Products.ProductRepository;
+import com.webbanhang.shop.Repository.PriceSegments.CategoryPriceSegmentRepository;
 import com.webbanhang.shop.Repository.PriceSegments.PriceSegmentRepository;
 import com.webbanhang.shop.Service.Categories.CategoryService;
 import com.webbanhang.shop.Service.Storage.MinioStorageService;
@@ -28,20 +29,36 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final MinioStorageService minioStorageService;
     private final PriceSegmentRepository priceSegmentRepository;
+    private final CategoryPriceSegmentRepository categoryPriceSegmentRepository;
     private final ProductRepository productRepository;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryImageRepository categoryImageRepository, MinioStorageService minioStorageService, PriceSegmentRepository priceSegmentRepository, ProductRepository productRepository) {
+    public CategoryServiceImpl(
+            CategoryRepository categoryRepository, 
+            CategoryImageRepository categoryImageRepository, 
+            MinioStorageService minioStorageService, 
+            PriceSegmentRepository priceSegmentRepository,
+            CategoryPriceSegmentRepository categoryPriceSegmentRepository,
+            ProductRepository productRepository) {
         this.categoryRepository = categoryRepository;
         this.minioStorageService = minioStorageService;
         this.priceSegmentRepository = priceSegmentRepository;
+        this.categoryPriceSegmentRepository = categoryPriceSegmentRepository;
         this.productRepository = productRepository;
     }
 
+    @Transactional
     private void syncSinglePriceSegment(Category category, BigDecimal minPrice, BigDecimal maxPrice) {
-        if (minPrice == null) {
+        // If category is persisted, delete existing links from database first
+        if (category.getCategoryId() != null) {
+            categoryPriceSegmentRepository.deleteByCategoryId(category.getCategoryId());
+            // Clear the collection to sync with database state
             if (category.getCategoryPriceSegments() != null) {
                 category.getCategoryPriceSegments().clear();
             }
+        }
+        
+        // If both are null, no price segment
+        if (minPrice == null && maxPrice == null) {
             return;
         }
 
@@ -49,9 +66,21 @@ public class CategoryServiceImpl implements CategoryService {
                 .findFirstByDeletedAtIsNullAndMinPriceAndMaxPrice(minPrice, maxPrice)
                 .orElseGet(() -> {
                     PriceSegment created = new PriceSegment();
-                    created.setSegmentName(maxPrice == null
-                            ? ("Từ " + minPrice.toPlainString() + "+")
-                            : (minPrice.toPlainString() + "-" + maxPrice.toPlainString()));
+                    
+                    // Generate segment name based on what's provided
+                    String segmentName;
+                    if (minPrice != null && maxPrice != null) {
+                        // Both provided: "2000000-5000000"
+                        segmentName = minPrice.toPlainString() + "-" + maxPrice.toPlainString();
+                    } else if (minPrice != null) {
+                        // Only minPrice: "2000000+" (above 2M)
+                        segmentName = minPrice.toPlainString() + "+";
+                    } else {
+                        // Only maxPrice: "2000000-" (below 2M)
+                        segmentName = maxPrice.toPlainString() + "-";
+                    }
+                    
+                    created.setSegmentName(segmentName);
                     created.setMinPrice(minPrice);
                     created.setMaxPrice(maxPrice);
                     created.setDeletedAt(null);
@@ -62,7 +91,7 @@ public class CategoryServiceImpl implements CategoryService {
             category.setCategoryPriceSegments(new LinkedHashSet<>());
         }
 
-        category.getCategoryPriceSegments().clear();
+        // Add new link
         CategoryPriceSegment link = new CategoryPriceSegment();
         link.setCategory(category);
         link.setPriceSegment(seg);

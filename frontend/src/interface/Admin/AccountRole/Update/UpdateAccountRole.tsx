@@ -208,6 +208,25 @@ function UpdateAccountRole() {
 
     window.setTimeout(async () => {
       try {
+        // Upload avatar first if exists
+        let finalAvatarUrl = avatarUrl;
+        if (avatarFile) {
+          try {
+            const formData = new FormData();
+            formData.append("file", avatarFile);
+            const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_URL || "http://localhost:8080"}/api/uploads/avatars`, {
+              method: "POST",
+              body: formData,
+            });
+            if (uploadResponse.ok) {
+              const data = await uploadResponse.json();
+              finalAvatarUrl = data.url || null;
+            }
+          } catch (uploadError) {
+            console.error("Failed to upload avatar:", uploadError);
+          }
+        }
+
         await adminAccountService.update(adminId, {
           fullName: fn,
           username: un,
@@ -216,7 +235,7 @@ function UpdateAccountRole() {
           email: em,
           phone: phone.trim() || null,
           address: address.trim() || null,
-          avatarUrl: avatarUrl || null,
+          avatarUrl: finalAvatarUrl,
         });
         router.push("/accounts-roles");
       } catch (e: any) {
@@ -376,7 +395,7 @@ function UpdateAccountRole() {
               <div className="rounded-3xl bg-white/60 p-4 ring-1 ring-slate-200/70 shadow-sm backdrop-blur-xl transition-all duration-500 ease-out dark:bg-slate-950/45 dark:ring-white/10 dark:shadow-2xl dark:shadow-black/40">
                 <div className="flex items-start gap-3">
                   <Avatar 
-                    src={avatarUrl} 
+                    src={avatarPreviewUrl || avatarUrl} 
                     name={fullName || username}
                     className="h-12 w-12 rounded-full cursor-pointer shrink-0"
                     textClassName="text-base font-semibold"
