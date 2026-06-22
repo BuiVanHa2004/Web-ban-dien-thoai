@@ -10,7 +10,10 @@ public class InventoryStockValidator {
 
     public int availableQuantity(ProductVariant variant) {
         if (variant == null) return 0;
-        return Math.max(0, variant.getQuantity() == null ? 0 : variant.getQuantity());
+        // Use total_stock - reserved_stock instead of deprecated 'quantity' field
+        int totalStock = variant.getTotalStock() == null ? 0 : variant.getTotalStock();
+        int reservedStock = variant.getReservedStock() == null ? 0 : variant.getReservedStock();
+        return Math.max(0, totalStock - reservedStock);
     }
 
     public void requireStock(ProductVariant variant, int requestedQty, String productLabel) {
