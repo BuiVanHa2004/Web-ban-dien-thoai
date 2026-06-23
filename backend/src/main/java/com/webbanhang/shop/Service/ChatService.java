@@ -57,7 +57,7 @@ public class ChatService {
             if (selectedRoom.getStatus() == ChatRoomStatus.CLOSED) {
                 log.info("🔄 Reactivating closed chat room: {} for customer: {}", selectedRoom.getId(), customerId);
                 selectedRoom.setStatus(ChatRoomStatus.ACTIVE);
-                selectedRoom.setLastMessageAt(LocalDateTime.now());
+                selectedRoom.setLastMessageAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
                 selectedRoom = chatRoomRepository.save(selectedRoom);
             } else {
                 log.info("✅ Found existing ACTIVE chat room: {} for customer: {}", selectedRoom.getId(), customerId);
@@ -86,7 +86,7 @@ public class ChatService {
             ChatRoom newRoom = new ChatRoom();
             newRoom.setCustomer(customer);
             newRoom.setStatus(ChatRoomStatus.ACTIVE);
-            newRoom.setLastMessageAt(LocalDateTime.now());
+            newRoom.setLastMessageAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
             
             // DUPLICATE PROTECTION: Check again before save
             List<ChatRoom> checkDuplicate = chatRoomRepository.findByCustomerIdAndStatusPaged(
@@ -153,7 +153,7 @@ public class ChatService {
 
         // Update last message preview
         String lastMessagePreview = message.getMessageType() == MessageType.IMAGE ? "📷 Hình ảnh" : request.getMessage();
-        chatRoom.setLastMessageAt(LocalDateTime.now());
+        chatRoom.setLastMessageAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
         chatRoom.setLastMessage(truncateMessage(lastMessagePreview, 100));
         chatRoom.setLastMessageSenderType(request.getSenderType());
         chatRoomRepository.save(chatRoom);
@@ -310,7 +310,7 @@ public class ChatService {
         // Update message
         message.setMessage(newMessage);
         message.setEdited(true);
-        message.setEditedAt(LocalDateTime.now());
+        message.setEditedAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
         message = chatMessageRepository.save(message);
         
         log.info("✏️ Message {} edited by user", messageId);
@@ -351,7 +351,7 @@ public class ChatService {
         message.setMessageType(MessageType.TEXT);
         message.setAttachmentUrl(null);
         message.setRecalled(true);
-        message.setRecalledAt(LocalDateTime.now());
+        message.setRecalledAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
         message = chatMessageRepository.save(message);
         
         log.info("🔙 Message {} recalled", messageId);
@@ -411,7 +411,7 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
             .orElseThrow(() -> new RuntimeException("Chat room not found"));
         
-        chatRoom.setAdminDeletedAt(LocalDateTime.now());
+        chatRoom.setAdminDeletedAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
         chatRoomRepository.save(chatRoom);
         
         log.info("🗑️ Admin deleted chat room: {} (Customer still sees it)", chatRoomId);
@@ -434,7 +434,7 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
             .orElseThrow(() -> new RuntimeException("Chat room not found"));
         
-        chatRoom.setCustomerDeletedAt(LocalDateTime.now());
+        chatRoom.setCustomerDeletedAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
         chatRoomRepository.save(chatRoom);
         
         log.info("🗑️ Customer deleted chat room: {} (Admin still sees it)", chatRoomId);
