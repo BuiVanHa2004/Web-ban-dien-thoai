@@ -12,7 +12,6 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
-import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.webbanhang.shop.Model.Orders.Order;
@@ -43,9 +42,10 @@ public class DeliveryCertificateService {
             Document document = new Document(pdf, PageSize.A4);
             document.setMargins(40, 40, 40, 40);
 
-            // Load font that supports Vietnamese characters
-            PdfFont font = PdfFontFactory.createFont("Helvetica", PdfEncodings.IDENTITY_H);
-            PdfFont boldFont = PdfFontFactory.createFont("Helvetica-Bold", PdfEncodings.IDENTITY_H);
+            // ✅ FIX: Use standard encoding instead of IDENTITY_H
+            // IDENTITY_H requires font file which is not available, use WINANSI for Latin characters
+            PdfFont font = PdfFontFactory.createFont("Helvetica");
+            PdfFont boldFont = PdfFontFactory.createFont("Helvetica-Bold");
 
             // Header
             Paragraph header = new Paragraph("MYPHONE STORE")

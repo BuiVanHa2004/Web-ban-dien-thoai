@@ -116,17 +116,20 @@ public class CustomerEmailService {
 
     @Async
     public void sendOrderDeliveredEmail(Order order, byte[] certificatePdf, String pdfDownloadUrl) {
+        log.info("[EMAIL] Starting sendOrderDeliveredEmail for order {}", order.getOrderCode());
+        
         if (order.getEmail() == null || order.getEmail().isBlank()) {
             log.warn("Cannot send order delivered email - no email address for order {}", order.getOrderCode());
             return;
         }
 
         try {
+            log.info("[EMAIL] Building HTML content for order {}", order.getOrderCode());
             String htmlContent = buildOrderDeliveredEmailHtml(order, pdfDownloadUrl);
             String subject = "MyPhone Store - Đơn hàng " + order.getOrderCode() + " đã giao thành công";
 
             if (certificatePdf != null && certificatePdf.length > 0) {
-                log.info("Sending order delivered email with PDF attachment ({} bytes) and download link to {} for order {}", 
+                log.info("[EMAIL] Sending order delivered email with PDF attachment ({} bytes) and download link to {} for order {}", 
                         certificatePdf.length, order.getEmail(), order.getOrderCode());
                 gmailApiService.sendEmailWithAttachment(
                         order.getEmail(),
@@ -135,17 +138,17 @@ public class CustomerEmailService {
                         certificatePdf,
                         "Chung-nhan-don-hang-" + order.getOrderCode() + ".pdf"
                 );
-                log.info("Successfully sent order delivered email WITH PDF attachment and download link to {} for order {}", 
+                log.info("[EMAIL] ✅ Successfully sent order delivered email WITH PDF attachment and download link to {} for order {}", 
                         order.getEmail(), order.getOrderCode());
             } else {
-                log.warn("PDF certificate is NULL or empty for order {}, sending email WITHOUT attachment", 
+                log.warn("[EMAIL] PDF certificate is NULL or empty for order {}, sending email WITHOUT attachment", 
                         order.getOrderCode());
                 gmailApiService.sendHtmlEmail(order.getEmail(), subject, htmlContent);
-                log.info("Sent order delivered email WITHOUT PDF to {} for order {}", 
+                log.info("[EMAIL] ✅ Sent order delivered email WITHOUT PDF to {} for order {}", 
                         order.getEmail(), order.getOrderCode());
             }
         } catch (Exception ex) {
-            log.error("Failed to send order delivered email to {} for order {}",
+            log.error("[EMAIL] ❌ Failed to send order delivered email to {} for order {}",
                     order.getEmail(), order.getOrderCode(), ex);
         }
     }

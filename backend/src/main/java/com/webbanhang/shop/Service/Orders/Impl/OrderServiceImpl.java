@@ -633,33 +633,66 @@ public class OrderServiceImpl implements OrderService {
                 // Send email notification for status change
                 try {
                     if (status == OrderStatus.DELIVERED) {
+                        System.out.println("[ORDER] ========================================");
+                        System.out.println("[ORDER] Order status changed to DELIVERED");
+                        System.out.println("[ORDER] Order code: " + savedOrder.getOrderCode());
+                        System.out.println("[ORDER] Customer email: " + savedOrder.getEmail());
+                        System.out.println("[ORDER] Payment method: " + savedOrder.getPaymentMethod());
+                        System.out.println("[ORDER] Payment status: " + savedOrder.getPaymentStatus());
+                        System.out.println("[ORDER] ========================================");
+                        
                         // Generate PDF certificate and send with delivered email
-                        System.out.println("[ORDER] Generating delivery certificate PDF for order " + savedOrder.getOrderCode());
-                        byte[] certificatePdf = deliveryCertificateService.generateDeliveryCertificate(savedOrder);
+                        System.out.println("[ORDER] Step 1: Generating delivery certificate PDF for order " + savedOrder.getOrderCode());
+                        byte[] certificatePdf = null;
+                        try {
+                            certificatePdf = deliveryCertificateService.generateDeliveryCertificate(savedOrder);
+                            System.out.println("[ORDER] ✅ PDF generation completed");
+                        } catch (Exception pdfEx) {
+                            System.err.println("[ORDER] ❌ PDF generation FAILED: " + pdfEx.getMessage());
+                            pdfEx.printStackTrace();
+                        }
+                        
                         String pdfDownloadUrl = null;
                         
                         if (certificatePdf != null && certificatePdf.length > 0) {
-                            System.out.println("[ORDER] PDF generated successfully: " + certificatePdf.length + " bytes");
+                            System.out.println("[ORDER] ✅ PDF generated successfully: " + certificatePdf.length + " bytes");
                             
                             // Upload PDF to MinIO and get public URL
                             try {
-                                System.out.println("[ORDER] Uploading PDF certificate to MinIO for order " + savedOrder.getOrderCode());
+                                System.out.println("[ORDER] Step 2: Uploading PDF certificate to MinIO for order " + savedOrder.getOrderCode());
                                 com.webbanhang.shop.Service.Storage.MinioStorageService.UploadedObject uploaded = 
                                     minioStorageService.uploadOrderCertificatePdf(certificatePdf, savedOrder.getOrderCode());
                                 pdfDownloadUrl = uploaded.url();
-                                System.out.println("[ORDER] PDF uploaded successfully. Download URL: " + pdfDownloadUrl);
+                                System.out.println("[ORDER] ✅ PDF uploaded successfully. Download URL: " + pdfDownloadUrl);
                             } catch (Exception e) {
-                                System.err.println("[ORDER] WARNING: Failed to upload PDF to MinIO: " + e.getMessage());
+                                System.err.println("[ORDER] ⚠️ WARNING: Failed to upload PDF to MinIO: " + e.getMessage());
                                 e.printStackTrace();
-                                // Continue anyway - will still attach PDF to email
+                                System.out.println("[ORDER] Continuing anyway - will still attach PDF to email");
                             }
                         } else {
-                            System.err.println("[ORDER] WARNING: PDF generation returned NULL or empty for order " + savedOrder.getOrderCode());
+                            System.err.println("[ORDER] ❌ ERROR: PDF generation returned NULL or empty for order " + savedOrder.getOrderCode());
                         }
                         
-                        // ✅ Email giao hàng thành công đã bao gồm thông tin thanh toán
-                        // Không cần gửi thêm email payment status change
-                        customerEmailService.sendOrderDeliveredEmail(savedOrder, certificatePdf, pdfDownloadUrl);
+                        // Send delivered email with PDF
+                        System.out.println("[ORDER] Step 3: Sending order delivered email");
+                        System.out.println("[ORDER] - Recipient: " + savedOrder.getEmail());
+                        System.out.println("[ORDER] - PDF attachment size: " + (certificatePdf != null ? certificatePdf.length + " bytes" : "NULL"));
+                        System.out.println("[ORDER] - Download URL: " + (pdfDownloadUrl != null ? pdfDownloadUrl : "NULL"));
+                        
+                        try {
+                            // ✅ Email giao hàng thành công đã bao gồm thông tin thanh toán
+                            // Không cần gửi thêm email payment status change
+                            customerEmailService.sendOrderDeliveredEmail(savedOrder, certificatePdf, pdfDownloadUrl);
+                            System.out.println("[ORDER] ✅ Order delivered email sent successfully");
+                        } catch (Exception emailEx) {
+                            System.err.println("[ORDER] ❌ FAILED to send order delivered email: " + emailEx.getMessage());
+                            emailEx.printStackTrace();
+                            throw emailEx; // Re-throw to be caught by outer catch
+                        }
+                        
+                        System.out.println("[ORDER] ========================================");
+                        System.out.println("[ORDER] DELIVERED status processing completed");
+                        System.out.println("[ORDER] ========================================");
                     } else {
                         // Send regular status change email
                         customerEmailService.sendOrderStatusChangeEmail(savedOrder, previousStatus, status);
@@ -676,8 +709,9 @@ public class OrderServiceImpl implements OrderService {
                         }
                     }
                 } catch (Exception e) {
-                    System.err.println("Failed to send order status change email: " + e.getMessage());
+                    System.err.println("[ORDER] ❌ CRITICAL ERROR in email notification process: " + e.getMessage());
                     e.printStackTrace();
+                    // Note: This will NOT stop the order status update, only log the error
                 }
             }
             
