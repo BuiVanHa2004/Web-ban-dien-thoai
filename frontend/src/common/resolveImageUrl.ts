@@ -7,6 +7,7 @@ const B2_BUCKET_NAME = process.env.NEXT_PUBLIC_B2_BUCKET_NAME || "myphone-datn";
  * Resolves an image URL:
  * - blob: URLs (local preview) → return as-is
  * - localhost URLs → replace với real backend URL
+ * - Old Render URLs → replace với current backend URL
  * - Backblaze B2 direct URLs → proxy qua backend /api/files/ vì bucket là private
  * - relative paths → prepend API base URL
  * - already absolute → return as-is
@@ -16,6 +17,13 @@ export function resolveImageUrl(url?: string | null): string | undefined {
 
   // Blob URLs (local preview) — giữ nguyên
   if (url.startsWith("blob:")) return url;
+
+  // Replace old Render domain with current backend
+  if (url.includes("datn-backend-d0et.onrender.com")) {
+    const fixedUrl = url.replace("https://datn-backend-d0et.onrender.com", API_URL);
+    console.log('[resolveImageUrl] Old Render URL detected, replacing:', url, '→', fixedUrl);
+    return fixedUrl;
+  }
 
   // Replace any localhost references with the real backend URL
   if (url.includes("localhost:8080") || url.includes("localhost:9000")) {
