@@ -32,14 +32,20 @@ public class FileController {
         String objectName = idx >= 0 ? path.substring(idx + "/api/files/".length()) : "";
 
         if (objectName.isBlank()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            System.err.println("ERROR: Object name is blank");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found".getBytes());
         }
 
+        System.out.println("INFO: Fetching file: " + objectName);
+        
         MinioStorageService.FileObject obj;
         try {
             obj = minioStorageService.getObject(objectName);
+            System.out.println("SUCCESS: File retrieved: " + objectName);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            System.err.println("ERROR: Failed to get file from MinIO: " + objectName);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(("File not found: " + e.getMessage()).getBytes());
         }
 
         try (InputStream in = obj.getInputStream()) {
@@ -60,9 +66,12 @@ public class FileController {
             // Cache control
             headers.setCacheControl("public, max-age=31536000, immutable");
             
+            System.out.println("SUCCESS: Serving file: " + objectName + " (" + bytes.length + " bytes)");
             return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            System.err.println("ERROR: Failed to read file stream: " + objectName);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(("Error reading file: " + e.getMessage()).getBytes());
         }
     }
 }
