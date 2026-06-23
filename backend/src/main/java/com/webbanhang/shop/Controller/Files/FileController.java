@@ -49,7 +49,15 @@ public class FileController {
                     : MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentLength(bytes.length);
             headers.setContentDisposition(ContentDisposition.inline().build());
+            
+            // CORS headers for cross-origin image loading
+            headers.set("Access-Control-Allow-Origin", "*");
+            headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+            headers.set("Access-Control-Allow-Headers", "*");
+            
+            // Cache control
             headers.setCacheControl("public, max-age=31536000, immutable");
+            
             return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
