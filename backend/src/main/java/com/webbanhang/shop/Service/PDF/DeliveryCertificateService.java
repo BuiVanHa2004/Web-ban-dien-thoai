@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -35,6 +36,43 @@ public class DeliveryCertificateService {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
 
+    /**
+     * Convert Vietnamese text to ASCII-friendly text
+     * This ensures PDF displays Vietnamese names correctly without requiring Unicode fonts
+     * 
+     * Examples:
+     * "Từ Sơn" → "Tu Son"
+     * "Bắc Ninh" → "Bac Ninh"
+     * "Cam Vũ Trụ" → "Cam Vu Tru"
+     * 
+     * @param text Original Vietnamese text
+     * @return ASCII-transliterated text
+     */
+    private String toAscii(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        
+        // First, normalize to NFD (decompose characters)
+        String normalized = Normalizer.normalize(text, Normalizer.Form.NFD);
+        
+        // Remove diacritical marks but keep base characters
+        String result = normalized.replaceAll("\\p{M}", "");
+        
+        // Handle Vietnamese special characters that don't normalize well
+        result = result.replace('đ', 'd').replace('Đ', 'D');
+        result = result.replace('ð', 'd').replace('Ð', 'D'); // Alternative forms
+        
+        // Additional Vietnamese-specific replacements
+        result = result.replace("ư", "u").replace("Ư", "U");
+        result = result.replace("ơ", "o").replace("Ơ", "O");
+        result = result.replace("â", "a").replace("Â", "A");
+        result = result.replace("ê", "e").replace("Ê", "E");
+        result = result.replace("ô", "o").replace("Ô", "O");
+        
+        return result;
+    }
+
     public byte[] generateDeliveryCertificate(Order order) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             PdfWriter writer = new PdfWriter(baos);
@@ -42,12 +80,14 @@ public class DeliveryCertificateService {
             Document document = new Document(pdf, PageSize.A4);
             document.setMargins(40, 40, 40, 40);
 
-            // Use standard fonts that work reliably across all systems
+            // Use standard Helvetica font (ASCII only)
+            // All Vietnamese text will be automatically converted to ASCII
             PdfFont font = PdfFontFactory.createFont("Helvetica");
             PdfFont boldFont = PdfFontFactory.createFont("Helvetica-Bold");
+            log.info("Using Helvetica font with Vietnamese → ASCII conversion");
 
             // Header
-            Paragraph header = new Paragraph("MYPHONE STORE")
+            Paragraph header = new Paragraph(toAscii("MYPHONE STORE"))
                     .setFont(boldFont)
                     .setFontSize(24)
                     .setTextAlignment(TextAlignment.CENTER)
@@ -55,7 +95,7 @@ public class DeliveryCertificateService {
                     .setMarginBottom(5);
             document.add(header);
 
-            Paragraph subHeader = new Paragraph("CHUNG NHAN GIAO HANG")
+            Paragraph subHeader = new Paragraph(toAscii("CHUNG NHAN GIAO HANG"))
                     .setFont(boldFont)
                     .setFontSize(18)
                     .setTextAlignment(TextAlignment.CENTER)
@@ -66,20 +106,20 @@ public class DeliveryCertificateService {
             Table infoTable = new Table(2);
             infoTable.setWidth(UnitValue.createPercentValue(100));
             
-            addInfoRow(infoTable, "Ma don hang:", order.getOrderCode(), font, boldFont);
-            addInfoRow(infoTable, "Ngay dat hang:", formatDateTime(order.getCreatedAt()), font, boldFont);
-            addInfoRow(infoTable, "Ngay giao hang:", formatDateTime(order.getUpdatedAt()), font, boldFont);
-            addInfoRow(infoTable, "Ten khach hang:", order.getCustomerName(), font, boldFont);
-            addInfoRow(infoTable, "Nguoi nhan:", order.getReceiverName(), font, boldFont);
-            addInfoRow(infoTable, "So dien thoai:", order.getReceiverPhone(), font, boldFont);
-            addInfoRow(infoTable, "Dia chi giao hang:", order.getShippingAddress(), font, boldFont);
-            addInfoRow(infoTable, "Phuong thuc thanh toan:", translatePaymentMethod(order.getPaymentMethod()), font, boldFont);
+            addInfoRow(infoTable, toAscii("Ma don hang:"), order.getOrderCode(), font, boldFont);
+            addInfoRow(infoTable, toAscii("Ngay dat hang:"), formatDateTime(order.getCreatedAt()), font, boldFont);
+            addInfoRow(infoTable, toAscii("Ngay giao hang:"), formatDateTime(order.getUpdatedAt()), font, boldFont);
+            addInfoRow(infoTable, toAscii("Ten khach hang:"), toAscii(order.getCustomerName()), font, boldFont);
+            addInfoRow(infoTable, toAscii("Nguoi nhan:"), toAscii(order.getReceiverName()), font, boldFont);
+            addInfoRow(infoTable, toAscii("So dien thoai:"), order.getReceiverPhone(), font, boldFont);
+            addInfoRow(infoTable, toAscii("Dia chi giao hang:"), toAscii(order.getShippingAddress()), font, boldFont);
+            addInfoRow(infoTable, toAscii("Phuong thuc thanh toan:"), toAscii(translatePaymentMethod(order.getPaymentMethod())), font, boldFont);
 
             document.add(infoTable);
             document.add(new Paragraph("\n"));
 
             // Products section
-            Paragraph productsTitle = new Paragraph("DANH SACH SAN PHAM")
+            Paragraph productsTitle = new Paragraph(toAscii("DANH SACH SAN PHAM"))
                     .setFont(boldFont)
                     .setFontSize(14)
                     .setMarginBottom(10);
@@ -91,20 +131,20 @@ public class DeliveryCertificateService {
             productTable.setWidth(UnitValue.createPercentValue(100));
 
             // Table header
-            productTable.addHeaderCell(createHeaderCell("San pham", boldFont));
-            productTable.addHeaderCell(createHeaderCell("SL", boldFont));
-            productTable.addHeaderCell(createHeaderCell("Don gia", boldFont));
-            productTable.addHeaderCell(createHeaderCell("Thanh tien", boldFont));
+            productTable.addHeaderCell(createHeaderCell(toAscii("San pham"), boldFont));
+            productTable.addHeaderCell(createHeaderCell(toAscii("SL"), boldFont));
+            productTable.addHeaderCell(createHeaderCell(toAscii("Don gia"), boldFont));
+            productTable.addHeaderCell(createHeaderCell(toAscii("Thanh tien"), boldFont));
 
             // Table rows
             for (OrderItem item : order.getItems()) {
                 // Product name with variants
-                StringBuilder productInfo = new StringBuilder(item.getProductName());
+                StringBuilder productInfo = new StringBuilder(toAscii(item.getProductName()));
                 if (item.getRamGb() != null || item.getStorageGb() != null || item.getColorName() != null) {
                     productInfo.append("\n");
-                    if (item.getRamGb() != null) productInfo.append("RAM: ").append(item.getRamGb()).append("GB ");
-                    if (item.getStorageGb() != null) productInfo.append("Bo nho: ").append(item.getStorageGb()).append("GB ");
-                    if (item.getColorName() != null) productInfo.append("Mau: ").append(item.getColorName());
+                    if (item.getRamGb() != null) productInfo.append(toAscii("RAM: ")).append(item.getRamGb()).append("GB ");
+                    if (item.getStorageGb() != null) productInfo.append(toAscii("Bo nho: ")).append(item.getStorageGb()).append("GB ");
+                    if (item.getColorName() != null) productInfo.append(toAscii("Mau: ")).append(toAscii(item.getColorName()));
                 }
                 
                 productTable.addCell(createCell(productInfo.toString(), font));
@@ -117,7 +157,7 @@ public class DeliveryCertificateService {
 
             // Total row
             Cell totalLabelCell = new Cell(1, 3)
-                    .add(new Paragraph("TONG CONG:").setFont(boldFont).setFontSize(12))
+                    .add(new Paragraph(toAscii("TONG CONG:")).setFont(boldFont).setFontSize(12))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBorder(Border.NO_BORDER)
                     .setBackgroundColor(new DeviceRgb(240, 240, 240));
@@ -139,14 +179,14 @@ public class DeliveryCertificateService {
             signatureTable.setWidth(UnitValue.createPercentValue(100));
 
             Cell customerSignCell = new Cell()
-                    .add(new Paragraph("Nguoi nhan hang").setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
-                    .add(new Paragraph("(Ky, ghi ro ho ten)").setFont(font).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
+                    .add(new Paragraph(toAscii("Nguoi nhan hang")).setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
+                    .add(new Paragraph(toAscii("(Ky, ghi ro ho ten)")).setFont(font).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
                     .add(new Paragraph("\n\n\n\n").setFont(font))
                     .setBorder(Border.NO_BORDER);
 
             Cell deliverySignCell = new Cell()
-                    .add(new Paragraph("Nguoi giao hang").setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
-                    .add(new Paragraph("(Ky, ghi ro ho ten)").setFont(font).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
+                    .add(new Paragraph(toAscii("Nguoi giao hang")).setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
+                    .add(new Paragraph(toAscii("(Ky, ghi ro ho ten)")).setFont(font).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
                     .add(new Paragraph("\n\n\n\n").setFont(font))
                     .setBorder(Border.NO_BORDER);
 
@@ -156,8 +196,8 @@ public class DeliveryCertificateService {
             document.add(signatureTable);
 
             // Footer
-            Paragraph footer = new Paragraph("Cam on ban da su dung dich vu cua MyPhone Store!\n" +
-                    "Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx")
+            Paragraph footer = new Paragraph(toAscii("Cam on ban da su dung dich vu cua MyPhone Store!\n" +
+                    "Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx"))
                     .setFont(font)
                     .setFontSize(9)
                     .setTextAlignment(TextAlignment.CENTER)
@@ -166,7 +206,7 @@ public class DeliveryCertificateService {
             document.add(footer);
 
             // Watermark
-            Paragraph watermark = new Paragraph("Da xac nhan giao hang thanh cong")
+            Paragraph watermark = new Paragraph(toAscii("Da xac nhan giao hang thanh cong"))
                     .setFont(boldFont)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER)
