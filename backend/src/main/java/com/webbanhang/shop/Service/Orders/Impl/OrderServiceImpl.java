@@ -652,19 +652,23 @@ public class OrderServiceImpl implements OrderService {
                             System.err.println("[ORDER] WARNING: PDF generation returned NULL or empty for order " + savedOrder.getOrderCode());
                         }
                         
+                        // ✅ Email giao hàng thành công đã bao gồm thông tin thanh toán
+                        // Không cần gửi thêm email payment status change
                         customerEmailService.sendOrderDeliveredEmail(savedOrder, certificatePdf, pdfDownloadUrl);
                     } else {
                         // Send regular status change email
                         customerEmailService.sendOrderStatusChangeEmail(savedOrder, previousStatus, status);
-                    }
-
-                    if (previousPaymentStatus != savedOrder.getPaymentStatus()) {
-                        customerEmailService.sendPaymentStatusChangeEmail(
-                                savedOrder,
-                                previousPaymentStatus,
-                                savedOrder.getPaymentStatus(),
-                                savedOrder.getPaymentNote()
-                        );
+                        
+                        // ✅ Chỉ gửi email payment status change nếu KHÔNG PHẢI DELIVERED
+                        // (vì email delivered đã bao gồm thông tin thanh toán)
+                        if (previousPaymentStatus != savedOrder.getPaymentStatus()) {
+                            customerEmailService.sendPaymentStatusChangeEmail(
+                                    savedOrder,
+                                    previousPaymentStatus,
+                                    savedOrder.getPaymentStatus(),
+                                    savedOrder.getPaymentNote()
+                            );
+                        }
                     }
                 } catch (Exception e) {
                     System.err.println("Failed to send order status change email: " + e.getMessage());
