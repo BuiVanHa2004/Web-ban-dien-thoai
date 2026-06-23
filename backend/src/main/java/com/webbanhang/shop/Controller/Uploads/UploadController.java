@@ -24,6 +24,12 @@ public class UploadController {
 
     @PostMapping(value = "/brands", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> uploadBrand(@RequestParam("file") MultipartFile file) {
+        System.out.println("========== UPLOAD BRAND REQUEST ==========");
+        System.out.println("Received file: " + file.getOriginalFilename());
+        System.out.println("File size: " + file.getSize());
+        System.out.println("Content type: " + file.getContentType());
+        System.out.println("==========================================");
+        
         MinioStorageService.UploadedObject uploaded = minioStorageService.uploadBrandImage(file);
         return ResponseEntity.ok(Map.of(
                 "url", uploaded.url(),

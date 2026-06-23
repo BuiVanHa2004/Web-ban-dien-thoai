@@ -90,6 +90,12 @@ export const brandService = {
   },
 
   uploadBrandImage: async (file: File): Promise<BrandUploadResponse> => {
+    console.log('========== UPLOAD BRAND IMAGE REQUEST ==========');
+    console.log('File name:', file.name);
+    console.log('File size:', file.size);
+    console.log('File type:', file.type);
+    console.log('API URL:', `${API_URL}/api/uploads/brands`);
+    
     const form = new FormData();
     form.append('file', file);
 
@@ -97,6 +103,9 @@ export const brandService = {
       method: 'POST',
       body: form,
     });
+
+    console.log('Response status:', res.status);
+    console.log('Response ok:', res.ok);
 
     if (!res.ok) {
       let message = 'Có lỗi xảy ra.';
@@ -106,9 +115,13 @@ export const brandService = {
       } catch {
         // ignore
       }
+      console.error('Upload failed:', message);
       throw new Error(message);
     }
 
-    return (await res.json()) as BrandUploadResponse;
+    const result = (await res.json()) as BrandUploadResponse;
+    console.log('Upload success:', result);
+    console.log('================================================');
+    return result;
   },
 };

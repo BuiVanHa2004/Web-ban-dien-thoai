@@ -59,6 +59,14 @@ public class MinioStorageService {
         }
 
         try {
+            System.out.println("========== UPLOAD BRAND IMAGE ==========");
+            System.out.println("Original filename: " + original);
+            System.out.println("Object name: " + objectName);
+            System.out.println("File size: " + file.getSize() + " bytes");
+            System.out.println("Content type: " + contentType);
+            System.out.println("Bucket: " + minIOConfig.getBucketName());
+            System.out.println("Endpoint: " + minIOConfig.getEndpoint());
+            
             ensureBucketExists(minIOConfig.getBucketName());
             try (InputStream in = file.getInputStream()) {
                 PutObjectArgs args = PutObjectArgs.builder()
@@ -68,10 +76,15 @@ public class MinioStorageService {
                         .contentType(contentType)
                         .build();
                 minioClient.putObject(args);
+                System.out.println("SUCCESS: Brand image uploaded to Backblaze B2");
             }
             String url = minIOConfig.getUrlPrefix().replaceAll("/+$", "") + "/" + objectName;
+            System.out.println("Generated URL: " + url);
+            System.out.println("========================================");
             return new UploadedObject(objectName, url);
         } catch (Exception e) {
+            System.err.println("ERROR: Upload brand image to Backblaze B2 failed: " + objectName);
+            e.printStackTrace();
             throw new RuntimeException("Upload to MinIO failed", e);
         }
     }
