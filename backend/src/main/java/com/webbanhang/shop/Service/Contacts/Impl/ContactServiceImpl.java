@@ -164,6 +164,14 @@ public class ContactServiceImpl implements ContactService {
 
         ContactReply savedReply = contactReplyRepository.save(reply);
 
+        // Prepare image URLs list
+        List<String> imageUrls = new ArrayList<>();
+        if (savedReply.getImages() != null) {
+            for (ContactReplyImage img : savedReply.getImages()) {
+                imageUrls.add(img.getImageUrl());
+            }
+        }
+
         // Notify customer
         if (contact.getCustomer() != null) {
             NotificationDto notif = NotificationDto.builder()
@@ -178,7 +186,7 @@ public class ContactServiceImpl implements ContactService {
             customerNotificationService.createNotification(notif);
         }
 
-        // Send email notification
+        // Send email notification with images
         try {
             String customerEmail = contact.getCustomer() != null && contact.getCustomer().getEmail() != null
                     ? contact.getCustomer().getEmail()
@@ -191,18 +199,12 @@ public class ContactServiceImpl implements ContactService {
                         customerEmail,
                         customerName != null ? customerName : "Khách hàng",
                         contact.getSubject(),
-                        savedReply.getReplyContent()
+                        savedReply.getReplyContent(),
+                        imageUrls
                 );
             }
         } catch (Exception e) {
             System.err.println("Failed to send contact reply email: " + e.getMessage());
-        }
-
-        List<String> imageUrls = new ArrayList<>();
-        if (savedReply.getImages() != null) {
-            for (ContactReplyImage img : savedReply.getImages()) {
-                imageUrls.add(img.getImageUrl());
-            }
         }
 
         return new ContactReplyCreateResponse(

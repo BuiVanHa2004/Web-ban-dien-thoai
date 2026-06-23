@@ -151,14 +151,14 @@ public class CustomerEmailService {
     }
 
     @Async
-    public void sendContactReplyEmail(String customerEmail, String customerName, String subject, String replyContent) {
+    public void sendContactReplyEmail(String customerEmail, String customerName, String subject, String replyContent, java.util.List<String> imageUrls) {
         if (customerEmail == null || customerEmail.isBlank()) {
             log.warn("Cannot send contact reply email - no email address");
             return;
         }
 
         try {
-            String htmlContent = buildContactReplyEmailHtml(customerName, subject, replyContent);
+            String htmlContent = buildContactReplyEmailHtml(customerName, subject, replyContent, imageUrls);
             sendHtmlEmail(customerEmail, "MyPhone Store - Phản hồi liên hệ của bạn", htmlContent);
             log.info("Sent contact reply email to {}", customerEmail);
         } catch (Exception ex) {
@@ -534,7 +534,7 @@ public class CustomerEmailService {
         return html.toString();
     }
 
-    private String buildContactReplyEmailHtml(String customerName, String subject, String replyContent) {
+    private String buildContactReplyEmailHtml(String customerName, String subject, String replyContent, java.util.List<String> imageUrls) {
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html>");
         html.append("<html>");
@@ -546,6 +546,8 @@ public class CustomerEmailService {
         html.append(".header { background-color: #007bff; color: white; padding: 20px; text-align: center; }");
         html.append(".content { padding: 20px; background-color: #f9f9f9; }");
         html.append(".reply-box { background-color: white; padding: 20px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #007bff; }");
+        html.append(".image-container { margin: 15px 0; }");
+        html.append(".reply-image { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }");
         html.append(".footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }");
         html.append("</style>");
         html.append("</head>");
@@ -567,6 +569,19 @@ public class CustomerEmailService {
         html.append("<div class='reply-box'>");
         html.append("<h3 style='margin-top: 0;'>Nội dung phản hồi:</h3>");
         html.append("<p>").append(escapeHtml(replyContent).replace("\n", "<br>")).append("</p>");
+        
+        // Add images if available
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            html.append("<div class='image-container'>");
+            html.append("<h4 style='color: #007bff; margin-top: 15px;'>Hình ảnh đính kèm:</h4>");
+            for (String imageUrl : imageUrls) {
+                if (imageUrl != null && !imageUrl.isBlank()) {
+                    html.append("<img src='").append(escapeHtml(imageUrl)).append("' class='reply-image' alt='Hình ảnh phản hồi' />");
+                }
+            }
+            html.append("</div>");
+        }
+        
         html.append("</div>");
         
         html.append("<p>Nếu bạn có thêm câu hỏi, đừng ngần ngại liên hệ lại với chúng tôi.</p>");

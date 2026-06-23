@@ -664,7 +664,12 @@ export default function ChatBox({ customerId, customerName, token }: ChatBoxProp
                                                             )}
                                                             {message.edited && !isRecalled && (<p className="text-xs mt-1 italic opacity-75">(đã chỉnh sửa)</p>)}
                                                             <p className={`text-xs mt-1.5 font-medium ${isOwnMessage ? 'text-white' : 'text-white/95'}`}>
-                                                                {new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                                                {new Date(message.createdAt).toLocaleString('vi-VN', { 
+                                                                    timeZone: 'Asia/Ho_Chi_Minh',
+                                                                    hour: '2-digit', 
+                                                                    minute: '2-digit',
+                                                                    hour12: false
+                                                                })}
                                                             </p>
                                                         </div>
 

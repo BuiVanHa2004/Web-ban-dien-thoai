@@ -26,10 +26,20 @@ export function resolveImageUrl(url?: string | null): string | undefined {
   // Pattern: https://f005.backblazeb2.com/file/<bucket>/<objectName>
   const b2Match = url.match(/https?:\/\/f\d+\.backblazeb2\.com\/file\/[^/]+\/(.+)/);
   if (b2Match) {
-    return `${API_URL}/api/files/${b2Match[1]}`;
+    const proxyUrl = `${API_URL}/api/files/${b2Match[1]}`;
+    console.log('[resolveImageUrl] B2 URL detected, converting to proxy:', url, '→', proxyUrl);
+    return proxyUrl;
   }
 
-  if (url.startsWith("http")) return url;
+  // Already absolute URL (https:// or http://)
+  if (url.startsWith("http")) {
+    console.log('[resolveImageUrl] Absolute URL, returning as-is:', url);
+    return url;
+  }
+  
+  // Relative path - prepend API URL
   const path = url.startsWith("/") ? url : `/${url}`;
-  return `${API_URL}${path}`;
+  const finalUrl = `${API_URL}${path}`;
+  console.log('[resolveImageUrl] Relative URL detected, prepending API_URL:', url, '→', finalUrl);
+  return finalUrl;
 }
