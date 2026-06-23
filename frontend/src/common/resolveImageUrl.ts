@@ -13,10 +13,18 @@ const B2_BUCKET_NAME = process.env.NEXT_PUBLIC_B2_BUCKET_NAME || "myphone-datn";
  * - already absolute → return as-is
  */
 export function resolveImageUrl(url?: string | null): string | undefined {
-  if (!url || url === "") return undefined;
+  console.log('[resolveImageUrl] Input:', url);
+  
+  if (!url || url === "") {
+    console.log('[resolveImageUrl] Empty URL, returning undefined');
+    return undefined;
+  }
 
   // Blob URLs (local preview) — giữ nguyên
-  if (url.startsWith("blob:")) return url;
+  if (url.startsWith("blob:")) {
+    console.log('[resolveImageUrl] Blob URL, returning as-is');
+    return url;
+  }
 
   // Replace old Render domain with current backend
   if (url.includes("datn-backend-d0et.onrender.com")) {

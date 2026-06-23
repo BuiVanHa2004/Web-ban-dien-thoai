@@ -466,6 +466,12 @@ public class ContactServiceImpl implements ContactService {
             List<MultipartFile> images,
             List<String> existingImageUrls
     ) {
+        System.out.println("========== UPDATE REPLY ==========");
+        System.out.println("Reply ID: " + replyId);
+        System.out.println("New content: " + replyContent);
+        System.out.println("New images count: " + (images != null ? images.size() : 0));
+        System.out.println("Existing image URLs: " + (existingImageUrls != null ? existingImageUrls : "null"));
+        
         ContactReply reply = contactReplyRepository.findById(replyId)
                 .orElseThrow(() -> new IllegalArgumentException("Reply not found"));
 
@@ -478,10 +484,14 @@ public class ContactServiceImpl implements ContactService {
         List<ContactReplyImage> currentImages = new ArrayList<>(reply.getImages());
         List<String> keepUrls = existingImageUrls != null ? existingImageUrls : new ArrayList<>();
 
+        System.out.println("Current images in DB: " + currentImages.size());
         for (ContactReplyImage img : currentImages) {
             if (!keepUrls.contains(img.getImageUrl())) {
+                System.out.println("Deleting old image: " + img.getImageUrl());
                 minioStorageService.deleteByUrl(img.getImageUrl());
                 reply.getImages().remove(img);
+            } else {
+                System.out.println("Keeping existing image: " + img.getImageUrl());
             }
         }
 
@@ -494,7 +504,9 @@ public class ContactServiceImpl implements ContactService {
 
             for (MultipartFile f : images) {
                 if (f == null || f.isEmpty()) continue;
+                System.out.println("Uploading new image: " + f.getOriginalFilename());
                 MinioStorageService.UploadedObject uploaded = minioStorageService.uploadContactReplyImage(f);
+                System.out.println("New image uploaded with URL: " + uploaded.url());
 
                 ContactReplyImage img = new ContactReplyImage();
                 img.setReply(reply);
@@ -505,10 +517,14 @@ public class ContactServiceImpl implements ContactService {
         }
 
         ContactReply saved = contactReplyRepository.save(reply);
+        System.out.println("Reply saved with " + saved.getImages().size() + " images");
 
         List<String> resultUrls = saved.getImages().stream()
                 .map(ContactReplyImage::getImageUrl)
                 .toList();
+        
+        System.out.println("Final image URLs: " + resultUrls);
+        System.out.println("==================================");
 
         return new ContactReplyCreateResponse(
                 saved.getReplyId(),

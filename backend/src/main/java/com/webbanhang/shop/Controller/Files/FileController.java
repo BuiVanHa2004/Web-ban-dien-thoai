@@ -27,13 +27,20 @@ public class FileController {
 
     @GetMapping("/**")
     public ResponseEntity<byte[]> getFile(HttpServletRequest request) {
+        System.out.println("========== FILE REQUEST ==========");
+        System.out.println("Request URI: " + request.getRequestURI());
+        System.out.println("Request URL: " + request.getRequestURL());
+        System.out.println("Method: " + request.getMethod());
+        
         String path = request.getRequestURI();
         int idx = path.indexOf("/api/files/");
         String objectName = idx >= 0 ? path.substring(idx + "/api/files/".length()) : "";
 
+        System.out.println("Extracted object name: '" + objectName + "'");
+
         if (objectName.isBlank()) {
             System.err.println("ERROR: Object name is blank");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found".getBytes());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Object name is required".getBytes());
         }
 
         System.out.println("INFO: Fetching file: " + objectName);
