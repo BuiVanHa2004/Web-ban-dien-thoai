@@ -776,10 +776,12 @@ export default function AdminChatBox({ adminId, adminName, token }: AdminChatBox
                                                         <p className="text-xs text-gray-500 truncate">{room.customerEmail}</p>
                                                         <p className="text-xs text-gray-400 mt-1">
                                                             {new Date(room.lastMessageAt).toLocaleString('vi-VN', {
+                                                                timeZone: 'Asia/Ho_Chi_Minh',
                                                                 month: 'short',
                                                                 day: 'numeric',
                                                                 hour: '2-digit',
                                                                 minute: '2-digit',
+                                                                hour12: false
                                                             })}
                                                         </p>
                                                     </div>
