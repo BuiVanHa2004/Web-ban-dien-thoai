@@ -16,7 +16,7 @@ import java.io.InputStream;
 
 @RestController
 @RequestMapping("/api/files")
-@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {org.springframework.web.bind.annotation.RequestMethod.GET, org.springframework.web.bind.annotation.RequestMethod.OPTIONS})
+@CrossOrigin(originPatterns = "*", allowedHeaders = "*", methods = {org.springframework.web.bind.annotation.RequestMethod.GET, org.springframework.web.bind.annotation.RequestMethod.OPTIONS})
 public class FileController {
 
     private final MinioStorageService minioStorageService;
