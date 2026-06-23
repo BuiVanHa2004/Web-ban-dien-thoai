@@ -579,17 +579,22 @@ public class OrderServiceImpl implements OrderService {
                     existing.setPaymentStatus(newPaymentStatus);
                     
                     // ✅ CRITICAL FIX: Confirm sale - chuyển từ reserved sang sold (TRỪ KHO THỰC SỰ)
-                    try {
-                        for (OrderItem item : existing.getItems()) {
-                            if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
-                                inventoryService.confirmSale(item.getVariantId(), item.getQuantity());
+                    // ⚠️ CHỈ TRỪ KHO NẾU CHƯA TRỪ (tránh trừ 2 lần khi chuyển DELIVERED → SHIPPING → DELIVERED lại)
+                    if (!Boolean.TRUE.equals(existing.getInventoryDeducted())) {
+                        try {
+                            for (OrderItem item : existing.getItems()) {
+                                if (item.getVariantId() != null && item.getQuantity() != null && item.getQuantity() > 0) {
+                                    inventoryService.confirmSale(item.getVariantId(), item.getQuantity());
+                                }
                             }
+                            existing.setInventoryDeducted(true);
+                            System.out.println("[ORDER] ✅ COD order " + existing.getOrderCode() + " - Stock deducted on DELIVERED");
+                        } catch (Exception e) {
+                            System.err.println("Failed to confirm sale: " + e.getMessage());
+                            throw new IllegalStateException("Không thể trừ kho: " + e.getMessage());
                         }
-                        existing.setInventoryDeducted(true);
-                        System.out.println("[ORDER] ✅ COD order " + existing.getOrderCode() + " - Stock deducted on DELIVERED");
-                    } catch (Exception e) {
-                        System.err.println("Failed to confirm sale: " + e.getMessage());
-                        throw new IllegalStateException("Không thể trừ kho: " + e.getMessage());
+                    } else {
+                        System.out.println("[ORDER] ℹ️ COD order " + existing.getOrderCode() + " - Inventory already deducted, skipping");
                     }
                 } else {
                     existing.setPaymentStatus(PaymentStatus.UNPAID);
