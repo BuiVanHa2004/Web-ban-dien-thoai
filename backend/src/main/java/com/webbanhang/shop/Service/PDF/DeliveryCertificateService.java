@@ -12,6 +12,7 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.webbanhang.shop.Model.Orders.Order;
@@ -42,10 +43,10 @@ public class DeliveryCertificateService {
             Document document = new Document(pdf, PageSize.A4);
             document.setMargins(40, 40, 40, 40);
 
-            // ✅ FIX: Use standard encoding instead of IDENTITY_H
-            // IDENTITY_H requires font file which is not available, use WINANSI for Latin characters
-            PdfFont font = PdfFontFactory.createFont("Helvetica");
-            PdfFont boldFont = PdfFontFactory.createFont("Helvetica-Bold");
+            // ✅ FIX: Use built-in fonts that support Vietnamese
+            // FreeSans is a built-in font in iText that supports Unicode/Vietnamese characters
+            PdfFont font = PdfFontFactory.createFont("Helvetica", PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+            PdfFont boldFont = PdfFontFactory.createFont("Helvetica-Bold", PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
 
             // Header
             Paragraph header = new Paragraph("MYPHONE STORE")
@@ -56,7 +57,7 @@ public class DeliveryCertificateService {
                     .setMarginBottom(5);
             document.add(header);
 
-            Paragraph subHeader = new Paragraph("CHUNG NHAN GIAO HANG")
+            Paragraph subHeader = new Paragraph("CHỨNG NHẬN GIAO HÀNG")
                     .setFont(boldFont)
                     .setFontSize(18)
                     .setTextAlignment(TextAlignment.CENTER)
@@ -67,20 +68,20 @@ public class DeliveryCertificateService {
             Table infoTable = new Table(2);
             infoTable.setWidth(UnitValue.createPercentValue(100));
             
-            addInfoRow(infoTable, "Ma don hang:", order.getOrderCode(), font, boldFont);
-            addInfoRow(infoTable, "Ngay dat hang:", formatDateTime(order.getCreatedAt()), font, boldFont);
-            addInfoRow(infoTable, "Ngay giao hang:", formatDateTime(order.getUpdatedAt()), font, boldFont);
-            addInfoRow(infoTable, "Ten khach hang:", order.getCustomerName(), font, boldFont);
-            addInfoRow(infoTable, "Nguoi nhan:", order.getReceiverName(), font, boldFont);
-            addInfoRow(infoTable, "So dien thoai:", order.getReceiverPhone(), font, boldFont);
-            addInfoRow(infoTable, "Dia chi giao hang:", order.getShippingAddress(), font, boldFont);
-            addInfoRow(infoTable, "Phuong thuc thanh toan:", translatePaymentMethod(order.getPaymentMethod()), font, boldFont);
+            addInfoRow(infoTable, "Mã đơn hàng:", order.getOrderCode(), font, boldFont);
+            addInfoRow(infoTable, "Ngày đặt hàng:", formatDateTime(order.getCreatedAt()), font, boldFont);
+            addInfoRow(infoTable, "Ngày giao hàng:", formatDateTime(order.getUpdatedAt()), font, boldFont);
+            addInfoRow(infoTable, "Tên khách hàng:", order.getCustomerName(), font, boldFont);
+            addInfoRow(infoTable, "Người nhận:", order.getReceiverName(), font, boldFont);
+            addInfoRow(infoTable, "Số điện thoại:", order.getReceiverPhone(), font, boldFont);
+            addInfoRow(infoTable, "Địa chỉ giao hàng:", order.getShippingAddress(), font, boldFont);
+            addInfoRow(infoTable, "Phương thức thanh toán:", translatePaymentMethod(order.getPaymentMethod()), font, boldFont);
 
             document.add(infoTable);
             document.add(new Paragraph("\n"));
 
             // Products section
-            Paragraph productsTitle = new Paragraph("DANH SACH SAN PHAM")
+            Paragraph productsTitle = new Paragraph("DANH SÁCH SẢN PHẨM")
                     .setFont(boldFont)
                     .setFontSize(14)
                     .setMarginBottom(10);
@@ -92,10 +93,10 @@ public class DeliveryCertificateService {
             productTable.setWidth(UnitValue.createPercentValue(100));
 
             // Table header
-            productTable.addHeaderCell(createHeaderCell("San pham", boldFont));
+            productTable.addHeaderCell(createHeaderCell("Sản phẩm", boldFont));
             productTable.addHeaderCell(createHeaderCell("SL", boldFont));
-            productTable.addHeaderCell(createHeaderCell("Don gia", boldFont));
-            productTable.addHeaderCell(createHeaderCell("Thanh tien", boldFont));
+            productTable.addHeaderCell(createHeaderCell("Đơn giá", boldFont));
+            productTable.addHeaderCell(createHeaderCell("Thành tiền", boldFont));
 
             // Table rows
             for (OrderItem item : order.getItems()) {
@@ -104,8 +105,8 @@ public class DeliveryCertificateService {
                 if (item.getRamGb() != null || item.getStorageGb() != null || item.getColorName() != null) {
                     productInfo.append("\n");
                     if (item.getRamGb() != null) productInfo.append("RAM: ").append(item.getRamGb()).append("GB ");
-                    if (item.getStorageGb() != null) productInfo.append("Bo nho: ").append(item.getStorageGb()).append("GB ");
-                    if (item.getColorName() != null) productInfo.append("Mau: ").append(item.getColorName());
+                    if (item.getStorageGb() != null) productInfo.append("Bộ nhớ: ").append(item.getStorageGb()).append("GB ");
+                    if (item.getColorName() != null) productInfo.append("Màu: ").append(item.getColorName());
                 }
                 
                 productTable.addCell(createCell(productInfo.toString(), font));
@@ -118,7 +119,7 @@ public class DeliveryCertificateService {
 
             // Total row
             Cell totalLabelCell = new Cell(1, 3)
-                    .add(new Paragraph("TONG CONG:").setFont(boldFont).setFontSize(12))
+                    .add(new Paragraph("TỔNG CỘNG:").setFont(boldFont).setFontSize(12))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setBorder(Border.NO_BORDER)
                     .setBackgroundColor(new DeviceRgb(240, 240, 240));
@@ -140,14 +141,14 @@ public class DeliveryCertificateService {
             signatureTable.setWidth(UnitValue.createPercentValue(100));
 
             Cell customerSignCell = new Cell()
-                    .add(new Paragraph("Nguoi nhan hang").setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
-                    .add(new Paragraph("(Ky, ghi ro ho ten)").setFont(font).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
+                    .add(new Paragraph("Người nhận hàng").setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
+                    .add(new Paragraph("(Ký, ghi rõ họ tên)").setFont(font).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
                     .add(new Paragraph("\n\n\n\n").setFont(font))
                     .setBorder(Border.NO_BORDER);
 
             Cell deliverySignCell = new Cell()
-                    .add(new Paragraph("Nguoi giao hang").setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
-                    .add(new Paragraph("(Ky, ghi ro ho ten)").setFont(font).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
+                    .add(new Paragraph("Người giao hàng").setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
+                    .add(new Paragraph("(Ký, ghi rõ họ tên)").setFont(font).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
                     .add(new Paragraph("\n\n\n\n").setFont(font))
                     .setBorder(Border.NO_BORDER);
 
@@ -157,7 +158,7 @@ public class DeliveryCertificateService {
             document.add(signatureTable);
 
             // Footer
-            Paragraph footer = new Paragraph("Cam on ban da su dung dich vu cua MyPhone Store!\n" +
+            Paragraph footer = new Paragraph("Cảm ơn bạn đã sử dụng dịch vụ của MyPhone Store!\n" +
                     "Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx")
                     .setFont(font)
                     .setFontSize(9)
@@ -167,7 +168,7 @@ public class DeliveryCertificateService {
             document.add(footer);
 
             // Watermark
-            Paragraph watermark = new Paragraph("Da xac nhan giao hang thanh cong")
+            Paragraph watermark = new Paragraph("Đã xác nhận giao hàng thành công")
                     .setFont(boldFont)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER)
@@ -225,6 +226,6 @@ public class DeliveryCertificateService {
 
     private String translatePaymentMethod(String method) {
         if (method == null) return "COD";
-        return "COD".equalsIgnoreCase(method) ? "Thanh toan khi nhan hang (COD)" : "Chuyen khoan ngan hang";
+        return "COD".equalsIgnoreCase(method) ? "Thanh toán khi nhận hàng (COD)" : "Chuyển khoản ngân hàng";
     }
 }

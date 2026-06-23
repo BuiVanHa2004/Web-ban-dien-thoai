@@ -255,11 +255,7 @@ public class CustomerEmailService {
         html.append("</div>");
         
         // Footer
-        html.append("<div class='footer'>");
-        html.append("<p><strong>MyPhone Store</strong></p>");
-        html.append("<p>Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx</p>");
-        html.append("<p>&copy; 2024 MyPhone Store. All rights reserved.</p>");
-        html.append("</div>");
+        html.append(buildEmailFooter());
         
         html.append("</div>");
         html.append("</body>");
@@ -318,11 +314,7 @@ public class CustomerEmailService {
         html.append("</div>");
         
         // Footer
-        html.append("<div class='footer'>");
-        html.append("<p><strong>MyPhone Store</strong></p>");
-        html.append("<p>Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx</p>");
-        html.append("<p>&copy; 2024 MyPhone Store. All rights reserved.</p>");
-        html.append("</div>");
+        html.append(buildEmailFooter());
         
         html.append("</div>");
         html.append("</body>");
@@ -430,13 +422,8 @@ public class CustomerEmailService {
         html.append("<p>Nếu có bất kỳ vấn đề gì về sản phẩm, vui lòng liên hệ với chúng tôi trong vòng 7 ngày để được hỗ trợ đổi trả.</p>");
         html.append("</div>");
         
-        // Footer
-        html.append("<div class='footer'>");
-        html.append("<p><strong>MyPhone Store</strong></p>");
-        html.append("<p>Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx</p>");
-        html.append("<p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</p>");
-        html.append("<p>&copy; 2024 MyPhone Store. All rights reserved.</p>");
-        html.append("</div>");
+        // Footer - Already updated in buildOrderDeliveredEmailHtml
+        html.append(buildEmailFooter());
         
         html.append("</div>");
         html.append("</body>");
@@ -538,11 +525,7 @@ public class CustomerEmailService {
         html.append("<p>Cảm ơn bạn đã tin tưởng MyPhone Store!</p>");
         html.append("</div>");
 
-        html.append("<div class='footer'>");
-        html.append("<p><strong>MyPhone Store</strong></p>");
-        html.append("<p>Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx</p>");
-        html.append("<p>&copy; 2024 MyPhone Store. All rights reserved.</p>");
-        html.append("</div>");
+        html.append(buildEmailFooter());
 
         html.append("</div>");
         html.append("</body>");
@@ -605,11 +588,7 @@ public class CustomerEmailService {
         html.append("</div>");
         
         // Footer
-        html.append("<div class='footer'>");
-        html.append("<p><strong>MyPhone Store</strong></p>");
-        html.append("<p>Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx</p>");
-        html.append("<p>&copy; 2024 MyPhone Store. All rights reserved.</p>");
-        html.append("</div>");
+        html.append(buildEmailFooter());
         
         html.append("</div>");
         html.append("</body>");
@@ -636,6 +615,21 @@ public class CustomerEmailService {
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
+    }
+    
+    private String buildEmailFooter() {
+        StringBuilder footer = new StringBuilder();
+        footer.append("<div class='footer'>");
+        footer.append("<p><strong>MyPhone Store</strong></p>");
+        footer.append("<p>Email: buivanha22032004@gmail.com | Hotline: 1900-xxxx</p>");
+        footer.append("<p>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</p>");
+        footer.append("<p style='font-size: 11px; color: #999; margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;'>");
+        footer.append("Bạn nhận được email này vì đã có giao dịch với MyPhone Store.<br>");
+        footer.append("Nếu email này nằm trong thư mục Spam, vui lòng đánh dấu \"Không phải spam\" để nhận thông báo quan trọng.");
+        footer.append("</p>");
+        footer.append("<p>&copy; 2024 MyPhone Store. All rights reserved.</p>");
+        footer.append("</div>");
+        return footer.toString();
     }
 
     private String translateStatus(OrderStatus status) {
