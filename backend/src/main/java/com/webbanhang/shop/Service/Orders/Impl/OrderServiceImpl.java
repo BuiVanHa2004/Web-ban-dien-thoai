@@ -77,6 +77,7 @@ public class OrderServiceImpl implements OrderService {
     
     private final CustomerEmailService customerEmailService;
     private final DeliveryCertificateService deliveryCertificateService;
+    private final com.webbanhang.shop.Service.Storage.MinioStorageService minioStorageService;
 
     public OrderServiceImpl(
             OrderRepository orderRepository,
@@ -93,7 +94,8 @@ public class OrderServiceImpl implements OrderService {
             com.webbanhang.shop.Repository.Orders.PaymentRepository paymentRepository,
             InventoryService inventoryService,
             CustomerEmailService customerEmailService,
-            DeliveryCertificateService deliveryCertificateService
+            DeliveryCertificateService deliveryCertificateService,
+            com.webbanhang.shop.Service.Storage.MinioStorageService minioStorageService
     ) {
         this.orderRepository = orderRepository;
         this.customerAccountRepository = customerAccountRepository;
@@ -110,6 +112,7 @@ public class OrderServiceImpl implements OrderService {
         this.inventoryService = inventoryService;
         this.customerEmailService = customerEmailService;
         this.deliveryCertificateService = deliveryCertificateService;
+        this.minioStorageService = minioStorageService;
     }
 
     @Override
@@ -628,12 +631,28 @@ public class OrderServiceImpl implements OrderService {
                         // Generate PDF certificate and send with delivered email
                         System.out.println("[ORDER] Generating delivery certificate PDF for order " + savedOrder.getOrderCode());
                         byte[] certificatePdf = deliveryCertificateService.generateDeliveryCertificate(savedOrder);
+                        String pdfDownloadUrl = null;
+                        
                         if (certificatePdf != null && certificatePdf.length > 0) {
                             System.out.println("[ORDER] PDF generated successfully: " + certificatePdf.length + " bytes");
+                            
+                            // Upload PDF to MinIO and get public URL
+                            try {
+                                System.out.println("[ORDER] Uploading PDF certificate to MinIO for order " + savedOrder.getOrderCode());
+                                com.webbanhang.shop.Service.Storage.MinioStorageService.UploadedObject uploaded = 
+                                    minioStorageService.uploadOrderCertificatePdf(certificatePdf, savedOrder.getOrderCode());
+                                pdfDownloadUrl = uploaded.url();
+                                System.out.println("[ORDER] PDF uploaded successfully. Download URL: " + pdfDownloadUrl);
+                            } catch (Exception e) {
+                                System.err.println("[ORDER] WARNING: Failed to upload PDF to MinIO: " + e.getMessage());
+                                e.printStackTrace();
+                                // Continue anyway - will still attach PDF to email
+                            }
                         } else {
                             System.err.println("[ORDER] WARNING: PDF generation returned NULL or empty for order " + savedOrder.getOrderCode());
                         }
-                        customerEmailService.sendOrderDeliveredEmail(savedOrder, certificatePdf);
+                        
+                        customerEmailService.sendOrderDeliveredEmail(savedOrder, certificatePdf, pdfDownloadUrl);
                     } else {
                         // Send regular status change email
                         customerEmailService.sendOrderStatusChangeEmail(savedOrder, previousStatus, status);

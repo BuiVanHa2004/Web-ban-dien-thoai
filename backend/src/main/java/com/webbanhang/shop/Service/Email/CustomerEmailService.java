@@ -115,18 +115,18 @@ public class CustomerEmailService {
     }
 
     @Async
-    public void sendOrderDeliveredEmail(Order order, byte[] certificatePdf) {
+    public void sendOrderDeliveredEmail(Order order, byte[] certificatePdf, String pdfDownloadUrl) {
         if (order.getEmail() == null || order.getEmail().isBlank()) {
             log.warn("Cannot send order delivered email - no email address for order {}", order.getOrderCode());
             return;
         }
 
         try {
-            String htmlContent = buildOrderDeliveredEmailHtml(order);
+            String htmlContent = buildOrderDeliveredEmailHtml(order, pdfDownloadUrl);
             String subject = "MyPhone Store - Đơn hàng " + order.getOrderCode() + " đã giao thành công";
 
             if (certificatePdf != null && certificatePdf.length > 0) {
-                log.info("Sending order delivered email with PDF attachment ({} bytes) to {} for order {}", 
+                log.info("Sending order delivered email with PDF attachment ({} bytes) and download link to {} for order {}", 
                         certificatePdf.length, order.getEmail(), order.getOrderCode());
                 gmailApiService.sendEmailWithAttachment(
                         order.getEmail(),
@@ -135,7 +135,7 @@ public class CustomerEmailService {
                         certificatePdf,
                         "Chung-nhan-don-hang-" + order.getOrderCode() + ".pdf"
                 );
-                log.info("Successfully sent order delivered email WITH PDF to {} for order {}", 
+                log.info("Successfully sent order delivered email WITH PDF attachment and download link to {} for order {}", 
                         order.getEmail(), order.getOrderCode());
             } else {
                 log.warn("PDF certificate is NULL or empty for order {}, sending email WITHOUT attachment", 
@@ -328,7 +328,7 @@ public class CustomerEmailService {
         return html.toString();
     }
 
-    private String buildOrderDeliveredEmailHtml(Order order) {
+    private String buildOrderDeliveredEmailHtml(Order order, String pdfDownloadUrl) {
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html>");
         html.append("<html>");
@@ -347,6 +347,8 @@ public class CustomerEmailService {
         html.append(".status-value { color: #28a745; font-weight: bold; }");
         html.append(".status-value.payment { color: #007bff; }");
         html.append(".pdf-notice { background-color: #e7f3ff; border-left: 4px solid #007bff; padding: 15px; margin: 15px 0; }");
+        html.append(".download-btn { display: inline-block; background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px 0; }");
+        html.append(".download-btn:hover { background-color: #0056b3; }");
         html.append(".footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }");
         html.append("</style>");
         html.append("</head>");
@@ -401,11 +403,23 @@ public class CustomerEmailService {
         html.append("<p><strong>Địa chỉ giao hàng:</strong> ").append(escapeHtml(order.getShippingAddress())).append("</p>");
         html.append("</div>");
         
-        // PDF notice
+        // PDF notice with download link
         html.append("<div class='pdf-notice'>");
         html.append("<h3 style='margin-top: 0;'>📎 Chứng nhận giao hàng</h3>");
-        html.append("<p><strong>File PDF đính kèm:</strong> <code>Chung-nhan-don-hang-").append(order.getOrderCode()).append(".pdf</code></p>");
-        html.append("<p>Vui lòng tải xuống file PDF đính kèm trong email này để xem chứng nhận giao hàng đầy đủ.</p>");
+        
+        // Show download button if URL is available
+        if (pdfDownloadUrl != null && !pdfDownloadUrl.isBlank()) {
+            html.append("<p style='text-align: center; margin: 20px 0;'>");
+            html.append("<a href='").append(pdfDownloadUrl).append("' class='download-btn' target='_blank'>");
+            html.append("📥 Tải xuống chứng nhận PDF");
+            html.append("</a>");
+            html.append("</p>");
+            html.append("<p style='font-size: 12px; color: #666; text-align: center;'>Hoặc xem file PDF đính kèm trong email này</p>");
+        } else {
+            html.append("<p><strong>File PDF đính kèm:</strong> <code>Chung-nhan-don-hang-").append(order.getOrderCode()).append(".pdf</code></p>");
+            html.append("<p>Vui lòng tải xuống file PDF đính kèm trong email này để xem chứng nhận giao hàng đầy đủ.</p>");
+        }
+        
         html.append("<p style='font-size: 12px; color: #666;'>📄 File PDF bao gồm: thông tin đơn hàng, sản phẩm, giá tiền, và xác nhận giao hàng thành công.</p>");
         html.append("</div>");
         

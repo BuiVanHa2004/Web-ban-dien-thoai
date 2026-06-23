@@ -494,6 +494,55 @@ public class MinioStorageService {
         }
     }
 
+    /**
+     * Upload PDF certificate for order delivery
+     * 
+     * @param pdfBytes PDF file content as byte array
+     * @param orderCode Order code to include in filename
+     * @return UploadedObject containing objectName and public URL
+     */
+    public UploadedObject uploadOrderCertificatePdf(byte[] pdfBytes, String orderCode) {
+        if (pdfBytes == null || pdfBytes.length == 0) {
+            throw new IllegalArgumentException("PDF content is empty");
+        }
+        if (orderCode == null || orderCode.isBlank()) {
+            throw new IllegalArgumentException("Order code is required");
+        }
+
+        String objectName = "certificates/Chung-nhan-don-hang-" + orderCode + ".pdf";
+
+        try {
+            System.out.println("========== UPLOAD ORDER CERTIFICATE PDF ==========");
+            System.out.println("Order code: " + orderCode);
+            System.out.println("Object name: " + objectName);
+            System.out.println("PDF size: " + pdfBytes.length + " bytes");
+            System.out.println("Bucket: " + minIOConfig.getBucketName());
+            System.out.println("Endpoint: " + minIOConfig.getEndpoint());
+            
+            ensureBucketExists(minIOConfig.getBucketName());
+            
+            try (InputStream in = new java.io.ByteArrayInputStream(pdfBytes)) {
+                PutObjectArgs args = PutObjectArgs.builder()
+                        .bucket(minIOConfig.getBucketName())
+                        .object(objectName)
+                        .stream(in, pdfBytes.length, -1)
+                        .contentType("application/pdf")
+                        .build();
+                minioClient.putObject(args);
+                System.out.println("SUCCESS: Certificate PDF uploaded to MinIO");
+            }
+            
+            String url = minIOConfig.getUrlPrefix().replaceAll("/+$", "") + "/" + objectName;
+            System.out.println("Generated URL: " + url);
+            System.out.println("==================================================");
+            return new UploadedObject(objectName, url);
+        } catch (Exception e) {
+            System.err.println("ERROR: Upload certificate PDF to MinIO failed: " + objectName);
+            e.printStackTrace();
+            throw new RuntimeException("Upload certificate PDF to MinIO failed", e);
+        }
+    }
+
     public record UploadedObject(String objectName, String url) {
     }
 
