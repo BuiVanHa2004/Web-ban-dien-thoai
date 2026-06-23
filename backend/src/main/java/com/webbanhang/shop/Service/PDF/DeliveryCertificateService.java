@@ -37,38 +37,44 @@ public class DeliveryCertificateService {
     private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
 
     /**
-     * Convert Vietnamese text to ASCII-friendly text
+     * Convert Vietnamese text to ASCII-friendly text (remove all diacritics)
      * This ensures PDF displays Vietnamese names correctly without requiring Unicode fonts
      * 
      * Examples:
      * "Từ Sơn" → "Tu Son"
      * "Bắc Ninh" → "Bac Ninh"
      * "Cam Vũ Trụ" → "Cam Vu Tru"
+     * "Hoàng Anh" → "Hoang Anh"
      * 
      * @param text Original Vietnamese text
-     * @return ASCII-transliterated text
+     * @return ASCII-transliterated text without diacritics
      */
     private String toAscii(String text) {
         if (text == null || text.isEmpty()) {
             return text;
         }
         
-        // First, normalize to NFD (decompose characters)
-        String normalized = Normalizer.normalize(text, Normalizer.Form.NFD);
+        // Manual mapping for all Vietnamese characters
+        // This is more reliable than Normalizer for Vietnamese
+        String result = text;
         
-        // Remove diacritical marks but keep base characters
-        String result = normalized.replaceAll("\\p{M}", "");
+        // Lowercase vowels with diacritics
+        result = result.replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a");
+        result = result.replaceAll("[èéẹẻẽêềếệểễ]", "e");
+        result = result.replaceAll("[ìíịỉĩ]", "i");
+        result = result.replaceAll("[òóọỏõôồốộổỗơờớợởỡ]", "o");
+        result = result.replaceAll("[ùúụủũưừứựửữ]", "u");
+        result = result.replaceAll("[ỳýỵỷỹ]", "y");
+        result = result.replaceAll("đ", "d");
         
-        // Handle Vietnamese special characters that don't normalize well
-        result = result.replace('đ', 'd').replace('Đ', 'D');
-        result = result.replace('ð', 'd').replace('Ð', 'D'); // Alternative forms
-        
-        // Additional Vietnamese-specific replacements
-        result = result.replace("ư", "u").replace("Ư", "U");
-        result = result.replace("ơ", "o").replace("Ơ", "O");
-        result = result.replace("â", "a").replace("Â", "A");
-        result = result.replace("ê", "e").replace("Ê", "E");
-        result = result.replace("ô", "o").replace("Ô", "O");
+        // Uppercase vowels with diacritics
+        result = result.replaceAll("[ÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴ]", "A");
+        result = result.replaceAll("[ÈÉẸẺẼÊỀẾỆỂỄ]", "E");
+        result = result.replaceAll("[ÌÍỊỈĨ]", "I");
+        result = result.replaceAll("[ÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠ]", "O");
+        result = result.replaceAll("[ÙÚỤỦŨƯỪỨỰỬỮ]", "U");
+        result = result.replaceAll("[ỲÝỴỶỸ]", "Y");
+        result = result.replaceAll("Đ", "D");
         
         return result;
     }
