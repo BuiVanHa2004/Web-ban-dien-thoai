@@ -15,12 +15,21 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     @SuppressWarnings("null")
     public void addCorsMappings(@NonNull CorsRegistry registry) {
-        registry.addMapping("/**")
+        // API endpoints với credentials
+        registry.addMapping("/api/**")
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
+        
+        // File serving endpoint - cho phép tất cả origins để images có thể load được
+        registry.addMapping("/api/files/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(false)
+                .maxAge(86400);
     }
 }
 
