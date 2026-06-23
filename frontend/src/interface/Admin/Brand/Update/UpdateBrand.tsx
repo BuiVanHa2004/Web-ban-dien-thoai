@@ -79,7 +79,14 @@ export default function UpdateBrand() {
   }, [id, brandId]);
 
   function handleImageSelect(file: File) {
+    console.log('========== IMAGE SELECTED ==========');
+    console.log('File:', file.name);
+    console.log('Size:', file.size);
+    console.log('Type:', file.type);
+    
     const url = URL.createObjectURL(file);
+    console.log('Blob URL created:', url);
+    
     // Replace old image with new one (only 1 image allowed for Brand based on previous code)
     // Actually, brandImages was string[], so it might support multiple, but handleImageUpload was replacing.
     // Let's stick to the existing behavior: replacing.
@@ -90,6 +97,10 @@ export default function UpdateBrand() {
       });
       return [{ url, file }];
     });
+    
+    console.log('imageItems updated with new file');
+    console.log('====================================');
+    
     if (imageInputRef.current) imageInputRef.current.value = "";
   }
 
@@ -122,16 +133,37 @@ export default function UpdateBrand() {
 
     window.setTimeout(async () => {
       try {
+        console.log('========== UPDATE BRAND SUBMIT ==========');
+        console.log('imageItems:', imageItems);
+        console.log('imageItems count:', imageItems.length);
+        
         // Upload new files
         const finalUrls = await Promise.all(
-          imageItems.map(async item => {
+          imageItems.map(async (item, idx) => {
+            console.log(`Processing image ${idx}:`, {
+              hasFile: !!item.file,
+              url: item.url,
+              fileName: item.file?.name
+            });
+            
             if (item.file) {
+              console.log(`Uploading image ${idx}...`);
               const res = await brandService.uploadBrandImage(item.file);
+              console.log(`Image ${idx} uploaded:`, res.url);
               return res.url;
             }
+            console.log(`Image ${idx} already uploaded, using existing URL:`, item.url);
             return item.url;
           })
         );
+
+        console.log('All finalUrls:', finalUrls);
+        console.log('Updating brand with payload:', {
+          brandName: n,
+          slug: s,
+          brandDescription: d || null,
+          brandImages: finalUrls,
+        });
 
         await brandService.update(brandId, {
           brandName: n,
@@ -139,8 +171,12 @@ export default function UpdateBrand() {
           brandDescription: d || null,
           brandImages: finalUrls,
         });
+        
+        console.log('Brand updated successfully');
+        console.log('=========================================');
         router.push("/brands");
       } catch (e: any) {
+        console.error('Update brand failed:', e);
         setError(e?.message || "Không thể cập nhật thương hiệu.");
       } finally {
         setSubmitting(false);
