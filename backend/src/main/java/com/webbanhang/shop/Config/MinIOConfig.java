@@ -33,6 +33,14 @@ public class MinIOConfig {
 
     @Bean
     public MinioClient minioClient() {
+        System.out.println("========== MinIO Configuration ==========");
+        System.out.println("Endpoint: " + endpoint);
+        System.out.println("Bucket: " + bucketName);
+        System.out.println("Region: " + region);
+        System.out.println("URL Prefix: " + urlPrefix);
+        System.out.println("Access Key: " + (accessKey != null ? accessKey.substring(0, Math.min(10, accessKey.length())) + "..." : "NULL"));
+        System.out.println("========================================");
+        
         MinioClient.Builder builder = MinioClient.builder()
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey);
