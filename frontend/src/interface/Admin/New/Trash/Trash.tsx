@@ -80,6 +80,7 @@ export default function Trash() {
         onRestore={onRestore}
         onDeleteForever={onDeleteForever}
         emptyText="Thùng rác trống."
+        hideImage={true}
       />
 
       {error ? (

@@ -204,11 +204,6 @@ export default function TrashView({
                                 width={48}
                                 height={48}
                                 unoptimized
-                                onError={(e) => {
-                                  console.error('[TrashView] Image load error:', it.imageUrl, 'resolved:', resolveImageUrl(it.imageUrl));
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = "https://dummyimage.com/200x200/e2e8f0/64748b&text=Error";
-                                }}
                                 className="h-full w-full object-cover transition duration-300 hover:scale-110"
                               />
                             </div>

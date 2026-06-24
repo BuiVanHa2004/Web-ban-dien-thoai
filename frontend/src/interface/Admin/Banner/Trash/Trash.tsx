@@ -115,6 +115,7 @@ export default function Trash() {
           onRestore={onRestore}
           onDeleteForever={onDeleteForever}
           emptyText={loading ? "Đang tải..." : "Thùng rác hiện đang trống."}
+          hideImage={true}
         />
       </div>
     </div>

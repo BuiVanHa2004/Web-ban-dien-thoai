@@ -13,24 +13,18 @@ const B2_BUCKET_NAME = process.env.NEXT_PUBLIC_B2_BUCKET_NAME || "myphone-datn";
  * - already absolute → return as-is
  */
 export function resolveImageUrl(url?: string | null): string | undefined {
-  console.log('[resolveImageUrl] Input:', url);
-  
   if (!url || url === "") {
-    console.log('[resolveImageUrl] Empty URL, returning undefined');
     return undefined;
   }
 
   // Blob URLs (local preview) — giữ nguyên
   if (url.startsWith("blob:")) {
-    console.log('[resolveImageUrl] Blob URL, returning as-is');
     return url;
   }
 
   // Replace old Render domain with current backend
   if (url.includes("datn-backend-d0et.onrender.com")) {
-    const fixedUrl = url.replace("https://datn-backend-d0et.onrender.com", API_URL);
-    console.log('[resolveImageUrl] Old Render URL detected, replacing:', url, '→', fixedUrl);
-    return fixedUrl;
+    return url.replace("https://datn-backend-d0et.onrender.com", API_URL);
   }
 
   // Replace any localhost references with the real backend URL
@@ -42,20 +36,15 @@ export function resolveImageUrl(url?: string | null): string | undefined {
   // Pattern: https://f005.backblazeb2.com/file/<bucket>/<objectName>
   const b2Match = url.match(/https?:\/\/f\d+\.backblazeb2\.com\/file\/[^/]+\/(.+)/);
   if (b2Match) {
-    const proxyUrl = `${API_URL}/api/files/${b2Match[1]}`;
-    console.log('[resolveImageUrl] B2 URL detected, converting to proxy:', url, '→', proxyUrl);
-    return proxyUrl;
+    return `${API_URL}/api/files/${b2Match[1]}`;
   }
 
   // Already absolute URL (https:// or http://)
   if (url.startsWith("http")) {
-    console.log('[resolveImageUrl] Absolute URL, returning as-is:', url);
     return url;
   }
   
   // Relative path - prepend API URL
   const path = url.startsWith("/") ? url : `/${url}`;
-  const finalUrl = `${API_URL}${path}`;
-  console.log('[resolveImageUrl] Relative URL detected, prepending API_URL:', url, '→', finalUrl);
-  return finalUrl;
+  return `${API_URL}${path}`;
 }
