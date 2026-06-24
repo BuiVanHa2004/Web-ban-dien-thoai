@@ -168,7 +168,10 @@ public class ProductServiceImpl implements ProductService {
             
             Product savedProduct = productRepository.save(existing);
             
-            // ✅ PHASE 2: Log stock adjustments AFTER save (compare old vs new)
+            // ✅ PHASE 2A: Initialize stock for NEW variants (no variantId before save)
+            postProcessNewVariantsStockInit(savedProduct, req.productColors());
+            
+            // ✅ PHASE 2B: Log stock adjustments for EXISTING variants (compare old vs new)
             postProcessStockAdjustments(savedProduct, req.productColors(), oldStockMap);
             
             return savedProduct;
