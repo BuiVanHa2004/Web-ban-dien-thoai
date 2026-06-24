@@ -18,18 +18,22 @@ public record ProductVariantDto(
         BigDecimal finalPrice
 ) {
     public static ProductVariantDto fromEntity(ProductVariant v) {
-        // Calculate available stock = total - reserved - sold
+        // ✅ FIXED: Calculate available stock correctly
+        // Formula: available = total - reserved (NOT subtracting sold)
+        // sold_stock is for statistics only, doesn't affect availability
         int totalStock = v.getTotalStock() != null ? v.getTotalStock() : 0;
         int reserved = v.getReservedStock() != null ? v.getReservedStock() : 0;
         int sold = v.getSoldStock() != null ? v.getSoldStock() : 0;
-        int available = totalStock - reserved - sold;
+        
+        // ✅ CORRECT FORMULA: available = total - reserved
+        int available = Math.max(0, totalStock - reserved);
         
         return new ProductVariantDto(
                 v.getVariantId(),
                 v.getRamGb(),
                 v.getStorageGb(),
-                v.getQuantity(), // Keep for backward compatibility
-                available, // Real available stock for display
+                v.getQuantity(), // ❌ DEPRECATED: Keep for backward compatibility only
+                available, // ✅ Real available stock for display
                 reserved,
                 sold,
                 v.getOriginalPrice(),
