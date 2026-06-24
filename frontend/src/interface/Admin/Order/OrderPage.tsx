@@ -690,7 +690,7 @@ export default function OrderPage() {
       ) : null}
 
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-500 ease-out hover:shadow-md dark:border-white/10 dark:bg-slate-900 dark:shadow-2xl dark:shadow-black/40 dark:ring-1 dark:ring-white/5">
-        <div ref={bottomScrollRef} className="overflow-x-scroll">
+        <div ref={bottomScrollRef} className="overflow-x-auto overflow-y-auto max-h-[600px]">
           <table ref={tableRef} className="min-w-full border-collapse text-center text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-700 dark:bg-slate-800 dark:text-slate-200">
               <tr className="border-b border-slate-200 dark:border-white/10">
