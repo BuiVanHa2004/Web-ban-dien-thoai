@@ -250,7 +250,7 @@ export default function UpdateBanner() {
                       className="relative z-[120] box-border flex h-11 w-full min-w-0 max-w-full cursor-pointer items-center justify-between gap-2 rounded-2xl bg-slate-100 px-3 text-left text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-2 focus:ring-cyan-400/30 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 disabled:opacity-50 sm:px-4"
                     >
                       <span className="truncate">
-                        {position === "SLIDER" ? "Slider chính" : 
+                        {position === "SLIDER" ? "Trang chủ - Slider chính" : 
                          position === "TOP" ? "Đầu trang (Top)" : 
                          position === "MIDDLE" ? "Giữa trang (Middle)" : "Cuối trang (Bottom)"}
                       </span>
@@ -268,7 +268,7 @@ export default function UpdateBanner() {
                         <div className="absolute left-0 right-0 z-[120] mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl animate-popover dark:border-white/10 dark:bg-slate-950">
                           <div className="max-h-56 overflow-auto p-1">
                             {[
-                              { value: "SLIDER", label: "Slider chính" },
+                              { value: "SLIDER", label: "Trang chủ - Slider chính" },
                               { value: "TOP", label: "Đầu trang (Top)" },
                               { value: "MIDDLE", label: "Giữa trang (Middle)" },
                               { value: "BOTTOM", label: "Cuối trang (Bottom)" },
