@@ -111,7 +111,7 @@ export default function CustomerBannerCarousel({
                 <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-6 sm:p-10 lg:p-16">
                   {/* Title with modern styling */}
                   <h2 
-                    className={`text-2xl font-black tracking-tight sm:text-4xl lg:text-6xl xl:text-7xl text-white transition-all duration-700 leading-tight ${
+                    className={`text-xl font-black tracking-tight sm:text-2xl lg:text-4xl xl:text-5xl text-white transition-all duration-700 leading-tight ${
                       isActive 
                         ? "opacity-100 translate-y-0 translate-x-0" 
                         : "opacity-0 -translate-y-8 translate-x-4"
@@ -128,7 +128,7 @@ export default function CustomerBannerCarousel({
                   {/* Subtitle with modern styling */}
                   {slide.subtitle && (
                     <p 
-                      className={`mt-3 max-w-2xl text-sm font-semibold text-slate-100 sm:mt-4 sm:text-lg lg:text-xl transition-all duration-700 leading-relaxed ${
+                      className={`mt-3 max-w-2xl text-xs font-semibold text-slate-100 sm:mt-4 sm:text-sm lg:text-base transition-all duration-700 leading-relaxed ${
                         isActive 
                           ? "opacity-100 translate-y-0 translate-x-0" 
                           : "opacity-0 -translate-y-6 translate-x-8"
