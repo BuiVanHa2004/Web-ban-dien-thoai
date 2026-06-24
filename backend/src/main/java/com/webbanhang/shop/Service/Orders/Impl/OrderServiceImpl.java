@@ -549,17 +549,9 @@ public class OrderServiceImpl implements OrderService {
             OrderStatus previousStatus = existing.getOrderStatus();
             PaymentStatus previousPaymentStatus = existing.getPaymentStatus();
             
-            // ⚠️ TEMPORARY: Log validation but don't block (for testing)
-            try {
-                OrderStatus.validateTransition(previousStatus, status);
-                System.out.println("[ORDER] ✅ Valid transition: " + previousStatus + " → " + status);
-            } catch (IllegalStateException e) {
-                System.err.println("[ORDER] ⚠️ Invalid transition detected: " + previousStatus + " → " + status);
-                System.err.println("[ORDER] Error: " + e.getMessage());
-                // TODO: Uncomment this line to enforce state machine in production:
-                // throw e;
-                System.err.println("[ORDER] ⚠️ Allowing invalid transition for testing purposes");
-            }
+            // ✅ PRODUCTION: Enforce state machine validation
+            OrderStatus.validateTransition(previousStatus, status);
+            System.out.println("[ORDER] ✅ Valid transition: " + previousStatus + " → " + status);
             
             existing.setOrderStatus(status);
 
