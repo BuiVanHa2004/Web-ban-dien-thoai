@@ -497,24 +497,28 @@ export default function PaymentPage() {
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Giá trị</th>
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Rủi ro</th>
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Trạng thái</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Người xử lý</th>
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-24 text-center">
+                  <td colSpan={6} className="py-24 text-center">
                     <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-400" />
                   </td>
                 </tr>
               ) : attempts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-24 text-center opacity-30 font-black">
+                  <td colSpan={6} className="py-24 text-center opacity-30 font-black">
                     KHÔNG CÓ DỮ LIỆU PHÙ HỢP
                   </td>
                 </tr>
               ) : (
-                attempts.map((a) => (
+                attempts.map((a) => {
+                  const isLockedByOther = a.processingByAdminId && Number(a.processingByAdminId) !== Number(currentAdminId);
+                  
+                  return (
                   <tr
                     key={a.attemptId}
                     className={`group transition-colors hover:bg-slate-100/70 dark:hover:bg-white/[0.06] ${
@@ -540,18 +544,45 @@ export default function PaymentPage() {
                       </div>
                     </td>
                     <td className="px-4 sm:px-8 py-4 sm:py-6 text-center">
+                      {a.processingByAdminId ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                            <User className="h-3.5 w-3.5" />
+                            {a.processingByAdminName || `Admin #${a.processingByAdminId}`}
+                          </div>
+                          {isLockedByOther && (
+                            <div className="text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                              (Đang khóa)
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-xs font-medium text-slate-400 dark:text-slate-500 italic">
+                          Chưa được xử lý
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 sm:px-8 py-4 sm:py-6 text-center">
                       <div className="flex justify-center">
-                        <button
-                          onClick={() => handleOpenDetail(a)}
-                          className="inline-flex cursor-pointer items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-2xl bg-white px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md active:translate-y-0 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:ring-cyan-400/15 dark:hover:shadow-black/30"
-                        >
-                          <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          {a.status === "WAITING_CONFIRM" || a.status === "PROCESSING" ? "Xử lý" : "Xem"}
-                        </button>
+                        {!isLockedByOther ? (
+                          <button
+                            onClick={() => handleOpenDetail(a)}
+                            className="inline-flex cursor-pointer items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-2xl bg-white px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md active:translate-y-0 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10 dark:hover:ring-cyan-400/15 dark:hover:shadow-black/30"
+                          >
+                            <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            {a.status === "WAITING_CONFIRM" || a.status === "PROCESSING" ? "Xử lý" : "Xem"}
+                          </button>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-2xl bg-slate-100 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs font-semibold text-slate-400 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:ring-slate-700">
+                            <Lock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            Đang được xử lý
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
