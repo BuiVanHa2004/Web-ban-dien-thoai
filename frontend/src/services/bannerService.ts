@@ -42,6 +42,13 @@ export type BannerUploadResponse = {
 
 const API_URL = process.env.NEXT_PUBLIC_URL || 'http://localhost:8080';
 
+// Global error handler
+let globalErrorHandler: ((message: string) => void) | null = null;
+
+export function setGlobalErrorHandler(handler: (message: string) => void): void {
+  globalErrorHandler = handler;
+}
+
 function getAuthHeaders(): HeadersInit {
   if (typeof window === 'undefined') return {};
   const token = localStorage.getItem('token');
@@ -52,72 +59,92 @@ function getAuthHeaders(): HeadersInit {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}/api${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeaders(),
-      ...(init?.headers || {}),
-    },
-  });
+  try {
+    const res = await fetch(`${API_URL}/api${path}`, {
+      ...init,
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+        ...(init?.headers || {}),
+      },
+    });
 
-  console.log(`[API Request] ${init?.method || 'GET'} ${path}`, {
-    status: res.status,
-    statusText: res.statusText,
-    ok: res.ok,
-  });
+    console.log(`[API Request] ${init?.method || 'GET'} ${path}`, {
+      status: res.status,
+      statusText: res.statusText,
+      ok: res.ok,
+    });
 
-  if (!res.ok) {
-    let message = 'Có lỗi xảy ra.';
-    try {
-      const data = await res.json();
-      console.error("[API Error Details]", {
-        status: res.status,
-        statusText: res.statusText,
-        data,
-      });
-      message = data?.message || data?.error || message;
-    } catch {
-      // If not JSON, try text
-      const text = await res.text();
-      console.error("[API Error Raw]", {
-        status: res.status,
-        text,
-      });
-      message = text || message;
+    if (!res.ok) {
+      let message = 'Có lỗi xảy ra.';
+      try {
+        const data = await res.json();
+        console.error("[API Error Details]", {
+          status: res.status,
+          statusText: res.statusText,
+          data,
+        });
+        message = data?.message || data?.error || message;
+      } catch {
+        // If not JSON, try text
+        const text = await res.text();
+        console.error("[API Error Raw]", {
+          status: res.status,
+          text,
+        });
+        message = text || message;
+      }
+      
+      // Show error toast automatically
+      if (globalErrorHandler) {
+        globalErrorHandler(message);
+      }
+      
+      throw new Error(message);
     }
-    throw new Error(message);
-  }
 
-  if (res.status === 204) {
-    return undefined as T;
-  }
+    if (res.status === 204) {
+      return undefined as T;
+    }
 
-  // Check if response has content before parsing JSON
-  const contentType = res.headers.get('content-type');
-  const contentLength = res.headers.get('content-length');
-  
-  // If no content or content-length is 0, return undefined
-  if (contentLength === '0' || (!contentType && !contentLength)) {
-    return undefined as T;
-  }
+    // Check if response has content before parsing JSON
+    const contentType = res.headers.get('content-type');
+    const contentLength = res.headers.get('content-length');
+    
+    // If no content or content-length is 0, return undefined
+    if (contentLength === '0' || (!contentType && !contentLength)) {
+      return undefined as T;
+    }
 
-  // Only parse JSON if content-type indicates JSON
-  if (contentType && contentType.includes('application/json')) {
+    // Only parse JSON if content-type indicates JSON
+    if (contentType && contentType.includes('application/json')) {
+      const text = await res.text();
+      // If response body is empty, return undefined
+      if (!text || text.trim() === '') {
+        return undefined as T;
+      }
+      return JSON.parse(text) as T;
+    }
+
+    // Fallback: try to parse as JSON anyway for backwards compatibility
     const text = await res.text();
-    // If response body is empty, return undefined
     if (!text || text.trim() === '') {
       return undefined as T;
     }
     return JSON.parse(text) as T;
+  } catch (error: any) {
+    // Re-throw if already handled
+    if (error.message) {
+      throw error;
+    }
+    
+    // Network error
+    const errorMsg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+    if (globalErrorHandler) {
+      globalErrorHandler(errorMsg);
+    }
+    throw new Error(errorMsg);
   }
-
-  // Fallback: try to parse as JSON anyway for backwards compatibility
-  const text = await res.text();
-  if (!text || text.trim() === '') {
-    return undefined as T;
-  }
-  return JSON.parse(text) as T;
 }
 
 export const bannerService = {

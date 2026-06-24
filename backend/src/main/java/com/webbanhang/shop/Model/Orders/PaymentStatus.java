@@ -54,13 +54,41 @@ public enum PaymentStatus {
      */
     public static void validateTransition(PaymentStatus from, PaymentStatus to) {
         if (!isValidTransition(from, to)) {
+            String fromVi = getVietnameseName(from);
+            String toVi = getVietnameseName(to);
+            Set<PaymentStatus> allowed = ALLOWED_TRANSITIONS.get(from);
+            String allowedVi = allowed == null || allowed.isEmpty() 
+                ? "không có trạng thái nào" 
+                : allowed.stream()
+                    .map(PaymentStatus::getVietnameseName)
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("");
+            
             throw new IllegalStateException(
                 String.format(
-                    "Invalid payment status transition: %s -> %s. Allowed transitions from %s: %s",
-                    from, to, from, ALLOWED_TRANSITIONS.get(from)
+                    "Không thể chuyển trạng thái thanh toán từ '%s' sang '%s'. Các trạng thái được phép: %s",
+                    fromVi, toVi, allowedVi
                 )
             );
         }
+    }
+    
+    /**
+     * Get Vietnamese name for payment status
+     */
+    public static String getVietnameseName(PaymentStatus status) {
+        if (status == null) return "Không xác định";
+        return switch (status) {
+            case UNPAID -> "Chưa thanh toán";
+            case WAITING_CONFIRM -> "Chờ xác nhận thanh toán";
+            case PAID -> "Đã thanh toán";
+            case FAILED -> "Thanh toán thất bại";
+            case REOPENED -> "Mở lại thanh toán";
+            case REFUND_PENDING -> "Chờ hoàn tiền";
+            case REFUNDED -> "Đã hoàn tiền";
+            case PARTIAL_REFUNDED -> "Hoàn tiền một phần";
+            case PARTIAL_PAID -> "Thanh toán một phần";
+        };
     }
     
     /**

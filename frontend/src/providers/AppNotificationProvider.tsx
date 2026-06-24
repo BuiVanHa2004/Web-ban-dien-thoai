@@ -4,6 +4,7 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -12,6 +13,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle, CheckCircle2, Info } from "lucide-react";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import StatusModal, { type ModalType } from "@/components/admin/StatusModal";
+import { setGlobalErrorHandler as setAuthUtilsErrorHandler } from "@/utils/authUtils";
+import { setGlobalErrorHandler as setBannerServiceErrorHandler } from "@/services/bannerService";
 
 type ToastType = "success" | "error" | "info";
 
@@ -128,6 +131,18 @@ export default function AppNotificationProvider({
     showStatus,
     confirm,
   };
+
+  // Setup global error handlers on mount
+  useEffect(() => {
+    const errorHandler = (message: string) => {
+      showToast(message, "error");
+    };
+    
+    setAuthUtilsErrorHandler(errorHandler);
+    setBannerServiceErrorHandler(errorHandler);
+    
+    console.log("[AppNotificationProvider] Global error handlers registered");
+  }, [showToast]);
 
   return (
     <AppNotificationContext.Provider value={value}>

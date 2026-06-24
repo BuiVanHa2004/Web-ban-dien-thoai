@@ -27,6 +27,7 @@ import {
 import { orderService, type OrderDto, type OrderStatus } from "@/services/orderService";
 import { productService, type ProductDto, type ProductSpecDto } from "@/services/productService";
 import { AdminCancelOrderModal } from "@/components/admin/AdminCancelOrderModal";
+import { useAppNotification } from "@/providers/AppNotificationProvider";
 import {
   STATUS_OPTIONS,
   getRealPaymentStatus,
@@ -90,6 +91,7 @@ function getSpecBoolean(product: ProductDto | undefined, field: "support5g" | "n
 }
 
 export default function OrderId() {
+  const { showToast } = useAppNotification();
   const router = useRouter();
   const pathname = usePathname() || "";
   const idStr = React.useMemo(() => parseIdFromPathname(pathname), [pathname]);
@@ -97,7 +99,6 @@ export default function OrderId() {
 
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
 
   const [order, setOrder] = React.useState<OrderDto | null>(null);
   const [status, setStatus] = React.useState<OrderStatus>("PENDING_CONFIRM");
@@ -139,7 +140,7 @@ export default function OrderId() {
 
   React.useEffect(() => {
     if (!Number.isFinite(id) || Number.isNaN(id)) {
-      setError("ID đơn hàng không hợp lệ.");
+      showToast("ID đơn hàng không hợp lệ.", "error");
       setLoading(false);
       return;
     }
@@ -149,7 +150,6 @@ export default function OrderId() {
 
   async function load() {
     setLoading(true);
-    setError(null);
     try {
       const data = await orderService.getById(id);
       setOrder(data);
@@ -183,7 +183,8 @@ export default function OrderId() {
         setProductMap(productRecord);
       }
     } catch (e: any) {
-      setError(e?.message || "Không thể tải chi tiết đơn hàng.");
+      // Error automatically shown via global handler
+      console.error("Failed to load order:", e);
     } finally {
       setLoading(false);
     }
@@ -198,12 +199,13 @@ export default function OrderId() {
     }
 
     setSaving(true);
-    setError(null);
     try {
       await orderService.updateStatus(id, { status });
       await load();
+      showToast("Cập nhật trạng thái đơn hàng thành công!", "success");
     } catch (e: any) {
-      setError(e?.message || "Không thể cập nhật trạng thái.");
+      // Error automatically shown via global handler
+      console.error("Failed to update status:", e);
     } finally {
       setSaving(false);
     }
@@ -213,12 +215,11 @@ export default function OrderId() {
     if (!Number.isFinite(id) || Number.isNaN(id)) return;
     
     if (!refundNote.trim()) {
-      setError("Vui lòng nhập lý do hoàn tiền.");
+      showToast("Vui lòng nhập lý do hoàn tiền.", "error");
       return;
     }
 
     setRefundSaving(true);
-    setError(null);
     try {
       const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -243,8 +244,10 @@ export default function OrderId() {
       await load();
       setIsRefundModalOpen(false);
       setRefundNote("");
+      showToast("Cập nhật trạng thái hoàn tiền thành công!", "success");
     } catch (e: any) {
-      setError(e?.message || "Không thể cập nhật trạng thái thanh toán.");
+      // Error automatically shown via global handler
+      console.error("Failed to update refund status:", e);
     } finally {
       setRefundSaving(false);
     }

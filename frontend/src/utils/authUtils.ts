@@ -4,6 +4,16 @@
  * Provides centralized auth token handling and automatic logout on token expiration
  */
 
+// Global error handler function - will be set by AppNotificationProvider
+let globalErrorHandler: ((message: string) => void) | null = null;
+
+/**
+ * Set global error handler (called from AppNotificationProvider)
+ */
+export function setGlobalErrorHandler(handler: (message: string) => void): void {
+  globalErrorHandler = handler;
+}
+
 /**
  * Get current auth token from localStorage
  */
@@ -37,52 +47,111 @@ export function clearAuthAndRedirect(): void {
 }
 
 /**
- * Enhanced fetch wrapper that handles 401 automatically
+ * Enhanced fetch wrapper that handles 401 automatically and shows error toasts
  * 
  * @param url - API endpoint URL
  * @param init - Fetch options
  * @param skipAutoLogout - Skip automatic logout on 401 (default: false)
+ * @param skipErrorToast - Skip automatic error toast display (default: false)
  * @returns Promise with response data
  */
 export async function authenticatedFetch<T>(
   url: string,
   init?: RequestInit,
-  skipAutoLogout = false
+  skipAutoLogout = false,
+  skipErrorToast = false
 ): Promise<T> {
   const authHeader = getAuthHeader();
   
   // Check if body is FormData - don't set Content-Type for multipart uploads
   const isFormData = init?.body instanceof FormData;
   
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      // Only set Content-Type if not FormData (let browser set it for multipart)
-      ...(!isFormData && { 'Content-Type': 'application/json' }),
-      ...(authHeader ? { Authorization: authHeader } : {}),
-      ...(init?.headers || {}),
-    },
-  });
+  try {
+    const response = await fetch(url, {
+      ...init,
+      headers: {
+        // Only set Content-Type if not FormData (let browser set it for multipart)
+        ...(!isFormData && { 'Content-Type': 'application/json' }),
+        ...(authHeader ? { Authorization: authHeader } : {}),
+        ...(init?.headers || {}),
+      },
+    });
 
-  // Handle 401 Unauthorized
-  if (response.status === 401 && !skipAutoLogout) {
-    clearAuthAndRedirect();
-    throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    // Handle 401 Unauthorized
+    if (response.status === 401 && !skipAutoLogout) {
+      clearAuthAndRedirect();
+      const errorMsg = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+      if (!skipErrorToast && globalErrorHandler) {
+        globalErrorHandler(errorMsg);
+      }
+      throw new Error(errorMsg);
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    const contentLength = response.headers.get('content-length');
+    const isJson = contentType.includes('application/json');
+    
+    // If no content or content-length is 0, return undefined
+    if (contentLength === '0' || (!contentType && !contentLength)) {
+      return undefined as T;
+    }
+
+    // Try to parse JSON if content type indicates JSON
+    let data = null;
+    if (isJson) {
+      const text = await response.text();
+      // If response body is empty, return undefined
+      if (!text || text.trim() === '') {
+        return undefined as T;
+      }
+      try {
+        data = JSON.parse(text);
+      } catch {
+        // If JSON parsing fails, return undefined for empty/invalid JSON
+        if (!response.ok) {
+          const errorMsg = 'Có lỗi xảy ra khi xử lý dữ liệu từ server.';
+          if (!skipErrorToast && globalErrorHandler) {
+            globalErrorHandler(errorMsg);
+          }
+          throw new Error(errorMsg);
+        }
+        return undefined as T;
+      }
+    }
+
+    if (!response.ok) {
+      const message =
+        (data && typeof data === 'object' && 'message' in data && (data as any).message) ||
+        (data && typeof data === 'object' && 'error' in data && (data as any).error) ||
+        'Có lỗi xảy ra.';
+      
+      // Show error toast automatically
+      if (!skipErrorToast && globalErrorHandler) {
+        globalErrorHandler(String(message));
+      }
+      
+      throw new Error(String(message));
+    }
+
+    return data as T;
+  } catch (error: any) {
+    // Re-throw if it's already our error (already handled above)
+    if (error.message) {
+      throw error;
+    }
+    
+    // Handle network errors or unexpected errors
+    const errorMsg = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+    if (!skipErrorToast && globalErrorHandler) {
+      globalErrorHandler(errorMsg);
+    }
+    throw new Error(errorMsg);
   }
-
-  const contentType = response.headers.get('content-type') || '';
-  const isJson = contentType.includes('application/json');
-  const data = isJson ? await response.json().catch(() => null) : null;
-
-  if (!response.ok) {
-    const message =
-      (data && typeof data === 'object' && 'message' in data && (data as any).message) ||
-      (data && typeof data === 'object' && 'error' in data && (data as any).error) ||
-      'Có lỗi xảy ra.';
-    throw new Error(String(message));
-  }
-
-  return data as T;
 }
 
 /**

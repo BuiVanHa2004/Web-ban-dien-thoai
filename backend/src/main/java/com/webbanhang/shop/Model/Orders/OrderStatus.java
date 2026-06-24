@@ -63,13 +63,40 @@ public enum OrderStatus {
      */
     public static void validateTransition(OrderStatus from, OrderStatus to) {
         if (!isValidTransition(from, to)) {
+            String fromVi = getVietnameseName(from);
+            String toVi = getVietnameseName(to);
+            Set<OrderStatus> allowed = ALLOWED_TRANSITIONS.get(from);
+            String allowedVi = allowed == null || allowed.isEmpty() 
+                ? "không có trạng thái nào" 
+                : allowed.stream()
+                    .map(OrderStatus::getVietnameseName)
+                    .reduce((a, b) -> a + ", " + b)
+                    .orElse("");
+            
             throw new IllegalStateException(
                 String.format(
-                    "Invalid order status transition: %s -> %s. Allowed transitions from %s: %s",
-                    from, to, from, ALLOWED_TRANSITIONS.get(from)
+                    "Không thể chuyển trạng thái đơn hàng từ '%s' sang '%s'. Các trạng thái được phép: %s",
+                    fromVi, toVi, allowedVi
                 )
             );
         }
+    }
+    
+    /**
+     * Get Vietnamese name for order status
+     */
+    public static String getVietnameseName(OrderStatus status) {
+        if (status == null) return "Không xác định";
+        return switch (status) {
+            case PENDING_CONFIRM -> "Chờ xác nhận";
+            case PENDING_PAYMENT_CONFIRMATION -> "Chờ xác nhận thanh toán";
+            case CONFIRMED -> "Đã xác nhận";
+            case SHIPPING -> "Đang giao hàng";
+            case PENDING_PICKUP -> "Chờ lấy hàng";
+            case PENDING_SHIPPING -> "Chờ giao hàng";
+            case DELIVERED -> "Đã giao hàng";
+            case CANCELLED -> "Đã hủy";
+        };
     }
     
     /**
