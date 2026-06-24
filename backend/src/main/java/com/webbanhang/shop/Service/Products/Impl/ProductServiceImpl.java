@@ -362,48 +362,68 @@ public class ProductServiceImpl implements ProductService {
 
         if (existingSpec != null) {
             // Update existing spec
-            existingSpec.setChip(reqSpec.chip());
-            existingSpec.setCameraFront(reqSpec.cameraFront());
-            existingSpec.setCameraRear(reqSpec.cameraRear());
-            existingSpec.setScreen(reqSpec.screen());
-            existingSpec.setBattery(reqSpec.battery());
-            existingSpec.setRefreshRate(reqSpec.refreshRate());
-            existingSpec.setFastCharge(reqSpec.fastCharge());
+            existingSpec.setChip(truncateString(reqSpec.chip(), 255));
+            existingSpec.setCameraFront(truncateString(reqSpec.cameraFront(), 255));
+            existingSpec.setCameraRear(truncateString(reqSpec.cameraRear(), 255));
+            existingSpec.setScreen(truncateString(reqSpec.screen(), 255));
+            existingSpec.setBattery(truncateString(reqSpec.battery(), 255));
+            existingSpec.setRefreshRate(truncateString(reqSpec.refreshRate(), 50));
+            existingSpec.setFastCharge(truncateString(reqSpec.fastCharge(), 100));
             existingSpec.setSupport5g(reqSpec.support5g() != null ? reqSpec.support5g() : false);
             existingSpec.setNfc(reqSpec.nfc() != null ? reqSpec.nfc() : false);
-            existingSpec.setOperatingSystem(reqSpec.operatingSystem());
-            existingSpec.setSize(reqSpec.size());
-            existingSpec.setWeight(reqSpec.weight());
-            existingSpec.setMaterial(reqSpec.material());
-            existingSpec.setWaterResistance(reqSpec.waterResistance());
-            existingSpec.setChargingPort(reqSpec.chargingPort());
-            existingSpec.setSim(reqSpec.sim());
-            existingSpec.setWarranty(reqSpec.warranty());
+            existingSpec.setOperatingSystem(truncateString(reqSpec.operatingSystem(), 100));
+            existingSpec.setSize(truncateString(reqSpec.size(), 100));
+            existingSpec.setWeight(truncateString(reqSpec.weight(), 100));
+            existingSpec.setMaterial(truncateString(reqSpec.material(), 100));
+            existingSpec.setWaterResistance(truncateString(reqSpec.waterResistance(), 100));
+            existingSpec.setChargingPort(truncateString(reqSpec.chargingPort(), 100));
+            existingSpec.setSim(truncateString(reqSpec.sim(), 100));
+            existingSpec.setWarranty(truncateString(reqSpec.warranty(), 255));
         } else {
             // Create new spec
             ProductSpec spec = new ProductSpec();
             spec.setProduct(product);
             spec.setVersion(targetVersion);
-            spec.setChip(reqSpec.chip());
-            spec.setCameraFront(reqSpec.cameraFront());
-            spec.setCameraRear(reqSpec.cameraRear());
-            spec.setScreen(reqSpec.screen());
-            spec.setBattery(reqSpec.battery());
-            spec.setRefreshRate(reqSpec.refreshRate());
-            spec.setFastCharge(reqSpec.fastCharge());
+            spec.setChip(truncateString(reqSpec.chip(), 255));
+            spec.setCameraFront(truncateString(reqSpec.cameraFront(), 255));
+            spec.setCameraRear(truncateString(reqSpec.cameraRear(), 255));
+            spec.setScreen(truncateString(reqSpec.screen(), 255));
+            spec.setBattery(truncateString(reqSpec.battery(), 255));
+            spec.setRefreshRate(truncateString(reqSpec.refreshRate(), 50));
+            spec.setFastCharge(truncateString(reqSpec.fastCharge(), 100));
             spec.setSupport5g(reqSpec.support5g() != null ? reqSpec.support5g() : false);
             spec.setNfc(reqSpec.nfc() != null ? reqSpec.nfc() : false);
-            spec.setOperatingSystem(reqSpec.operatingSystem());
-            spec.setSize(reqSpec.size());
-            spec.setWeight(reqSpec.weight());
-            spec.setMaterial(reqSpec.material());
-            spec.setWaterResistance(reqSpec.waterResistance());
-            spec.setChargingPort(reqSpec.chargingPort());
-            spec.setSim(reqSpec.sim());
-            spec.setWarranty(reqSpec.warranty());
+            spec.setOperatingSystem(truncateString(reqSpec.operatingSystem(), 100));
+            spec.setSize(truncateString(reqSpec.size(), 100));
+            spec.setWeight(truncateString(reqSpec.weight(), 100));
+            spec.setMaterial(truncateString(reqSpec.material(), 100));
+            spec.setWaterResistance(truncateString(reqSpec.waterResistance(), 100));
+            spec.setChargingPort(truncateString(reqSpec.chargingPort(), 100));
+            spec.setSim(truncateString(reqSpec.sim(), 100));
+            spec.setWarranty(truncateString(reqSpec.warranty(), 255));
             
             product.getProductSpecs().add(spec);
         }
+    }
+    
+    /**
+     * ✅ Truncate string to max length to prevent database errors
+     * @param value Input string
+     * @param maxLength Maximum allowed length
+     * @return Truncated string or null if input is null
+     */
+    private String truncateString(String value, int maxLength) {
+        if (value == null) {
+            return null;
+        }
+        if (value.length() <= maxLength) {
+            return value;
+        }
+        System.err.println(String.format(
+            "[PRODUCT] ⚠️ Truncating field from %d to %d chars: %s...", 
+            value.length(), maxLength, value.substring(0, Math.min(50, value.length()))
+        ));
+        return value.substring(0, maxLength);
     }
 
     @Override
@@ -495,8 +515,9 @@ public class ProductServiceImpl implements ProductService {
                 color.setProduct(product);
                 product.getProductColors().add(color);
             }
-            color.setColorName(rc.colorName().trim());
-            color.setColorCode(rc.colorCode());
+            // ✅ Truncate color fields
+            color.setColorName(truncateString(rc.colorName().trim(), 255));
+            color.setColorCode(truncateString(rc.colorCode(), 64));
             syncColorImages(color, rc.images());
             syncColorVariants(color, rc.variants());
         }
@@ -509,6 +530,19 @@ public class ProductServiceImpl implements ProductService {
                 .filter(v -> v != null && (v.ramGb() != null || v.storageGb() != null))
                 .toList();
 
+        // ✅ VALIDATION: Check for duplicate (ramGb, storageGb) in request
+        Set<String> seenSpecs = new HashSet<>();
+        for (com.webbanhang.shop.DTO.Products.ProductVariantUpsertRequest rv : desired) {
+            String specKey = rv.ramGb() + "-" + rv.storageGb();
+            if (seenSpecs.contains(specKey)) {
+                throw new IllegalArgumentException(
+                    String.format("Duplicate variant specification: RAM %dGB + Storage %dGB. Each variant must be unique.", 
+                        rv.ramGb(), rv.storageGb())
+                );
+            }
+            seenSpecs.add(specKey);
+        }
+
         if (color.getVariants() == null) {
             color.setVariants(new java.util.LinkedHashSet<>());
         }
@@ -517,6 +551,15 @@ public class ProductServiceImpl implements ProductService {
         Map<Integer, ProductVariant> byId = existing.stream()
                 .filter(v -> v.getVariantId() != null)
                 .collect(Collectors.toMap(ProductVariant::getVariantId, v -> v, (a, b) -> a));
+        
+        // ✅ NEW: Also create map by (ramGb, storageGb) for existing variants
+        Map<String, ProductVariant> bySpec = existing.stream()
+                .filter(v -> v.getRamGb() != null && v.getStorageGb() != null)
+                .collect(Collectors.toMap(
+                    v -> v.getRamGb() + "-" + v.getStorageGb(), 
+                    v -> v, 
+                    (a, b) -> a // Keep first if duplicate
+                ));
 
         Set<Integer> desiredIds = desired.stream()
                 .map(com.webbanhang.shop.DTO.Products.ProductVariantUpsertRequest::variantId)
@@ -534,8 +577,14 @@ public class ProductServiceImpl implements ProductService {
             ProductVariant variant = null;
             boolean isNewVariant = false;
             
+            // ✅ IMPROVED: Try to find by variantId first, then by (ramGb, storageGb)
             if (rv.variantId() != null) {
                 variant = byId.get(rv.variantId());
+            }
+            if (variant == null && rv.ramGb() != null && rv.storageGb() != null) {
+                // Try to match by spec (for update operations without variantId)
+                String specKey = rv.ramGb() + "-" + rv.storageGb();
+                variant = bySpec.get(specKey);
             }
             if (variant == null) {
                 variant = new ProductVariant();
@@ -651,9 +700,10 @@ public class ProductServiceImpl implements ProductService {
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thương hiệu."));
         }
 
-        product.setProductName(req.productName());
-        product.setSlug(req.slug());
-        product.setProductDescribe(req.productDescribe());
+        // ✅ Truncate strings to prevent database errors
+        product.setProductName(truncateString(req.productName(), 255));
+        product.setSlug(truncateString(req.slug(), 255));
+        product.setProductDescribe(req.productDescribe()); // TEXT field - no limit
         product.setCategory(category);
         product.setBrand(brand);
 
