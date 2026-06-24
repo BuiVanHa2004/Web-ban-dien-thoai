@@ -161,8 +161,20 @@ function minVariantPrice(productColors: ColorItem[]) {
 }
 
 function sumVariantQuantity(variants: VariantInput[]) {
-  // ✅ Tính tổng dựa trên currentStock (tồn hiện tại)
-  return variants.reduce((sum, v) => sum + (Number(v.currentStock) || 0), 0);
+  // ✅ Tính tổng stock dựa trên:
+  // - Variant mới (không có variantId): dùng stockAdjustment (số lượng sẽ nhập)
+  // - Variant cũ (có variantId): dùng currentStock + stockAdjustment (tồn hiện tại + điều chỉnh)
+  return variants.reduce((sum, v) => {
+    if (!v.variantId) {
+      // Variant mới: chưa có trong DB, dùng stockAdjustment
+      return sum + (Number(v.stockAdjustment) || 0);
+    } else {
+      // Variant cũ: có trong DB, tính = currentStock + stockAdjustment
+      const current = Number(v.currentStock) || 0;
+      const adjustment = Number(v.stockAdjustment) || 0;
+      return sum + current + adjustment;
+    }
+  }, 0);
 }
 
 function deriveVariantSpecValues(productColors: ColorItem[]): { ramSpecValue: string; storageSpecValue: string } {
