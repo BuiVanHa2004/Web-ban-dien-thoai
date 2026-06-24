@@ -880,8 +880,7 @@ export default function PaymentPage() {
                             const isStaffRestricted =
                               currentAdminRole === "STAFF" &&
                               (selectedAttempt.amount >= PAYMENT_APPROVE_THRESHOLD ||
-                                selectedAttempt.riskLevel === "HIGH" ||
-                                selectedAttempt.isSuspicious);
+                                selectedAttempt.riskLevel === "HIGH");
 
                             return (
                               <>
