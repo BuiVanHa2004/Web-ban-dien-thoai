@@ -202,12 +202,18 @@ public class ProductServiceImpl implements ProductService {
      */
     private void postProcessNewVariantsStockInit(Product product, List<ProductColorUpsertRequest> reqColors) {
         if (reqColors == null || reqColors.isEmpty()) {
+            System.out.println("[PRODUCT] ⚠️ No colors in request, skipping stock init");
             return;
         }
         
+        System.out.println(String.format("[PRODUCT] 📦 Processing stock init for %d colors", reqColors.size()));
+        
         // Find matching variants and apply their initial stock from stockAdjustment
         for (ProductColor color : product.getProductColors()) {
-            if (color.getVariants() == null) continue;
+            if (color.getVariants() == null || color.getVariants().isEmpty()) {
+                System.out.println(String.format("[PRODUCT] ⚠️ Color '%s' has no variants", color.getColorName()));
+                continue;
+            }
             
             // Find corresponding color request
             ProductColorUpsertRequest colorReq = reqColors.stream()
@@ -215,7 +221,18 @@ public class ProductServiceImpl implements ProductService {
                 .findFirst()
                 .orElse(null);
             
-            if (colorReq == null || colorReq.variants() == null) continue;
+            if (colorReq == null) {
+                System.out.println(String.format("[PRODUCT] ⚠️ No matching request for color '%s'", color.getColorName()));
+                continue;
+            }
+            
+            if (colorReq.variants() == null || colorReq.variants().isEmpty()) {
+                System.out.println(String.format("[PRODUCT] ⚠️ Color '%s' request has no variants", color.getColorName()));
+                continue;
+            }
+            
+            System.out.println(String.format("[PRODUCT] Processing %d variants for color '%s'", 
+                color.getVariants().size(), color.getColorName()));
             
             for (ProductVariant variant : color.getVariants()) {
                 // Find corresponding variant request by RAM+Storage
@@ -225,10 +242,17 @@ public class ProductServiceImpl implements ProductService {
                     .findFirst()
                     .orElse(null);
                 
-                if (variantReq == null) continue;
+                if (variantReq == null) {
+                    System.out.println(String.format("[PRODUCT] ⚠️ No match for variant RAM=%dGB Storage=%dGB", 
+                        variant.getRamGb(), variant.getStorageGb()));
+                    continue;
+                }
                 
                 // Check if this variant has initial stock (stockAdjustment field)
                 Integer initialStock = variantReq.stockAdjustment();
+                System.out.println(String.format("[PRODUCT] Variant %d (RAM=%d, Storage=%d): stockAdjustment=%s", 
+                    variant.getVariantId(), variant.getRamGb(), variant.getStorageGb(), initialStock));
+                
                 if (initialStock != null && initialStock > 0) {
                     String reason = variantReq.adjustmentReason();
                     if (reason == null || reason.isBlank()) {
@@ -245,8 +269,12 @@ public class ProductServiceImpl implements ProductService {
                         ));
                     } catch (Exception e) {
                         System.err.println("Failed to initialize stock for new variant " + variant.getVariantId() + ": " + e.getMessage());
+                        e.printStackTrace();
                         throw new IllegalStateException("Không thể khởi tạo tồn kho: " + e.getMessage());
                     }
+                } else {
+                    System.out.println(String.format("[PRODUCT] ⏭️ Skipping variant %d - no stock adjustment (%s)", 
+                        variant.getVariantId(), initialStock));
                 }
             }
         }
