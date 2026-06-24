@@ -323,7 +323,7 @@ public class PaymentServiceImpl implements PaymentService {
                     throw new IllegalStateException("Hạn mức phê duyệt thanh toán vượt quá quyền hạn của Nhân viên (Chỉ áp dụng với giao dịch dưới " 
                         + String.format("%,d", getApproveThreshold().longValue()) + " VND). Vui lòng chuyển quyền phê duyệt cho Quản trị viên.");
                 }
-                if (Boolean.TRUE.equals(attempt.getIsSuspicious()) || "HIGH".equals(attempt.getRiskLevel()) || "MEDIUM".equals(attempt.getRiskLevel())) {
+                if (Boolean.TRUE.equals(attempt.getIsSuspicious()) || "HIGH".equals(attempt.getRiskLevel())) {
                     throw new IllegalStateException("Giao dịch này được đánh dấu rủi ro cao. Nhân viên không có quyền phê duyệt. Vui lòng chuyển cho Quản trị viên.");
                 }
             }
@@ -459,7 +459,7 @@ public class PaymentServiceImpl implements PaymentService {
                     throw new IllegalStateException("Hạn mức từ chối thanh toán vượt quá quyền hạn của Nhân viên (Chỉ áp dụng với giao dịch dưới " 
                         + String.format("%,d", getApproveThreshold().longValue()) + " VND). Vui lòng chuyển cho Quản trị viên.");
                 }
-                if (Boolean.TRUE.equals(attempt.getIsSuspicious()) || "HIGH".equals(attempt.getRiskLevel()) || "MEDIUM".equals(attempt.getRiskLevel())) {
+                if (Boolean.TRUE.equals(attempt.getIsSuspicious()) || "HIGH".equals(attempt.getRiskLevel())) {
                     throw new IllegalStateException("Giao dịch này được đánh dấu rủi ro cao. Nhân viên không có quyền từ chối. Vui lòng chuyển cho Quản trị viên.");
                 }
             }
