@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
-import java.text.Normalizer;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -191,9 +190,11 @@ public class DeliveryCertificateService {
                     .setBorder(Border.NO_BORDER);
 
             Cell deliverySignCell = new Cell()
-                    .add(new Paragraph(toAscii("Nguoi giao hang")).setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
+                    .add(new Paragraph(toAscii("Nguoi ban")).setFont(boldFont).setTextAlignment(TextAlignment.CENTER))
                     .add(new Paragraph(toAscii("(Ky, ghi ro ho ten)")).setFont(font).setFontSize(9).setTextAlignment(TextAlignment.CENTER))
-                    .add(new Paragraph("\n\n\n\n").setFont(font))
+                    .add(new Paragraph("\n\n").setFont(font))
+                    .add(new Paragraph(toAscii("Ha")).setFont(boldFont).setFontSize(16).setTextAlignment(TextAlignment.CENTER).setItalic())
+                    .add(new Paragraph(toAscii("Bui Van Ha")).setFont(boldFont).setFontSize(11).setTextAlignment(TextAlignment.CENTER))
                     .setBorder(Border.NO_BORDER);
 
             signatureTable.addCell(customerSignCell);

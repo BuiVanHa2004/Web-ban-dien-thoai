@@ -221,11 +221,13 @@ function UpdateAccount() {
                 </>
               ) : null}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">Gmail</label>
+                <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  Gmail {isGoogleAccount && <span className="text-xs text-amber-600 dark:text-amber-400">(Đăng nhập bằng Google - không thể sửa)</span>}
+                </label>
                 <input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={formDisabled}
+                  disabled={formDisabled || isGoogleAccount}
                   placeholder="Nhập Gmail"
                   className="h-11 w-full rounded-2xl bg-slate-100 px-3 text-sm text-slate-900 ring-1 ring-slate-200 outline-none transition focus:ring-cyan-400/30 disabled:opacity-70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:focus:ring-cyan-400/25"
                 />

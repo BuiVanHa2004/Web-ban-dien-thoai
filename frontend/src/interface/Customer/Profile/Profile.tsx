@@ -469,9 +469,10 @@ export default function ProfileInterface() {
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
                           <Mail size={12} className="text-slate-300" /> Email liên hệ
+                          {profile?.googleId && <span className="normal-case text-amber-500 font-semibold">(Google - không thể sửa)</span>}
                         </label>
                         <input
-                          disabled={!editing}
+                          disabled={!editing || !!profile?.googleId}
                           type="email"
                           value={formData.email}
                           onChange={(e) => setFormData({...formData, email: e.target.value})}

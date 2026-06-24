@@ -210,6 +210,16 @@ public class ProductServiceImpl implements ProductService {
         }
         
         System.out.println(String.format("[PRODUCT] 📦 Processing stock init for %d colors", reqColors.size()));
+        System.out.println("[PRODUCT] DEBUG: Request colors details:");
+        for (ProductColorUpsertRequest rc : reqColors) {
+            System.out.println(String.format("  - Color: %s, Variants count: %d", rc.colorName(), rc.variants() != null ? rc.variants().size() : 0));
+            if (rc.variants() != null) {
+                for (var vr : rc.variants()) {
+                    System.out.println(String.format("    - RAM=%d, Storage=%d, stockAdjustment=%s, reason=%s", 
+                        vr.ramGb(), vr.storageGb(), vr.stockAdjustment(), vr.adjustmentReason()));
+                }
+            }
+        }
         
         // Find matching variants and apply their initial stock from stockAdjustment
         for (ProductColor color : product.getProductColors()) {
@@ -276,7 +286,7 @@ public class ProductServiceImpl implements ProductService {
                         throw new IllegalStateException("Không thể khởi tạo tồn kho: " + e.getMessage());
                     }
                 } else {
-                    System.out.println(String.format("[PRODUCT] ⏭️ Skipping variant %d - no stock adjustment (%s)", 
+                    System.out.println(String.format("[PRODUCT] ⏭️ Skipping variant %d - no stock adjustment (value=%s)", 
                         variant.getVariantId(), initialStock));
                 }
             }
