@@ -93,7 +93,31 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     return undefined as T;
   }
 
-  return (await res.json()) as T;
+  // Check if response has content before parsing JSON
+  const contentType = res.headers.get('content-type');
+  const contentLength = res.headers.get('content-length');
+  
+  // If no content or content-length is 0, return undefined
+  if (contentLength === '0' || (!contentType && !contentLength)) {
+    return undefined as T;
+  }
+
+  // Only parse JSON if content-type indicates JSON
+  if (contentType && contentType.includes('application/json')) {
+    const text = await res.text();
+    // If response body is empty, return undefined
+    if (!text || text.trim() === '') {
+      return undefined as T;
+    }
+    return JSON.parse(text) as T;
+  }
+
+  // Fallback: try to parse as JSON anyway for backwards compatibility
+  const text = await res.text();
+  if (!text || text.trim() === '') {
+    return undefined as T;
+  }
+  return JSON.parse(text) as T;
 }
 
 export const bannerService = {
