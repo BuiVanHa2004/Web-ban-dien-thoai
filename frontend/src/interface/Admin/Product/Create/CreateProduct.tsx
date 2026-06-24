@@ -112,10 +112,13 @@ function toVariantPayload(variants: VariantInput[], discountType: DiscountType |
     .map((v) => {
       const original = Math.max(Number(v.price) || 0, 0);
       const final = calcCurrentPrice(original, dt, dv);
+      const quantity = Math.max(Number(v.quantity) || 0, 0);
       return {
         ramGb: Number(v.ramGb),
         storageGb: Number(v.storageGb),
-        quantity: Math.max(Number(v.quantity) || 0, 0),
+        // ✅ FIX: Send stockAdjustment instead of quantity for CREATE
+        stockAdjustment: quantity > 0 ? quantity : null,
+        adjustmentReason: quantity > 0 ? `Nhập kho ban đầu: ${quantity} sản phẩm` : undefined,
         originalPrice: original,
         discountType: (dt || "NONE") as DiscountType,
         discountValue: dv == null ? 0 : dv,
