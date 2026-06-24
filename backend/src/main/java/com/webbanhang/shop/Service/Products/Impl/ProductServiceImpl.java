@@ -145,7 +145,14 @@ public class ProductServiceImpl implements ProductService {
         syncProductColors(product, req.productColors());
         syncProductSpecs(product, req.productSpec());
         product.setProductId(null);
-        return productRepository.save(product);
+        
+        // ✅ PHASE 1: Save product first to generate variant IDs
+        Product savedProduct = productRepository.save(product);
+        
+        // ✅ PHASE 2: Process stock adjustments for NEW variants
+        postProcessNewVariantsStockInit(savedProduct, req.productColors());
+        
+        return savedProduct;
     }
 
     @Override
@@ -187,6 +194,62 @@ public class ProductServiceImpl implements ProductService {
         }
         
         return stockMap;
+    }
+    
+    /**
+     * ✅ NEW: Initialize stock for newly created variants
+     * Called after first save when variantIds are generated
+     */
+    private void postProcessNewVariantsStockInit(Product product, List<ProductColorUpsertRequest> reqColors) {
+        if (reqColors == null || reqColors.isEmpty()) {
+            return;
+        }
+        
+        // Find matching variants and apply their initial stock from stockAdjustment
+        for (ProductColor color : product.getProductColors()) {
+            if (color.getVariants() == null) continue;
+            
+            // Find corresponding color request
+            ProductColorUpsertRequest colorReq = reqColors.stream()
+                .filter(rc -> rc.colorName() != null && rc.colorName().trim().equals(color.getColorName()))
+                .findFirst()
+                .orElse(null);
+            
+            if (colorReq == null || colorReq.variants() == null) continue;
+            
+            for (ProductVariant variant : color.getVariants()) {
+                // Find corresponding variant request by RAM+Storage
+                com.webbanhang.shop.DTO.Products.ProductVariantUpsertRequest variantReq = colorReq.variants().stream()
+                    .filter(vr -> vr.ramGb() != null && vr.ramGb().equals(variant.getRamGb()) 
+                               && vr.storageGb() != null && vr.storageGb().equals(variant.getStorageGb()))
+                    .findFirst()
+                    .orElse(null);
+                
+                if (variantReq == null) continue;
+                
+                // Check if this variant has initial stock (stockAdjustment field)
+                Integer initialStock = variantReq.stockAdjustment();
+                if (initialStock != null && initialStock > 0) {
+                    String reason = variantReq.adjustmentReason();
+                    if (reason == null || reason.isBlank()) {
+                        reason = String.format("Nhập kho ban đầu: %d sản phẩm", initialStock);
+                    }
+                    
+                    try {
+                        // Use InventoryService to properly initialize stock
+                        inventoryService.importStock(variant.getVariantId(), initialStock, reason, "ADMIN");
+                        
+                        System.out.println(String.format(
+                            "[PRODUCT] ✅ Initialized stock for new variant %d: %d units. Reason: %s",
+                            variant.getVariantId(), initialStock, reason
+                        ));
+                    } catch (Exception e) {
+                        System.err.println("Failed to initialize stock for new variant " + variant.getVariantId() + ": " + e.getMessage());
+                        throw new IllegalStateException("Không thể khởi tạo tồn kho: " + e.getMessage());
+                    }
+                }
+            }
+        }
     }
     
     /**

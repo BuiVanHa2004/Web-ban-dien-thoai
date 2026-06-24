@@ -466,6 +466,9 @@ public class InventoryService {
         variant.setTotalStock(variant.getTotalStock() + quantity);
         variant.setVersion(variant.getVersion() + 1);
         
+        // ✅ CRITICAL FIX: Also update legacy quantity field for backward compatibility
+        variant.setQuantity(variant.getTotalStock());
+        
         variantRepository.save(variant);
         
         // Log to new table
