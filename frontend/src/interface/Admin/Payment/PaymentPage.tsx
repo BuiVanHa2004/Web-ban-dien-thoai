@@ -556,6 +556,24 @@ export default function PaymentPage() {
                             </div>
                           )}
                         </div>
+                      ) : a.reviewedByAdminId && (a.status === "MATCHED" || a.status === "REJECTED") ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <div className={`flex items-center gap-1.5 text-xs font-bold ${
+                            a.status === "MATCHED" 
+                              ? "text-emerald-600 dark:text-emerald-400" 
+                              : "text-rose-600 dark:text-rose-400"
+                          }`}>
+                            <User className="h-3.5 w-3.5" />
+                            {a.reviewedByAdminName || `Admin #${a.reviewedByAdminId}`}
+                          </div>
+                          <div className={`text-[10px] font-bold ${
+                            a.status === "MATCHED"
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-rose-600 dark:text-rose-400"
+                          }`}>
+                            {a.status === "MATCHED" ? "(Đã duyệt)" : "(Đã từ chối)"}
+                          </div>
+                        </div>
                       ) : (
                         <div className="text-xs font-medium text-slate-400 dark:text-slate-500 italic">
                           Chưa được xử lý

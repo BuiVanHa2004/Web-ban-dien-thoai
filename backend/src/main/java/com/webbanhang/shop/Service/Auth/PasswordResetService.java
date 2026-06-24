@@ -2,6 +2,7 @@ package com.webbanhang.shop.Service.Auth;
 
 import com.webbanhang.shop.Model.Admins.AdminAccount;
 import com.webbanhang.shop.Model.Auth.PasswordResetCode;
+import com.webbanhang.shop.Model.Customers.AuthProvider;
 import com.webbanhang.shop.Model.Customers.CustomerAccount;
 import com.webbanhang.shop.Repository.Admins.AdminAccountRepository;
 import com.webbanhang.shop.Repository.Auth.PasswordResetCodeRepository;
@@ -68,7 +69,13 @@ public class PasswordResetService {
             return;
         }
 
+        // Kiểm tra xem tài khoản có được đăng ký bằng Google không
         String emailLower = email.toLowerCase(Locale.ROOT);
+        CustomerAccount customer = customerAccountRepository.findByEmail(emailLower).orElse(null);
+        if (customer != null && customer.getAuthProvider() == AuthProvider.GOOGLE) {
+            throw new IllegalArgumentException("GOOGLE_ACCOUNT");
+        }
+
         Instant now = Instant.now();
 
         // Chống spam: giới hạn tần suất gửi OTP.
