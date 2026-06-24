@@ -99,11 +99,11 @@ function normalizeSpecName(value: string) {
 function createEmptyVariantInput(): VariantInput {
   return {
     key: `${Date.now()}-${Math.random()}`,
-    variantId: null,
+    variantId: null,  // ✅ null = variant mới
     ramGb: "",
     storageGb: "",
-    currentStock: undefined,
-    stockAdjustment: "",
+    currentStock: 0,  // ✅ Variant mới có stock = 0
+    stockAdjustment: "",  // ✅ Sẽ dùng để nhập số lượng ban đầu cho variant mới
     adjustmentReason: "",
     price: "",
   };
@@ -1588,46 +1588,47 @@ export default function UpdateProduct() {
                                 </div>
                               )}
                             </div>
-                            {/* Stock adjustment (mobile) */}
-                            {v.variantId && (
-                              <div className="mt-3 pt-3" style={{ borderTop: "1px dashed rgba(255,255,255,0.15)" }}>
-                                <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-amber-400">
+                            {/* Stock adjustment/input (mobile) */}
+                            <div className="mt-3 pt-3" style={{ borderTop: "1px dashed rgba(255,255,255,0.15)" }}>
+                              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-amber-400">
+                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
+                                {v.variantId ? "Điều chỉnh tồn kho (+/-)" : "Số lượng ban đầu"}
+                              </label>
+                              <input
+                                type="number"
+                                value={v.stockAdjustment === "" ? "" : v.stockAdjustment}
+                                onChange={(e) => updateVariant({ stockAdjustment: e.target.value === "" ? "" : Number(e.target.value) })}
+                                className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/20"
+                                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+                                placeholder={v.variantId ? "VD: +50 hoặc -10" : "VD: 200"}
+                              />
+                              {v.stockAdjustment !== "" && v.stockAdjustment !== undefined && (
+                                <div className="mt-1.5 text-xs font-medium text-amber-300">
+                                  {v.variantId 
+                                    ? `Tồn sau điều chỉnh: ${(v.currentStock ?? 0) + Number(v.stockAdjustment)}`
+                                    : `Sẽ nhập: ${Number(v.stockAdjustment)} sản phẩm`
+                                  }
+                                </div>
+                              )}
+                              <div className="mt-2">
+                                <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-blue-400">
                                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   </svg>
-                                  Điều chỉnh tồn kho (+/-)
+                                  Lý do {v.variantId ? "điều chỉnh" : "nhập kho"}
                                 </label>
                                 <input
-                                  type="number"
-                                  value={v.stockAdjustment === "" ? "" : v.stockAdjustment}
-                                  onChange={(e) => updateVariant({ stockAdjustment: e.target.value === "" ? "" : Number(e.target.value) })}
-                                  className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/20"
+                                  type="text"
+                                  value={v.adjustmentReason || ""}
+                                  onChange={(e) => updateVariant({ adjustmentReason: e.target.value })}
+                                  className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
                                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
-                                  placeholder="VD: +50 hoặc -10"
+                                  placeholder={v.variantId ? "VD: Nhập thêm 50 máy từ nhà cung cấp" : "VD: Nhập kho ban đầu"}
                                 />
-                                {v.stockAdjustment !== "" && v.stockAdjustment !== undefined && (
-                                  <div className="mt-1.5 text-xs font-medium text-amber-300">
-                                    Tồn sau điều chỉnh: {(v.currentStock ?? 0) + Number(v.stockAdjustment)}
-                                  </div>
-                                )}
-                                <div className="mt-2">
-                                  <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-blue-400">
-                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Lý do điều chỉnh
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={v.adjustmentReason || ""}
-                                    onChange={(e) => updateVariant({ adjustmentReason: e.target.value })}
-                                    className="h-10 w-full rounded-xl px-3 text-sm text-white/90 outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
-                                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
-                                    placeholder="VD: Nhập thêm 50 máy từ nhà cung cấp"
-                                  />
-                                </div>
                               </div>
-                            )}
+                            </div>
                           </div>
                           
                           {/* Desktop view */}
@@ -1673,54 +1674,55 @@ export default function UpdateProduct() {
                                 </div>
                               )}
                             </div>
-                            {/* Stock adjustment (desktop) */}
-                            {v.variantId && (
-                              <div className="mt-4 pt-4" style={{ borderTop: "1px dashed rgba(255,255,255,0.15)" }}>
-                                <div className="grid grid-cols-2 gap-3">
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <svg className="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                      </svg>
-                                      <span className="text-xs font-medium text-amber-400">
-                                        Điều chỉnh tồn kho (+/-)
-                                      </span>
-                                    </div>
-                                    <input
-                                      type="number"
-                                      value={v.stockAdjustment === "" ? "" : v.stockAdjustment}
-                                      onChange={(e) => updateVariant({ stockAdjustment: e.target.value === "" ? "" : Number(e.target.value) })}
-                                      className="h-11 w-full rounded-xl px-4 text-sm text-white/90 outline-none transition focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/20"
-                                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
-                                      placeholder="VD: +50 hoặc -10"
-                                    />
-                                    {v.stockAdjustment !== "" && v.stockAdjustment !== undefined && (
-                                      <div className="mt-2 text-xs font-medium text-amber-300">
-                                        Tồn sau điều chỉnh: {(v.currentStock ?? 0) + Number(v.stockAdjustment)}
-                                      </div>
-                                    )}
+                            {/* Stock adjustment/input (desktop) */}
+                            <div className="mt-4 pt-4" style={{ borderTop: "1px dashed rgba(255,255,255,0.15)" }}>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <svg className="h-4 w-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span className="text-xs font-medium text-amber-400">
+                                      {v.variantId ? "Điều chỉnh tồn kho (+/-)" : "Số lượng ban đầu"}
+                                    </span>
                                   </div>
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <svg className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                      </svg>
-                                      <span className="text-xs font-medium text-blue-400">
-                                        Lý do điều chỉnh (bắt buộc nếu có thay đổi)
-                                      </span>
+                                  <input
+                                    type="number"
+                                    value={v.stockAdjustment === "" ? "" : v.stockAdjustment}
+                                    onChange={(e) => updateVariant({ stockAdjustment: e.target.value === "" ? "" : Number(e.target.value) })}
+                                    className="h-11 w-full rounded-xl px-4 text-sm text-white/90 outline-none transition focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/20"
+                                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+                                    placeholder={v.variantId ? "VD: +50 hoặc -10" : "VD: 200"}
+                                  />
+                                  {v.stockAdjustment !== "" && v.stockAdjustment !== undefined && (
+                                    <div className="mt-2 text-xs font-medium text-amber-300">
+                                      {v.variantId 
+                                        ? `Tồn sau điều chỉnh: ${(v.currentStock ?? 0) + Number(v.stockAdjustment)}`
+                                        : `Sẽ nhập: ${Number(v.stockAdjustment)} sản phẩm`
+                                      }
                                     </div>
-                                    <input
-                                      type="text"
-                                      value={v.adjustmentReason || ""}
-                                      onChange={(e) => updateVariant({ adjustmentReason: e.target.value })}
-                                      className="h-11 w-full rounded-xl px-4 text-sm text-white/90 outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
-                                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
-                                      placeholder="VD: Nhập thêm 50 máy từ nhà cung cấp, Điều chỉnh kiểm kê..."
-                                    />
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <svg className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-xs font-medium text-blue-400">
+                                      Lý do {v.variantId ? "điều chỉnh" : "nhập kho"} (bắt buộc nếu có thay đổi)
+                                    </span>
                                   </div>
+                                  <input
+                                    type="text"
+                                    value={v.adjustmentReason || ""}
+                                    onChange={(e) => updateVariant({ adjustmentReason: e.target.value })}
+                                    className="h-11 w-full rounded-xl px-4 text-sm text-white/90 outline-none transition focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/20"
+                                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+                                    placeholder={v.variantId ? "VD: Nhập thêm 50 máy từ nhà cung cấp, Điều chỉnh kiểm kê..." : "VD: Nhập kho ban đầu"}
+                                  />
                                 </div>
                               </div>
-                            )}
+                            </div>
                           </div>
                         </div>
                       );
