@@ -275,21 +275,25 @@ export default function ProfileInterface() {
               <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-indigo-500/10 blur-3xl" />
             </div>
             
-            <button 
-              onClick={() => setShowPasswordForm(!showPasswordForm)}
-              className="flex w-full items-center justify-between rounded-2xl bg-slate-900 p-5 text-white transition hover:bg-slate-800 active:scale-[0.98] dark:bg-white dark:text-slate-900"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 dark:bg-slate-900/10">
-                  <Lock size={20} />
+            
+            {/* Only show change password button for non-Google accounts */}
+            {!profile?.googleId && (
+              <button 
+                onClick={() => setShowPasswordForm(!showPasswordForm)}
+                className="flex w-full items-center justify-between rounded-2xl bg-slate-900 p-5 text-white transition hover:bg-slate-800 active:scale-[0.98] dark:bg-white dark:text-slate-900"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 dark:bg-slate-900/10">
+                    <Lock size={20} />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-black uppercase">Đổi mật khẩu</div>
+                    <div className="text-[10px] font-medium opacity-60">Cập nhật mật khẩu định kỳ</div>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <div className="text-sm font-black uppercase">Đổi mật khẩu</div>
-                  <div className="text-[10px] font-medium opacity-60">Cập nhật mật khẩu định kỳ</div>
-                </div>
-              </div>
-              <ChevronRight size={20} />
-            </button>
+                <ChevronRight size={20} />
+              </button>
+            )}
           </div>
 
           {/* Main Content Area */}
@@ -434,7 +438,7 @@ export default function ProfileInterface() {
                       />
                     </div>
 
-                    <div className="grid gap-8 md:grid-cols-2">
+                    <div className={`grid gap-8 ${profile?.googleId ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
                           <User size={12} className="text-slate-300" /> Họ và tên
@@ -447,16 +451,21 @@ export default function ProfileInterface() {
                           placeholder="VD: Nguyễn Văn A"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                          <User size={12} className="text-slate-300" /> Tên đăng nhập
-                        </label>
-                        <input
-                          disabled={true} // Usually username is immutable
-                          value={formData.username}
-                          className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition disabled:bg-slate-100/50 dark:border-white/5 dark:bg-white/5 dark:disabled:bg-white/10 opacity-50"
-                        />
-                      </div>
+                      
+                      {/* Only show username field for non-Google accounts */}
+                      {!profile?.googleId && (
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                            <User size={12} className="text-slate-300" /> Tên đăng nhập
+                          </label>
+                          <input
+                            disabled={true} // Usually username is immutable
+                            value={formData.username}
+                            className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition disabled:bg-slate-100/50 dark:border-white/5 dark:bg-white/5 dark:disabled:bg-white/10 opacity-50"
+                          />
+                        </div>
+                      )}
+                      
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
                           <Mail size={12} className="text-slate-300" /> Email liên hệ
