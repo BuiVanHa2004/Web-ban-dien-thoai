@@ -86,15 +86,7 @@ public class ShopApplication {
                 System.err.println("[STARTUP] Failed to clean old notifications: " + e.getMessage());
             }
 
-            // Đảm bảo có ít nhất 1 Admin để hiển thị tên
-            try {
-                jdbcTemplate.execute("INSERT IGNORE INTO roles (role_id, role_name) VALUES (1, 'ADMIN')");
-                jdbcTemplate.execute("INSERT IGNORE INTO admin_accounts (admin_id, full_name, username, password, role_id) " +
-                        "VALUES (1, 'Quản trị viên hệ thống', 'admin', 'admin', 1)");
-                System.out.println("[STARTUP] Default admin account ensured.");
-            } catch (Exception e) {
-                System.err.println("[STARTUP] Failed to ensure default admin: " + e.getMessage());
-            }
+
 
             // Migration: Cập nhật tên Admin cho các bản ghi cũ
             try {

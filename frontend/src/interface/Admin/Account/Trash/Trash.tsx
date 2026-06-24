@@ -79,6 +79,7 @@ function Trash() {
         onRestore={restore}
         onDeleteForever={deleteForever}
         emptyText="Thùng rác đang trống."
+        hideImage={true}
       />
 
       {error ? (

@@ -9,7 +9,7 @@ import {
 import { orderService, type OrderDto } from "@/services/orderService";
 import {
   Check, X, Trash2, Loader2,
-  AlertTriangle, Archive, Eye
+  AlertTriangle, Archive, Eye, User
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -404,19 +404,20 @@ export default function WareHousePage() {
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Giá trị</th>
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Rủi ro</th>
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Trạng thái</th>
+                <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Người xử lý</th>
                 <th className="px-4 sm:px-8 py-4 sm:py-5 text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan={userRole === "ADMIN" ? 6 : 5} className="py-24 text-center">
+                  <td colSpan={userRole === "ADMIN" ? 7 : 6} className="py-24 text-center">
                     <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-400" />
                   </td>
                 </tr>
               ) : archivedAttempts.length === 0 ? (
                 <tr>
-                  <td colSpan={userRole === "ADMIN" ? 6 : 5} className="py-24 text-center">
+                  <td colSpan={userRole === "ADMIN" ? 7 : 6} className="py-24 text-center">
                     <Archive className="h-12 w-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
                     <p className="text-sm font-black text-slate-400">CHƯA CÓ BILL NÀO TRONG KHO LƯU TRỮ</p>
                     <p className="mt-1 text-xs text-slate-500">Bill sẽ được lưu trữ khi xóa vĩnh viễn đơn hàng</p>
@@ -472,6 +473,31 @@ export default function WareHousePage() {
                           {attempt.status === "MATCHED" ? "Đã duyệt khớp lệnh" : "Từ chối"}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-4 sm:px-8 py-4 sm:py-6 text-center">
+                      {attempt.reviewedByAdminId ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <div className={`flex items-center gap-1.5 text-xs font-bold ${
+                            attempt.status === "MATCHED" 
+                              ? "text-emerald-600 dark:text-emerald-400" 
+                              : "text-rose-600 dark:text-rose-400"
+                          }`}>
+                            <User className="h-3.5 w-3.5" />
+                            {attempt.reviewedByAdminName || `Admin #${attempt.reviewedByAdminId}`}
+                          </div>
+                          <div className={`text-[10px] font-bold ${
+                            attempt.status === "MATCHED"
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-rose-600 dark:text-rose-400"
+                          }`}>
+                            {attempt.status === "MATCHED" ? "(Đã duyệt)" : "(Đã từ chối)"}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-xs font-medium text-slate-400 dark:text-slate-500 italic">
+                          Chưa được xử lý
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 sm:px-8 py-4 sm:py-6 text-center">
                       <div className="flex justify-center gap-2">
