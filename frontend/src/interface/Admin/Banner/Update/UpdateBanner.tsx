@@ -260,37 +260,32 @@ export default function UpdateBanner() {
                     </button>
 
                     {!formDisabled && openDropdown === "position" && (
-                      <>
-                        <div 
-                          className="fixed inset-0 z-[99999] bg-slate-950/20 backdrop-blur-md transition-opacity"
-                          onClick={() => setOpenDropdown(null)}
-                        />
-                        <div className="absolute left-0 right-0 z-[120] mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl animate-popover dark:border-white/10 dark:bg-slate-950">
-                          <div className="max-h-56 overflow-auto p-1">
-                            {[
-                              { value: "SLIDER", label: "Trang chủ - Slider chính" },
-                              { value: "TOP", label: "Đầu trang (Top)" },
-                              { value: "MIDDLE", label: "Giữa trang (Middle)" },
-                              { value: "BOTTOM", label: "Cuối trang (Bottom)" },
-                            ].map((opt) => (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                onClick={() => {
-                                  setPosition(opt.value as BannerPosition);
-                                  setOpenDropdown(null);
-                                }}
-                                className={
-                                  "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
-                                  (position === opt.value ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100" : "text-slate-700 dark:text-slate-200")
-                                }
-                              >
-                                {opt.label}
-                              </button>
-                            ))}
-                          </div>
+                      <div className="absolute left-0 right-0 z-[9999] mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-slate-950">
+                        <div className="max-h-56 overflow-auto p-1">
+                          {[
+                            { value: "SLIDER", label: "Trang chủ - Slider chính" },
+                            { value: "TOP", label: "Đầu trang (Top)" },
+                            { value: "MIDDLE", label: "Giữa trang (Middle)" },
+                            { value: "BOTTOM", label: "Cuối trang (Bottom)" },
+                          ].map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPosition(opt.value as BannerPosition);
+                                setOpenDropdown(null);
+                              }}
+                              className={
+                                "flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-white/10 " +
+                                (position === opt.value ? "bg-slate-100 text-slate-900 dark:bg-white/10 dark:text-slate-100" : "text-slate-700 dark:text-slate-200")
+                              }
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
