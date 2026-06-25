@@ -74,8 +74,23 @@ function getMinMaxPrice(p: ProductDto) {
 
 /* ---------- simple markdown renderer ---------- */
 function RenderMd({ text }: { text: string }) {
+  if (!text) return null;
+
+  // Clean and normalize text: Ensure emojis and bullet points have proper double newlines
+  const normalizedText = text
+    .replace(/\r\n/g, "\n")
+    // Ensure headings starting with emojis are separated from previous content by double newlines
+    .replace(/([^\n])\s*\n\s*([💰📸🎮🔋📱🏆])/g, "$1\n\n$2")
+    // Ensure bullet points following a heading are separated from it by double newlines
+    .replace(/([💰📸🎮🔋📱🏆].*?)\n\s*([*-•])/g, "$1\n\n$2");
+
   const parseLine = (line: string) => {
-    return line.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\))/).map((seg, k) => {
+    // Remove bold wrappers around links to prevent regex conflict
+    const sanitizedLine = line
+      .replace(/\*\*(\[.*?\]\(.*?\))\*\*/g, "$1") // **[link](url)** -> [link](url)
+      .replace(/\[\*\*(.*?)\*\*\]\((.*?)\)/g, "[$1]($2)"); // [**link**](url) -> [link](url)
+
+    return sanitizedLine.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\))/).map((seg, k) => {
       if (seg.startsWith("**") && seg.endsWith("**")) {
         return (
           <strong key={k} className="font-bold text-violet-600 dark:text-violet-400">
@@ -103,7 +118,7 @@ function RenderMd({ text }: { text: string }) {
 
   return (
     <div className="space-y-6 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-      {text.split("\n\n").map((paragraph, i) => {
+      {normalizedText.split("\n\n").map((paragraph, i) => {
         const trimmed = paragraph.trim();
         
         // Section headings (emoji + text or just capitalized)
@@ -118,11 +133,11 @@ function RenderMd({ text }: { text: string }) {
         }
 
         // Bullet list
-        if (trimmed.startsWith("- ")) {
+        if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.startsWith("• ")) {
           return (
             <ul key={i} className="space-y-3 ml-4">
               {paragraph.split("\n").map((line, j) => {
-                const cleanLine = line.replace(/^- /, "").trim();
+                const cleanLine = line.replace(/^[-*•]\s*/, "").trim();
                 if (!cleanLine) return null;
                 
                 return (
