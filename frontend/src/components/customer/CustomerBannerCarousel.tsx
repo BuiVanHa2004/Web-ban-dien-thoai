@@ -111,7 +111,7 @@ export default function CustomerBannerCarousel({
                 <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 sm:p-10 lg:p-16">
                   {/* Title with modern styling */}
                   <h2 
-                    className={`text-lg font-black tracking-tight sm:text-2xl lg:text-4xl xl:text-5xl text-white transition-all duration-700 leading-tight line-clamp-2 ${
+                    className={`text-base font-black tracking-tight sm:text-2xl lg:text-4xl xl:text-5xl text-white transition-all duration-700 leading-tight line-clamp-3 ${
                       isActive 
                         ? "opacity-100 translate-y-0 translate-x-0" 
                         : "opacity-0 -translate-y-8 translate-x-4"
@@ -130,7 +130,7 @@ export default function CustomerBannerCarousel({
                   {/* Subtitle with modern styling */}
                   {slide.subtitle && (
                     <p 
-                      className={`mt-2 max-w-2xl text-xs font-semibold text-slate-100 sm:mt-4 sm:text-sm lg:text-base transition-all duration-700 leading-relaxed line-clamp-3 ${
+                      className={`mt-2 max-w-2xl text-2xs font-semibold text-slate-100 sm:mt-4 sm:text-sm lg:text-base transition-all duration-700 leading-relaxed line-clamp-2 ${
                         isActive 
                           ? "opacity-100 translate-y-0 translate-x-0" 
                           : "opacity-0 -translate-y-6 translate-x-8"
@@ -139,7 +139,8 @@ export default function CustomerBannerCarousel({
                         textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.7)',
                         transitionDelay: isActive ? '500ms' : '0ms',
                         wordBreak: 'break-word',
-                        overflowWrap: 'break-word'
+                        overflowWrap: 'break-word',
+                        fontSize: 'clamp(0.625rem, 2vw, 0.75rem)'
                       }}
                     >
                       {slide.subtitle}
