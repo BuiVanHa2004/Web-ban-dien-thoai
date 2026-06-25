@@ -706,6 +706,60 @@ public class AiAdvisorService {
                     return available != null && available > 0;
                 });
     }
+    
+    /**
+     * Trích xuất số series từ tên sản phẩm (ví dụ: S25 = 25, iPhone 17 = 17)
+     * Giúp ưu tiên model mới hơn khi so sánh
+     */
+    private double extractSeriesNumber(String productName) {
+        if (productName == null) return 0;
+        
+        // Samsung Galaxy S-series: S25, S24, S23...
+        Pattern samsungPattern = Pattern.compile("\\bs(\\d{2})\\b", Pattern.CASE_INSENSITIVE);
+        Matcher samsungMatcher = samsungPattern.matcher(productName);
+        if (samsungMatcher.find()) {
+            try {
+                return Double.parseDouble(samsungMatcher.group(1)); // S25 -> 25
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        
+        // iPhone: iPhone 17, iPhone 16, iPhone 15...
+        Pattern iphonePattern = Pattern.compile("iphone\\s+(\\d{1,2})\\b", Pattern.CASE_INSENSITIVE);
+        Matcher iphoneMatcher = iphonePattern.matcher(productName);
+        if (iphoneMatcher.find()) {
+            try {
+                return Double.parseDouble(iphoneMatcher.group(1)); // iPhone 17 -> 17
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        
+        // Xiaomi: Xiaomi 14, Xiaomi 13...
+        Pattern xiaomiPattern = Pattern.compile("xiaomi\\s+(\\d{1,2})\\b", Pattern.CASE_INSENSITIVE);
+        Matcher xiaomiMatcher = xiaomiPattern.matcher(productName);
+        if (xiaomiMatcher.find()) {
+            try {
+                return Double.parseDouble(xiaomiMatcher.group(1)); // Xiaomi 14 -> 14
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        
+        // Oppo/Vivo: Reno 12, V30...
+        Pattern otherPattern = Pattern.compile("(reno|v|find|note)\\s+(\\d{1,2})\\b", Pattern.CASE_INSENSITIVE);
+        Matcher otherMatcher = otherPattern.matcher(productName);
+        if (otherMatcher.find()) {
+            try {
+                return Double.parseDouble(otherMatcher.group(2));
+            } catch (NumberFormatException e) {
+                // ignore
+            }
+        }
+        
+        return 0;
+    }
 
     private double scoreShopHighlight(Product p) {
         if (p == null) return -1;
@@ -967,6 +1021,9 @@ public class AiAdvisorService {
         else if (name.contains("pro max")) score += 18;
         else if (name.contains(" pro ")) score += 15;
         else if (name.contains("plus")) score += 10;
+        
+        // Điểm cho số series (model mới hơn)
+        score += extractSeriesNumber(name) * 0.5; // S25 = +12.5, S24 = +12, iPhone 17 = +8.5
 
         ProductSpec spec = null;
         if (p.getProductSpecs() != null && !p.getProductSpecs().isEmpty()) {
