@@ -25,17 +25,17 @@ public class GoogleAiService {
     private final List<String> models;
 
     // Danh sách model dự phòng khi model chính bị quá tải
+    // Chỉ sử dụng models có sẵn trong API v1
     private static final String[] FALLBACK_MODELS = {
-        "gemini-2.0-flash",
-        "gemini-2.0-flash-lite",
-        "gemini-1.5-flash-latest",
+        "gemini-2.0-flash-exp",
         "gemini-1.5-flash",
+        "gemini-1.5-flash-8b", 
         "gemini-1.5-pro"
     };
 
     public GoogleAiService(
             @Value("${google-ai.api-key:}") String apiKey,
-            @Value("${google-ai.model:gemini-2.0-flash}") String model
+            @Value("${google-ai.model:gemini-1.5-flash}") String model
     ) {
         this.apiKey = apiKey;
         // Xây dựng danh sách model: model chính + các model dự phòng (loại trùng)
@@ -60,13 +60,15 @@ public class GoogleAiService {
         // Build prompt once
         String prompt = buildPrompt(messages);
 
-        // Try each model in order
+        // Try each model in order, max 3 attempts
+        int maxAttempts = Math.min(3, models.size());
         Exception lastException = null;
-        for (int i = 0; i < models.size(); i++) {
+        
+        for (int i = 0; i < maxAttempts; i++) {
             String currentModel = models.get(i);
             try {
                 if (i > 0) {
-                    log.info("Thử model dự phòng Google AI: {}", currentModel);
+                    log.info("Thử model dự phòng Google AI #{}: {}", i + 1, currentModel);
                     // Chờ 1 giây trước khi thử model tiếp theo
                     Thread.sleep(1000);
                 }
@@ -78,16 +80,27 @@ public class GoogleAiService {
                         || msg.contains("UNAVAILABLE") || msg.contains("high demand")
                         || msg.contains("overloaded") || msg.contains("rate limit");
                 
-                if (isOverloaded && i < models.size() - 1) {
-                    log.warn("Google AI model {} bị quá tải ({}), thử model tiếp theo...", currentModel, msg.length() > 120 ? msg.substring(0, 120) : msg);
+                boolean isNotFound = msg.contains("404") || msg.contains("NOT_FOUND") 
+                        || msg.contains("not found");
+                
+                // Nếu model không tồn tại, thử model khác
+                if (isNotFound && i < maxAttempts - 1) {
+                    log.warn("Google AI model {} không tồn tại, thử model tiếp theo...", currentModel);
                     continue;
                 }
-                // Nếu không phải lỗi quá tải hoặc hết model dự phòng, throw luôn
+                
+                // Nếu bị quá tải, thử model khác
+                if (isOverloaded && i < maxAttempts - 1) {
+                    log.warn("Google AI model {} bị quá tải, thử model tiếp theo...", currentModel);
+                    continue;
+                }
+                
+                // Nếu không phải lỗi quá tải/not found hoặc hết model dự phòng, throw luôn
                 break;
             }
         }
 
-        throw new RuntimeException("Google AI API error (đã thử " + models.size() + " models): " 
+        throw new RuntimeException("Google AI API error (đã thử " + maxAttempts + " models): " 
                 + (lastException != null ? lastException.getMessage() : "unknown"), lastException);
     }
 
