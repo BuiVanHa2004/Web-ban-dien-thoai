@@ -78,8 +78,8 @@ public class AiAdvisorService {
                 + (wantsIphone ? "Người dùng YÊU CẦU iPhone/Apple → CHỈ gợi ý iPhone/Apple, KHÔNG đề xuất hãng khác. " : "")
                 + "CHỈ dùng sản phẩm trong danh sách. KHÔNG bịa thông tin hay productId. "
                 + "Mỗi sản phẩm có status (CÒN_HÀNG/HẾT_HÀNG). Ưu tiên CÒN_HÀNG. Nếu gợi ý HẾT_HÀNG phải nói rõ 'tạm hết hàng'. "
-                + "TRONG answer: KHÔNG nhắc productId hay (productId=123). CHỈ nhắc TÊN sản phẩm. "
-                + "KHÔNG nhắc sản phẩm/hãng KHÔNG có trong danh sách. "
+                + "BẮT BUỘC: Khi nhắc tên sản phẩm, PHẢI dùng markdown link: [Tên sản phẩm](/product/productId). "
+                + "Ví dụ: [iPhone 14 Pro Max](/product/123) thay vì chỉ iPhone 14 Pro Max. "
                 + "Phong cách: Ngắn gọn (60-80 từ), tự nhiên, emoji phù hợp (🔥💪⚡🎮📸), tập trung vào điểm mạnh chính. "
                 + "JSON schema: {\"answer\": string, \"recommendedProductIds\": number[]}";
 
@@ -144,14 +144,12 @@ public class AiAdvisorService {
                 + "SO SÁNH chi tiết " + productCount + " sản phẩm theo từng mục. "
                 + "CHỈ dùng dữ liệu được cung cấp. KHÔNG bịa. KHÔNG nhắc sản phẩm/hãng NGOÀI danh sách. "
                 + "\n\nQUY TẮC:"
-                + "\n- Trả lời ĐẦY ĐỦ nhưng NGẮN GỌN. Mỗi mục 2-3 câu so sánh + 1 kết luận tốt nhất."
-                + "\n- 💰 Giá: Liệt kê giá thấp nhất/cao nhất, chọn rẻ nhất."
-                + "\n- 📸 Camera: So camera sau/trước, chọn tốt nhất chụp hình."
-                + "\n- 🎮 Hiệu năng: So chip/RAM, chọn mạnh nhất chơi game."
-                + "\n- 🔋 Pin: So dung lượng/sạc nhanh, chọn pin trâu nhất."
-                + "\n- 📱 Màn hình: So kích thước/tần số, chọn đẹp/mượt nhất."
-                + "\n- 🏆 Kết luận: Chọn 1 sản phẩm tốt nhất TỔNG THỂ + 1 câu khuyên mua."
-                + "\n- Dùng emoji, viết tự nhiên, tối đa 150-200 từ TOÀN BỘ."
+                + "\n- BẮT BUỘC: Mỗi lần nhắc tên sản phẩm, dùng markdown link [Tên](/product/ID)."
+                + "\n- Mỗi mục (💰📸🎮🔋📱) phải có:"
+                + "\n  + Bullet list (-) so sánh từng sản phẩm với link"
+                + "\n  + Dòng 'Tốt nhất mục này: [Tên](/product/ID) - lý do ngắn'"
+                + "\n- 🏆 Kết luận: PHẢI chọn 1 sản phẩm tốt nhất tổng thể + khuyên mua."
+                + "\n- Format: Dùng emoji, xuống dòng rõ ràng, 150-200 từ."
                 + "\n\nJSON schema: {\"answer\": string, \"comparedProductIds\": number[]}";
 
         // Build detailed product context
