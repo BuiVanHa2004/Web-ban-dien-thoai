@@ -154,7 +154,7 @@ public class GoogleAiService {
         // Generation config - tăng maxOutputTokens để response chi tiết hơn
         Map<String, Object> generationConfig = new LinkedHashMap<>();
         generationConfig.put("temperature", 0.7);  // Tăng creativity một chút
-        generationConfig.put("maxOutputTokens", 4096);  // Tăng gấp đôi cho response dài hơn
+        generationConfig.put("maxOutputTokens", 8192);  // Tăng lên 8K để đủ chỗ cho response dài
         generationConfig.put("topP", 0.95);  // Tăng diversity
         generationConfig.put("topK", 40);  // Thêm topK
         payload.put("generationConfig", generationConfig);
@@ -205,6 +205,9 @@ public class GoogleAiService {
             }
 
             log.info("Google AI trả lời thành công với model: {}", modelName);
+            log.debug("Google AI response length: {} chars, reply preview: {}", 
+                    reply != null ? reply.length() : 0, 
+                    reply != null && reply.length() > 200 ? reply.substring(0, 200) + "..." : reply);
             return new AiProviderService.AiProviderResult(
                     reply != null ? reply : "",
                     promptTokens,
