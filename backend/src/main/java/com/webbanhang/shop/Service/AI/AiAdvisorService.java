@@ -170,7 +170,7 @@ public class AiAdvisorService {
         String cleanedAnswer = answer
                 .replaceAll("(?i)\\(\\s*product\\s*id\\s*=\\s*\\d+\\s*\\)", "")
                 .replaceAll("(?i)product\\s*id\\s*=\\s*\\d+", "")
-                .replaceAll("\\s{2,}", " ")
+                .replaceAll("[ \\t]{2,}", " ")
                 .trim();
 
         return new AiResponse(
@@ -284,9 +284,15 @@ public class AiAdvisorService {
             answer = tryExtractAnswerFromRaw(answer);
         }
 
+        String cleanedAnswer = answer
+                .replaceAll("(?i)\\(\\s*product\\s*id\\s*=\\s*\\d+\\s*\\)", "")
+                .replaceAll("(?i)product\\s*id\\s*=\\s*\\d+", "")
+                .replaceAll("[ \\t]{2,}", " ")
+                .trim();
+
         return new AiResponse(
-                answer,
-                List.of(),
+                cleanedAnswer,
+                compared,
                 compared
         );
     }
@@ -1132,6 +1138,7 @@ public class AiAdvisorService {
         try {
             JsonNode node = localObjectMapper.readTree(json);
             String answer = node.path("answer").asText("").trim();
+            answer = unescapeJsonString(answer);
 
             List<Integer> rec = readIntList(node.get("recommendedProductIds"));
             List<Integer> cmp = readIntList(node.get("comparedProductIds"));

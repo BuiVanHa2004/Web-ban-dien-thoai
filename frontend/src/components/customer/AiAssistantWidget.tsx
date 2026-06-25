@@ -396,7 +396,7 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
           const trimmed = line.trim();
           if (!trimmed) return <div key={i} className="h-2" />;
 
-          const isBullet = trimmed.startsWith("* ") || trimmed.startsWith("- ");
+          const isBullet = trimmed.startsWith("* ") || trimmed.startsWith("- ") || trimmed.startsWith("• ");
           const lineContent = isBullet ? trimmed.substring(2) : line;
 
           // Remove bold wrappers around links or inside links to prevent regex conflict
