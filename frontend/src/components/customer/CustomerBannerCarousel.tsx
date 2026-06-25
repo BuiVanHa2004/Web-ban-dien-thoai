@@ -104,8 +104,8 @@ export default function CustomerBannerCarousel({
                   imageEl
                 )}
                 {/* Gradient overlay - modern design với nhiều lớp */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-cyan-900/20" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-cyan-900/10" />
                 
                 {/* Content container */}
                 <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 sm:p-10 lg:p-16">
