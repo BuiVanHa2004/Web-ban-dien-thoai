@@ -20,7 +20,7 @@ public class GoogleAiService {
 
     public GoogleAiService(
             @Value("${google-ai.api-key:}") String apiKey,
-            @Value("${google-ai.model:gemini-1.5-flash}") String model
+            @Value("${google-ai.model:gemini-1.5-flash-latest}") String model
     ) {
         this.apiKey = apiKey;
         this.model = model;
@@ -68,7 +68,8 @@ public class GoogleAiService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey;
+        // Use v1 API instead of v1beta
+        String url = "https://generativelanguage.googleapis.com/v1/models/" + model + ":generateContent?key=" + apiKey;
 
         try {
             @SuppressWarnings("unchecked")

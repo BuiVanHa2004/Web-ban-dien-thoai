@@ -64,6 +64,16 @@ public class AiAdvisorService {
 
         List<Product> products = productRepository.findAllVisibleWithGraph();
 
+        // Phát hiện câu hỏi so sánh 2 hãng
+        BrandComparisonQuery brandComparison = detectBrandComparison(userMessage);
+        if (brandComparison != null) {
+            AiResponse brandComparisonResult = handleBrandComparison(brandComparison, products, userMessage);
+            if (brandComparisonResult != null) {
+                return brandComparisonResult;
+            }
+            // Nếu không đủ sản phẩm để so sánh, tiếp tục xử lý thông thường
+        }
+
         boolean wantsIphone = wantsIphoneOnly(userMessage);
         if (wantsIphone) {
             products = products.stream().filter(this::isIphoneProduct).toList();
@@ -866,6 +876,317 @@ public class AiAdvisorService {
     private String safe(String s) {
         if (s == null) return "";
         return s.replaceAll("\n+", " ").trim();
+    }
+
+    /**
+     * Phát hiện câu hỏi so sánh giữa 2 hãng
+     */
+    private BrandComparisonQuery detectBrandComparison(String message) {
+        if (message == null || message.isBlank()) return null;
+        String msg = message.toLowerCase();
+
+        // Kiểm tra có từ khóa so sánh không
+        boolean hasComparisonKeyword = msg.contains("so sánh") || msg.contains("so sanh") 
+                || msg.contains(" vs ") || msg.contains(" với ") || msg.contains("hay")
+                || msg.contains("tốt hơn") || msg.contains("tot hon") || msg.contains("khác nhau")
+                || msg.contains("nên chọn") || msg.contains("nên mua");
+        
+        if (!hasComparisonKeyword) return null;
+
+        // Phát hiện các hãng được nhắc đến
+        String brand1 = null;
+        String brand2 = null;
+        String aspect = null; // camera, pin, hiệu năng...
+
+        // Map các hãng phổ biến
+        String[][] brandPatterns = {
+            {"samsung", "sam sung"},
+            {"iphone", "apple", "i phone"},
+            {"xiaomi"},
+            {"oppo"},
+            {"vivo"},
+            {"realme"},
+            {"oneplus", "one plus"},
+            {"nokia"},
+            {"sony"}
+        };
+
+        List<String> detectedBrands = new ArrayList<>();
+        for (String[] patterns : brandPatterns) {
+            boolean found = false;
+            for (String pattern : patterns) {
+                if (msg.contains(pattern)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                detectedBrands.add(patterns[0]); // Lưu tên chuẩn hóa
+            }
+        }
+
+        // Phải có đúng 2 hãng để so sánh
+        if (detectedBrands.size() != 2) return null;
+
+        brand1 = detectedBrands.get(0);
+        brand2 = detectedBrands.get(1);
+
+        // Phát hiện khía cạnh so sánh
+        if (msg.contains("camera") || msg.contains("cam") || msg.contains("chụp") || msg.contains("ảnh")) {
+            aspect = "camera";
+        } else if (msg.contains("pin") || msg.contains("battery") || msg.contains("sạc")) {
+            aspect = "pin";
+        } else if (msg.contains("hiệu năng") || msg.contains("chip") || msg.contains("game") || msg.contains("mượt")) {
+            aspect = "hiệu năng";
+        } else if (msg.contains("màn hình") || msg.contains("screen") || msg.contains("display")) {
+            aspect = "màn hình";
+        } else if (msg.contains("giá") || msg.contains("rẻ") || msg.contains("tiết kiệm")) {
+            aspect = "giá";
+        }
+        // Nếu không có khía cạnh cụ thể, so sánh tổng thể
+        
+        return new BrandComparisonQuery(brand1, brand2, aspect);
+    }
+
+    /**
+     * Xử lý câu hỏi so sánh giữa 2 hãng
+     */
+    private AiResponse handleBrandComparison(BrandComparisonQuery query, List<Product> allProducts, String originalMessage) {
+        // Lọc sản phẩm theo từng hãng
+        List<Product> brand1Products = filterProductsByBrand(allProducts, query.brand1);
+        List<Product> brand2Products = filterProductsByBrand(allProducts, query.brand2);
+
+        if (brand1Products.isEmpty() || brand2Products.isEmpty()) {
+            // Không đủ sản phẩm để so sánh, fallback về xử lý thông thường
+            return null;
+        }
+
+        // Chọn sản phẩm tốt nhất của mỗi hãng dựa theo khía cạnh
+        Product bestBrand1 = selectBestProductForComparison(brand1Products, query.aspect);
+        Product bestBrand2 = selectBestProductForComparison(brand2Products, query.aspect);
+
+        // Gọi compare() với 2 sản phẩm đại diện
+        List<Integer> productIds = List.of(bestBrand1.getProductId(), bestBrand2.getProductId());
+        
+        return compare(productIds, originalMessage);
+    }
+
+    /**
+     * Lọc sản phẩm theo hãng
+     */
+    private List<Product> filterProductsByBrand(List<Product> products, String brandKeyword) {
+        return products.stream()
+                .filter(p -> {
+                    String productName = safe(p.getProductName()).toLowerCase();
+                    String brandName = p.getBrand() != null ? safe(p.getBrand().getBrandName()).toLowerCase() : "";
+                    
+                    // Xử lý trường hợp đặc biệt cho iPhone/Apple
+                    if (brandKeyword.equals("iphone") || brandKeyword.equals("apple")) {
+                        return productName.contains("iphone") || brandName.contains("apple");
+                    }
+                    
+                    return productName.contains(brandKeyword) || brandName.contains(brandKeyword);
+                })
+                .toList();
+    }
+
+    /**
+     * Chọn sản phẩm tốt nhất để so sánh dựa theo khía cạnh
+     */
+    private Product selectBestProductForComparison(List<Product> products, String aspect) {
+        if (products.isEmpty()) return null;
+        if (products.size() == 1) return products.get(0);
+
+        // Ưu tiên sản phẩm còn hàng
+        List<Product> inStock = products.stream()
+                .filter(this::hasSellableVariant)
+                .toList();
+        
+        List<Product> pool = inStock.isEmpty() ? products : inStock;
+
+        return pool.stream()
+                .max((a, b) -> Double.compare(
+                    scoreProductForAspect(a, aspect),
+                    scoreProductForAspect(b, aspect)
+                ))
+                .orElse(pool.get(0));
+    }
+
+    /**
+     * Chấm điểm sản phẩm theo khía cạnh cụ thể
+     */
+    private double scoreProductForAspect(Product p, String aspect) {
+        double score = 0;
+        
+        // Điểm cơ bản: sản phẩm cao cấp (Pro, Max, Ultra)
+        String name = safe(p.getProductName()).toLowerCase();
+        if (name.contains("ultra")) score += 20;
+        else if (name.contains("pro max")) score += 18;
+        else if (name.contains(" pro ")) score += 15;
+        else if (name.contains("plus")) score += 10;
+
+        ProductSpec spec = null;
+        if (p.getProductSpecs() != null && !p.getProductSpecs().isEmpty()) {
+            spec = p.getProductSpecs().iterator().next();
+        }
+
+        if (spec == null) return score;
+
+        // Chấm điểm theo khía cạnh
+        if (aspect == null) {
+            // So sánh tổng thể: ưu tiên flagship mới nhất
+            score += scoreChipGeneration(spec.getChip()) * 2;
+            score += scoreCameraQuality(spec.getCameraRear(), spec.getCameraFront());
+            score += scoreBatteryCapacity(spec.getBattery());
+        } else if (aspect.equals("camera")) {
+            score += scoreCameraQuality(spec.getCameraRear(), spec.getCameraFront()) * 3;
+        } else if (aspect.equals("hiệu năng")) {
+            score += scoreChipGeneration(spec.getChip()) * 5;
+        } else if (aspect.equals("pin")) {
+            score += scoreBatteryCapacity(spec.getBattery()) * 4;
+        } else if (aspect.equals("màn hình")) {
+            score += scoreScreenQuality(spec.getScreen(), spec.getRefreshRate()) * 3;
+        } else if (aspect.equals("giá")) {
+            // Giá thấp hơn = điểm cao hơn
+            BigDecimal price = getMinPrice(p);
+            if (price != null) {
+                score -= price.doubleValue() / 1_000_000; // Trừ điểm theo triệu
+            }
+        }
+
+        return score;
+    }
+
+    private double scoreChipGeneration(String chip) {
+        if (chip == null) return 0;
+        String chipLower = chip.toLowerCase();
+        
+        // Apple A-series
+        if (chipLower.contains("a19")) return 19;
+        if (chipLower.contains("a18")) return 18;
+        if (chipLower.contains("a17")) return 17;
+        if (chipLower.contains("a16")) return 16;
+        if (chipLower.contains("a15")) return 15;
+        if (chipLower.contains("a14")) return 14;
+        
+        // Snapdragon
+        if (chipLower.contains("8 elite")) return 18;
+        if (chipLower.contains("8 gen 3") || chipLower.contains("8 gen3")) return 17;
+        if (chipLower.contains("8+ gen 2") || chipLower.contains("8+gen2")) return 16.5;
+        if (chipLower.contains("8 gen 2") || chipLower.contains("8 gen2")) return 16;
+        if (chipLower.contains("8+ gen 1") || chipLower.contains("8+gen1")) return 15.5;
+        if (chipLower.contains("8 gen 1") || chipLower.contains("8 gen1")) return 15;
+        if (chipLower.contains("888")) return 14;
+        if (chipLower.contains("7+ gen 3")) return 13;
+        if (chipLower.contains("7 gen 3")) return 12;
+        
+        // Dimensity
+        if (chipLower.contains("9300+")) return 17.5;
+        if (chipLower.contains("9300")) return 17;
+        if (chipLower.contains("9200+")) return 16;
+        if (chipLower.contains("9200")) return 15.5;
+        if (chipLower.contains("9000")) return 15;
+        if (chipLower.contains("8300")) return 13;
+        if (chipLower.contains("8200")) return 12;
+        
+        return 5; // Có chip nhưng không xác định được
+    }
+
+    private double scoreCameraQuality(String cameraRear, String cameraFront) {
+        double score = 0;
+        
+        if (cameraRear != null && !cameraRear.isBlank()) {
+            String rear = cameraRear.toLowerCase();
+            
+            // Điểm theo MP camera chính
+            if (rear.contains("200mp")) score += 20;
+            else if (rear.contains("108mp")) score += 15;
+            else if (rear.contains("64mp") || rear.contains("50mp")) score += 12;
+            else if (rear.contains("48mp")) score += 10;
+            else if (rear.contains("12mp")) score += 6;
+            
+            // Công nghệ camera
+            if (rear.contains("ois")) score += 3;
+            if (rear.contains("telephoto") || rear.contains("tele")) score += 3;
+            if (rear.contains("zoom")) score += 2;
+            if (rear.contains("ultra") || rear.contains("ultrawide")) score += 2;
+        }
+        
+        if (cameraFront != null && !cameraFront.isBlank()) {
+            String front = cameraFront.toLowerCase();
+            if (front.contains("32mp") || front.contains("40mp")) score += 3;
+            else if (front.contains("12mp") || front.contains("16mp")) score += 2;
+        }
+        
+        return score;
+    }
+
+    private double scoreBatteryCapacity(String battery) {
+        if (battery == null || battery.isBlank()) return 0;
+        
+        // Trích xuất số mAh
+        Pattern pattern = Pattern.compile("(\\d+)\\s*mah", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(battery);
+        
+        if (matcher.find()) {
+            try {
+                int mah = Integer.parseInt(matcher.group(1));
+                return mah / 100.0; // 5000mAh = 50 điểm
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+        
+        return 0;
+    }
+
+    private double scoreScreenQuality(String screen, String refreshRate) {
+        double score = 0;
+        
+        if (screen != null && !screen.isBlank()) {
+            String s = screen.toLowerCase();
+            
+            // Kích thước màn hình (lớn hơn = tốt hơn)
+            Pattern sizePattern = Pattern.compile("(\\d+\\.\\d+)\"");
+            Matcher matcher = sizePattern.matcher(s);
+            if (matcher.find()) {
+                try {
+                    double size = Double.parseDouble(matcher.group(1));
+                    score += size * 2; // 6.7" = 13.4 điểm
+                } catch (NumberFormatException e) {
+                    // ignore
+                }
+            }
+            
+            // Công nghệ màn hình
+            if (s.contains("amoled") || s.contains("oled")) score += 5;
+            if (s.contains("super")) score += 2;
+            if (s.contains("dynamic")) score += 2;
+        }
+        
+        if (refreshRate != null && !refreshRate.isBlank()) {
+            String r = refreshRate.toLowerCase();
+            if (r.contains("120hz")) score += 6;
+            else if (r.contains("90hz")) score += 4;
+            else if (r.contains("60hz")) score += 2;
+        }
+        
+        return score;
+    }
+
+    /**
+     * Class để lưu thông tin so sánh hãng
+     */
+    private static class BrandComparisonQuery {
+        final String brand1;
+        final String brand2;
+        final String aspect; // camera, pin, hiệu năng, null = tổng thể
+        
+        BrandComparisonQuery(String brand1, String brand2, String aspect) {
+            this.brand1 = brand1;
+            this.brand2 = brand2;
+            this.aspect = aspect;
+        }
     }
 
     private Parsed parseJsonResponse(String raw) {
