@@ -24,14 +24,14 @@ public class GoogleAiService {
     private final String apiKey;
     private final List<String> models;
 
-    // Danh sách model dự phòng khi model chính bị quá tải
-    // Bao gồm cả models mới nhất (experimental) và stable models
+    // Danh sách model dự phòng - bao gồm models mới nhất
     private static final String[] FALLBACK_MODELS = {
         "gemini-2.0-flash-exp",           // Gemini 2.0 Flash (experimental)
-        "gemini-exp-1206",                 // Gemini 3.0 (experimental)  
-        "gemini-1.5-flash",                // Stable
-        "gemini-1.5-flash-8b",             // Stable, nhỹ
-        "gemini-1.5-pro"                   // Stable, mạnh nhất
+        "gemini-exp-1206",                 // Gemini 3.0 (experimental)
+        "gemini-1.5-flash",                // Stable, nhanh
+        "gemini-1.5-flash-8b",             // Stable, nhẹ
+        "gemini-1.5-pro",                  // Stable, mạnh nhất
+        "gemini-pro"                       // Fallback cuối cùng
     };
 
     public GoogleAiService(
@@ -109,14 +109,23 @@ public class GoogleAiService {
 
     private String buildPrompt(List<AiChatTurn> messages) {
         StringBuilder fullPrompt = new StringBuilder();
+        
+        // Thêm system message ở đầu
         for (AiChatTurn msg : messages) {
             if ("system".equals(msg.role())) {
                 fullPrompt.append("System Instructions: ").append(msg.content()).append("\n\n");
-            } else if ("user".equals(msg.role())) {
-                fullPrompt.append(msg.content()).append("\n");
             }
-            // Skip assistant messages for simplicity in fallback
         }
+        
+        // Thêm conversation history (user và assistant)
+        for (AiChatTurn msg : messages) {
+            if ("user".equals(msg.role())) {
+                fullPrompt.append("User: ").append(msg.content()).append("\n\n");
+            } else if ("assistant".equals(msg.role())) {
+                fullPrompt.append("Assistant: ").append(msg.content()).append("\n\n");
+            }
+        }
+        
         return fullPrompt.toString();
     }
 
@@ -129,11 +138,25 @@ public class GoogleAiService {
         
         payload.put("contents", List.of(content));
         
-        // Generation config
+        // System instruction (nếu có trong prompt)
+        if (prompt.startsWith("System Instructions:")) {
+            String[] parts = prompt.split("\n\n", 2);
+            if (parts.length > 1) {
+                String systemInstr = parts[0].replace("System Instructions: ", "");
+                payload.put("systemInstruction", Map.of(
+                    "parts", List.of(Map.of("text", systemInstr))
+                ));
+                // Update content với phần còn lại
+                content.put("parts", List.of(Map.of("text", parts[1])));
+            }
+        }
+        
+        // Generation config - tăng maxOutputTokens để response chi tiết hơn
         Map<String, Object> generationConfig = new LinkedHashMap<>();
-        generationConfig.put("temperature", 0.6);
-        generationConfig.put("maxOutputTokens", 2048);
-        generationConfig.put("topP", 0.9);
+        generationConfig.put("temperature", 0.7);  // Tăng creativity một chút
+        generationConfig.put("maxOutputTokens", 4096);  // Tăng gấp đôi cho response dài hơn
+        generationConfig.put("topP", 0.95);  // Tăng diversity
+        generationConfig.put("topK", 40);  // Thêm topK
         payload.put("generationConfig", generationConfig);
 
         HttpHeaders headers = new HttpHeaders();
