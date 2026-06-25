@@ -75,7 +75,7 @@ public class AiProviderService {
         payload.put("model", model);
         payload.put("messages", payloadMessages);
         payload.put("temperature", 0.6);
-        payload.put("max_tokens", 1024);
+        payload.put("max_tokens", 2048);
         payload.put("top_p", 0.9);
 
         Map<?, ?> res;

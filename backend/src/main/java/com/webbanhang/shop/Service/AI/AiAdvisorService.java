@@ -71,7 +71,7 @@ public class AiAdvisorService {
 
         List<Product> sample = pickRelevantProducts(products, userMessage, 40);
 
-        String systemPrompt = "Bạn là trợ lý tư vấn mua điện thoại chuyên nghiệp của MyPhone Store. "
+        String systemPrompt = "Bạn là trợ lý tư vấn mua điện thoại chuyên nghiệp của MyPhone Store với kiến thức chuyên sâu về phần cứng. "
                 + "CHỈ TƯ VẤN điện thoại có trong danh sách cung cấp. "
                 + "KHÔNG trả lời câu hỏi ngoài lề (thời tiết, bóng đá, chính trị, sức khỏe, phim nhạc, lập trình, v.v.). "
                 + "Nếu câu hỏi không liên quan điện thoại trong shop, từ chối lịch sự và hướng về tư vấn điện thoại. "
@@ -80,7 +80,35 @@ public class AiAdvisorService {
                 + "Mỗi sản phẩm có status (CÒN_HÀNG/HẾT_HÀNG). Ưu tiên CÒN_HÀNG. Nếu gợi ý HẾT_HÀNG phải nói rõ 'tạm hết hàng'. "
                 + "BẮT BUỘC: Khi nhắc tên sản phẩm, PHẢI dùng markdown link: [Tên sản phẩm](/product/productId). "
                 + "Ví dụ: [iPhone 14 Pro Max](/product/123) thay vì chỉ iPhone 14 Pro Max. "
-                + "Phong cách: Ngắn gọn (60-80 từ), tự nhiên, emoji phù hợp (🔥💪⚡🎮📸), tập trung vào điểm mạnh chính. "
+                + "\n\n### KIẾN THỨC CHUYÊN MÔN - PHÂN TÍCH CHIP (Gaming/Hiệu năng):"
+                + "\nRanking chip từ mạnh → yếu (năm 2024-2026):"
+                + "\n**Flagship đỉnh cao:**"
+                + "\n- Apple A19 Pro (2026) > A18 Pro (2024) > A17 Pro (2023) > A16 Bionic (2022) > A15 Bionic (2021) > A14 Bionic (2020)"
+                + "\n- Snapdragon 8 Elite (2024) ≈ 8 Gen 3 (2023-2024) > 8+ Gen 2 (2023) > 8 Gen 2 (2022) > 8+ Gen 1 (2022) > 8 Gen 1 (2021) > 888 (2021)"
+                + "\n- Dimensity 9300+ > 9300 > 9200+ > 9200 > 9000"
+                + "\n**Tầm trung cao:**"
+                + "\n- Snapdragon 7+ Gen 3, 7s Gen 3, 7 Gen 3"
+                + "\n- Dimensity 8300, 8200, 8100"
+                + "\n**Tầm trung:**"
+                + "\n- Snapdragon 695, 680"
+                + "\n- Dimensity 6000 series, Helio G series"
+                + "\nQUY TẮC: Chip thế hệ mới hơn (số cao hơn) = hiệu năng mạnh hơn, KHÔNG dựa vào mô tả text."
+                + "\n\n### KIẾN THỨC CHUYÊN MÔN - PHÂN TÍCH CAMERA (Chụp ảnh):"
+                + "\nĐánh giá camera dựa trên:"
+                + "\n1. **Cảm biến chính (MP cao + kích thước lớn):**"
+                + "\n   - Xuất sắc: ≥ 50MP (Samsung GN2, Sony IMX989, IMX800)"
+                + "\n   - Tốt: 48MP, 64MP"
+                + "\n   - Trung bình: 12-16MP (trừ iPhone dùng cảm biến lớn)"
+                + "\n2. **Camera phụ:** Ultra-wide (≥12MP), Telephoto/Zoom quang (≥2x), Macro"
+                + "\n3. **Công nghệ:** OIS (chống rung quang học), Night mode, AI processing"
+                + "\n4. **Camera trước:** ≥32MP tốt cho selfie, ≥12MP chấp nhận được"
+                + "\nLƯU Ý: iPhone 14 Pro trở lên có camera 48MP với cảm biến lớn = xuất sắc dù MP không cao nhất."
+                + "\n\n### CÁCH PHÂN TÍCH:"
+                + "\n- Đọc thông số chip/camera từ data"
+                + "\n- So sánh với bảng ranking trên"
+                + "\n- Ưu tiên sản phẩm có chip/camera THỰC TẾ mạnh hơn"
+                + "\n- KHÔNG chỉ tin vào text mô tả (vì có thể thiếu hoặc không chính xác)"
+                + "\n\nPhong cách: Ngắn gọn (60-80 từ), tự nhiên, emoji phù hợp (🔥💪⚡🎮📸), tập trung vào điểm mạnh chính. "
                 + "JSON schema: {\"answer\": string, \"recommendedProductIds\": number[]}";
 
         String userPrompt = "Nhu cầu: " + userMessage + "\n\n"
@@ -140,16 +168,60 @@ public class AiAdvisorService {
 
         int productCount = products.size();
         
-        String systemPrompt = "Bạn là chuyên gia so sánh điện thoại của MyPhone Store. "
-                + "SO SÁNH chi tiết " + productCount + " sản phẩm theo từng mục. "
+        String systemPrompt = "Bạn là chuyên gia so sánh điện thoại của MyPhone Store với kiến thức chuyên sâu về phần cứng. "
+                + "SO SÁNH chi tiết " + productCount + " sản phẩm theo ĐÚNG format dưới đây. "
                 + "CHỈ dùng dữ liệu được cung cấp. KHÔNG bịa. KHÔNG nhắc sản phẩm/hãng NGOÀI danh sách. "
+                + "\n\n### KIẾN THỨC CHUYÊN MÔN - PHÂN TÍCH CHIP:"
+                + "\nRanking chip (mạnh → yếu):"
+                + "\n- Apple: A19 Pro > A18 Pro > A17 Pro > A16 > A15 > A14"
+                + "\n- Snapdragon: 8 Elite ≈ 8 Gen 3 > 8+ Gen 2 > 8 Gen 2 > 8+ Gen 1 > 8 Gen 1 > 888 > 7+ Gen 3 > 7 Gen 3"
+                + "\n- Dimensity: 9300+ > 9300 > 9200+ > 9200 > 9000 > 8300 > 8200"
+                + "\nQUY TẮC: Thế hệ cao hơn = mạnh hơn, KHÔNG chỉ dựa text mô tả."
+                + "\n\n### KIẾN THỨC CHUYÊN MÔN - PHÂN TÍCH CAMERA:"
+                + "\n- Xuất sắc: ≥50MP cảm biến lớn, có OIS, Telephoto, Ultra-wide"
+                + "\n- Tốt: 48MP (đặc biệt iPhone 14 Pro+), 64MP"
+                + "\n- Trung bình: 12-16MP (iPhone cũ vẫn tốt nhờ xử lý)"
+                + "\nCamera trước: ≥32MP xuất sắc, ≥12MP tốt"
+                + "\n\n### CÁCH PHÂN TÍCH MỖI MỤC:"
+                + "\n- 🎮 Hiệu năng: Dùng bảng ranking chip, so sánh thế hệ"
+                + "\n- 📸 Camera: Dựa MP + công nghệ (OIS, zoom), không chỉ số MP"
+                + "\n- 💰 Giá: So sánh giá thấp nhất của từng máy"
+                + "\n- 🔋 Pin: Dung lượng mAh + công suất sạc (W)"
+                + "\n- 📱 Màn hình: Kích thước + tần số quét (Hz)"
+                + "\n\nFORMAT BẮT BUỘC:"
+                + "\n\n💰 Giá cả"
+                + "\n- [Sản phẩm A](/product/ID): giá thấp nhất - cao nhất"
+                + "\n- [Sản phẩm B](/product/ID): giá thấp nhất - cao nhất"
+                + "\n(liệt kê hết " + productCount + " sản phẩm)"
+                + "\nTốt nhất mục này: [Tên rẻ nhất](/product/ID) - rẻ nhất."
+                + "\n\n📸 Camera"
+                + "\n- [Sản phẩm A](/product/ID): Camera sau XXX, trước YYY"
+                + "\n- [Sản phẩm B](/product/ID): Camera sau XXX, trước YYY"
+                + "\n(liệt kê hết " + productCount + " sản phẩm)"
+                + "\nTốt nhất mục này: [Tên tốt nhất](/product/ID) - lý do (dựa kiến thức camera)."
+                + "\n\n🎮 Hiệu năng"
+                + "\n- [Sản phẩm A](/product/ID): Chip XXX, RAM YYY"
+                + "\n- [Sản phẩm B](/product/ID): Chip XXX, RAM YYY"
+                + "\n(liệt kê hết " + productCount + " sản phẩm)"
+                + "\nTốt nhất mục này: [Tên mạnh nhất](/product/ID) - lý do (dựa ranking chip)."
+                + "\n\n🔋 Pin & Sạc"
+                + "\n- [Sản phẩm A](/product/ID): Pin XXXmAh, sạc YYW"
+                + "\n- [Sản phẩm B](/product/ID): Pin XXXmAh, sạc YYW"
+                + "\n(liệt kê hết " + productCount + " sản phẩm)"
+                + "\nTốt nhất mục này: [Tên trâu nhất](/product/ID) - lý do."
+                + "\n\n📱 Màn hình"
+                + "\n- [Sản phẩm A](/product/ID): Kích thước, tần số quét"
+                + "\n- [Sản phẩm B](/product/ID): Kích thước, tần số quét"
+                + "\n(liệt kê hết " + productCount + " sản phẩm)"
+                + "\nTốt nhất mục này: [Tên đẹp nhất](/product/ID) - lý do."
+                + "\n\n🏆 Kết luận"
+                + "\nSản phẩm tốt nhất tổng thể: [Tên](/product/ID) - lý do tổng hợp."
                 + "\n\nQUY TẮC:"
-                + "\n- BẮT BUỘC: Mỗi lần nhắc tên sản phẩm, dùng markdown link [Tên](/product/ID)."
-                + "\n- Mỗi mục (💰📸🎮🔋📱) phải có:"
-                + "\n  + Bullet list (-) so sánh từng sản phẩm với link"
-                + "\n  + Dòng 'Tốt nhất mục này: [Tên](/product/ID) - lý do ngắn'"
-                + "\n- 🏆 Kết luận: PHẢI chọn 1 sản phẩm tốt nhất tổng thể + khuyên mua."
-                + "\n- Format: Dùng emoji, xuống dòng rõ ràng, 150-200 từ."
+                + "\n- PHẢI liệt kê ĐẦY ĐỦ " + productCount + " sản phẩm ở MỖI mục (💰📸🎮🔋📱)"
+                + "\n- PHẢI dùng markdown link [Tên](/product/ID) cho mọi sản phẩm"
+                + "\n- Mỗi mục PHẢI có dòng 'Tốt nhất mục này:' với lý do DỰA TRÊN KIẾN THỨC CHUYÊN MÔN"
+                + "\n- Format: Dùng emoji, bullet (-), xuống dòng rõ ràng"
+                + "\n- Chi tiết đủ nhưng không dài dòng (150-250 từ toàn bộ)"
                 + "\n\nJSON schema: {\"answer\": string, \"comparedProductIds\": number[]}";
 
         // Build detailed product context
@@ -394,9 +466,14 @@ public class AiAdvisorService {
         if (p.getProductSpecs() != null && !p.getProductSpecs().isEmpty()) {
             spec = p.getProductSpecs().iterator().next();
         }
+        
+        boolean isGamingQuery = msg.contains("game") || msg.contains("chơi");
+        
         if (spec != null) {
+            // For gaming queries, exclude chip text from generic matching to avoid keyword bias
+            // Only use chip generation scoring instead
             String specBlob = (
-                    safe(spec.getChip()) + " " +
+                    (isGamingQuery ? "" : safe(spec.getChip())) + " " +
                             safe(spec.getBattery()) + " " +
                             safe(spec.getCameraRear()) + " " +
                             safe(spec.getCameraFront()) + " " +
@@ -418,22 +495,43 @@ public class AiAdvisorService {
             if (msg.contains("camera") || msg.contains("cam") || msg.contains("chụp")) {
                 if (!safe(spec.getCameraRear()).isBlank() || !safe(spec.getCameraFront()).isBlank()) score += 1.5;
             }
-            if (msg.contains("game") || msg.contains("chơi")) {
+            if (isGamingQuery) {
                 // Gaming needs: good chip + high RAM
                 if (!safe(spec.getChip()).isBlank()) {
                     String chipLower = safe(spec.getChip()).toLowerCase();
-                    // High-end gaming chips get massive boost
-                    if (chipLower.contains("a17") || chipLower.contains("a18") || 
-                        chipLower.contains("snapdragon 8 gen") || chipLower.contains("dimensity 9") ||
-                        chipLower.contains("a16") || chipLower.contains("snapdragon 8+")) {
-                        score += 8.0; // Flagship chips
-                    } else if (chipLower.contains("a15") || chipLower.contains("snapdragon 888") || 
-                               chipLower.contains("dimensity 8") || chipLower.contains("snapdragon 7+")) {
-                        score += 5.0; // High-end chips
-                    } else {
-                        score += 2.0; // Any chip
-                    }
+                    
+                    // Extract chip generation number for smart comparison
+                    int chipScore = 0;
+                    
+                    // Apple A-series (higher number = newer/better)
+                    if (chipLower.contains("a19")) chipScore = 19;
+                    else if (chipLower.contains("a18")) chipScore = 18;
+                    else if (chipLower.contains("a17")) chipScore = 17;
+                    else if (chipLower.contains("a16")) chipScore = 16;
+                    else if (chipLower.contains("a15")) chipScore = 15;
+                    else if (chipLower.contains("a14")) chipScore = 14;
+                    
+                    // Snapdragon (8 Gen series)
+                    else if (chipLower.contains("8 gen 3") || chipLower.contains("8 gen3")) chipScore = 17;
+                    else if (chipLower.contains("8 gen 2") || chipLower.contains("8 gen2")) chipScore = 16;
+                    else if (chipLower.contains("8 gen 1") || chipLower.contains("8 gen1")) chipScore = 15;
+                    else if (chipLower.contains("8+ gen 1") || chipLower.contains("8+")) chipScore = 16;
+                    else if (chipLower.contains("snapdragon 888")) chipScore = 14;
+                    else if (chipLower.contains("snapdragon 8 elite")) chipScore = 18;
+                    
+                    // Dimensity
+                    else if (chipLower.contains("dimensity 9300")) chipScore = 17;
+                    else if (chipLower.contains("dimensity 9200")) chipScore = 16;
+                    else if (chipLower.contains("dimensity 9000")) chipScore = 15;
+                    else if (chipLower.contains("dimensity 8")) chipScore = 13;
+                    
+                    // Score based on chip tier
+                    if (chipScore >= 17) score += 10.0; // Latest flagship (A17+, SD 8 Gen 3, Dimensity 9300)
+                    else if (chipScore >= 15) score += 7.0; // Previous flagship
+                    else if (chipScore >= 13) score += 4.0; // High-end
+                    else score += 2.0; // Has chip info
                 }
+                
                 // Check RAM from variants
                 if (p.getProductColors() != null) {
                     int maxRam = p.getProductColors().stream()

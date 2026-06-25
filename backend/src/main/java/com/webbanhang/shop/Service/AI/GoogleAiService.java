@@ -11,7 +11,6 @@ import org.springframework.web.client.RestTemplate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class GoogleAiService {
@@ -62,7 +61,7 @@ public class GoogleAiService {
         // Generation config
         Map<String, Object> generationConfig = new LinkedHashMap<>();
         generationConfig.put("temperature", 0.6);
-        generationConfig.put("maxOutputTokens", 1024);
+        generationConfig.put("maxOutputTokens", 2048);
         generationConfig.put("topP", 0.9);
         payload.put("generationConfig", generationConfig);
 
