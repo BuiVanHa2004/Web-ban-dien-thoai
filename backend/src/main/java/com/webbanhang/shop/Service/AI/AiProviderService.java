@@ -2,6 +2,8 @@ package com.webbanhang.shop.Service.AI;
 
 import com.webbanhang.shop.DTO.AI.AiChatTurn;
 import com.webbanhang.shop.Exception.BadRequestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,23 +20,49 @@ import java.util.Map;
 @Service
 @SuppressWarnings("null")
 public class AiProviderService {
+    private static final Logger log = LoggerFactory.getLogger(AiProviderService.class);
+    
     private final RestTemplate restTemplate = new RestTemplate();
     private final String groqApiKey;
     private final String model;
+    private final GoogleAiService googleAiService;
 
     public AiProviderService(
             @Value("${groq.api-key:}") String groqApiKey,
-            @Value("${groq.model:llama-3.3-70b-versatile}") String model
+            @Value("${groq.model:llama-3.3-70b-versatile}") String model,
+            GoogleAiService googleAiService
     ) {
         this.groqApiKey = groqApiKey;
         this.model = model;
+        this.googleAiService = googleAiService;
     }
 
     public AiProviderResult chat(List<AiChatTurn> messages) {
-        if (groqApiKey == null || groqApiKey.isBlank()) {
-            throw new BadRequestException("Chưa cấu hình GROQ API key ở backend.");
+        // Try Groq first
+        if (groqApiKey != null && !groqApiKey.isBlank()) {
+            try {
+                return chatWithGroq(messages);
+            } catch (Exception e) {
+                log.warn("Groq API failed, falling back to Google AI: {}", e.getMessage());
+                // Fall through to Google AI fallback
+            }
         }
 
+        // Fallback to Google AI
+        if (googleAiService.isConfigured()) {
+            try {
+                log.info("Using Google AI fallback");
+                return googleAiService.chat(messages);
+            } catch (Exception e) {
+                log.error("Google AI fallback also failed: {}", e.getMessage());
+                throw new BadRequestException("Cả Groq và Google AI đều không khả dụng. Vui lòng thử lại sau.");
+            }
+        }
+
+        throw new BadRequestException("Chưa cấu hình API key cho AI provider.");
+    }
+
+    private AiProviderResult chatWithGroq(List<AiChatTurn> messages) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(groqApiKey);
@@ -63,12 +91,13 @@ public class AiProviderService {
                 throw new BadRequestException("GROQ API key không hợp lệ hoặc không có quyền.");
             }
             if (status == 429) {
-                throw new BadRequestException("AI đang quá tải (rate limit). Vui lòng thử lại sau.");
+                throw new BadRequestException("Groq rate limit exceeded");
             }
-            throw new BadRequestException("AI provider lỗi (HTTP " + status + "). Vui lòng thử lại sau.");
+            throw new BadRequestException("AI provider lỗi (HTTP " + status + ").");
         } catch (ResourceAccessException ex) {
-            throw new BadRequestException("Không kết nối được tới AI provider. Vui lòng thử lại sau.");
+            throw new BadRequestException("Không kết nối được tới AI provider.");
         }
+        
         if (res == null) throw new BadRequestException("Không nhận được phản hồi từ AI provider.");
 
         List<?> choices = (List<?>) res.get("choices");
