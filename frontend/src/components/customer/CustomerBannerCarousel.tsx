@@ -107,11 +107,11 @@ export default function CustomerBannerCarousel({
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-cyan-900/10" />
                 
-                {/* Content container */}
-                <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 pb-20 sm:p-10 sm:pb-10 lg:p-16">
+                {/* Content container - Adjusted for mobile */}
+                <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-3 pb-16 sm:p-10 sm:pb-10 lg:p-16">
                   {/* Title with modern styling */}
                   <h2 
-                    className={`text-base font-black tracking-tight sm:text-2xl lg:text-4xl xl:text-5xl text-white transition-all duration-700 leading-tight line-clamp-2 ${
+                    className={`text-sm font-black tracking-tight sm:text-2xl lg:text-4xl xl:text-5xl text-white transition-all duration-700 leading-tight line-clamp-2 ${
                       isActive 
                         ? "opacity-100 translate-y-0 translate-x-0" 
                         : "opacity-0 -translate-y-8 translate-x-4"
@@ -130,7 +130,7 @@ export default function CustomerBannerCarousel({
                   {/* Subtitle with modern styling */}
                   {slide.subtitle && (
                     <p 
-                      className={`mt-1.5 max-w-2xl text-xs font-semibold text-slate-100 sm:mt-3 sm:text-sm lg:text-base transition-all duration-700 leading-snug line-clamp-2 ${
+                      className={`mt-1 max-w-2xl text-[11px] font-semibold text-slate-100 sm:mt-3 sm:text-sm lg:text-base transition-all duration-700 leading-snug line-clamp-2 ${
                         isActive 
                           ? "opacity-100 translate-y-0 translate-x-0" 
                           : "opacity-0 -translate-y-6 translate-x-8"
@@ -146,10 +146,10 @@ export default function CustomerBannerCarousel({
                     </p>
                   )}
                   
-                  {/* CTA Button with modern styling */}
+                  {/* CTA Button with modern styling - Hidden on small mobile to save space */}
                   {slide.linkUrl && (
                     <div 
-                      className={`pointer-events-auto mt-4 sm:mt-8 transition-all duration-700 ${
+                      className={`pointer-events-auto mt-2 hidden sm:mt-8 sm:block transition-all duration-700 ${
                         isActive 
                           ? "opacity-100 translate-y-0 scale-100" 
                           : "opacity-0 translate-y-4 scale-95"
