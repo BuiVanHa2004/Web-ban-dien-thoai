@@ -197,12 +197,12 @@ export default function CustomerBannerCarousel({
               ))}
             </div>
             
-            {/* Navigation arrows - modern design */}
+            {/* Navigation arrows - modern design - Hidden on mobile */}
             <button
               type="button"
               aria-label="Slide trước"
               onClick={goPrev}
-              className="absolute left-4 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-black/40 text-white backdrop-blur-md transition-all hover:bg-black/60 hover:scale-110 active:scale-95 sm:left-6 sm:h-14 sm:w-14 sm:rounded-3xl"
+              className="absolute left-4 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-2xl bg-black/40 text-white backdrop-blur-md transition-all hover:bg-black/60 hover:scale-110 active:scale-95 md:flex md:h-12 md:w-12 lg:h-14 lg:w-14 lg:rounded-3xl"
             >
               <svg viewBox="0 0 24 24" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" stroke="currentColor" strokeWidth="3">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -212,7 +212,7 @@ export default function CustomerBannerCarousel({
               type="button"
               aria-label="Slide sau"
               onClick={goNext}
-              className="absolute right-4 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-black/40 text-white backdrop-blur-md transition-all hover:bg-black/60 hover:scale-110 active:scale-95 sm:right-6 sm:h-14 sm:w-14 sm:rounded-3xl"
+              className="absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-2xl bg-black/40 text-white backdrop-blur-md transition-all hover:bg-black/60 hover:scale-110 active:scale-95 md:flex md:h-12 md:w-12 lg:h-14 lg:w-14 lg:rounded-3xl"
             >
               <svg viewBox="0 0 24 24" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" stroke="currentColor" strokeWidth="3">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
