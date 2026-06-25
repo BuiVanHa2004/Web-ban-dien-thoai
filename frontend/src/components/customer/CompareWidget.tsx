@@ -102,19 +102,72 @@ function RenderMd({ text }: { text: string }) {
   };
 
   return (
-    <div className="space-y-6 text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-line">
+    <div className="space-y-6 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
       {text.split("\n\n").map((paragraph, i) => {
-        if (paragraph.trim().startsWith("- ")) {
+        const trimmed = paragraph.trim();
+        
+        // Section headings (emoji + text or just capitalized)
+        if (trimmed.match(/^[💰📸🎮🔋📱🏆]/)) {
           return (
-            <ul key={i} className="list-inside list-disc space-y-1">
-              {paragraph.split("\n").map((line, j) => (
-                <li key={j}>{parseLine(line.replace(/^- /, ""))}</li>
-              ))}
+            <div key={i} className="mt-8 first:mt-0">
+              <h3 className="mb-4 text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-2">
+                {parseLine(trimmed)}
+              </h3>
+            </div>
+          );
+        }
+
+        // Bullet list
+        if (trimmed.startsWith("- ")) {
+          return (
+            <ul key={i} className="space-y-3 ml-4">
+              {paragraph.split("\n").map((line, j) => {
+                const cleanLine = line.replace(/^- /, "").trim();
+                if (!cleanLine) return null;
+                
+                return (
+                  <li key={j} className="flex gap-3">
+                    <span className="text-violet-500 dark:text-violet-400 mt-0.5">•</span>
+                    <span className="flex-1">{parseLine(cleanLine)}</span>
+                  </li>
+                );
+              })}
             </ul>
           );
         }
 
-        return <p key={i}>{parseLine(paragraph)}</p>;
+        // "Tốt nhất mục này:" or "Sản phẩm tốt nhất tổng thể:" highlighting
+        if (trimmed.includes("Tốt nhất mục này:") || trimmed.includes("tốt nhất tổng thể:") || trimmed.includes("đáng mua nhất")) {
+          return (
+            <div key={i} className="rounded-2xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-violet-200 dark:border-violet-800/50 p-4 shadow-sm">
+              <p className="font-semibold text-violet-900 dark:text-violet-100">
+                {parseLine(trimmed)}
+              </p>
+            </div>
+          );
+        }
+
+        // "Kết luận" heading
+        if (trimmed.toLowerCase().includes("kết luận")) {
+          return (
+            <div key={i} className="mt-8">
+              <h3 className="mb-4 text-base font-bold text-slate-900 dark:text-white border-b-2 border-violet-500 dark:border-violet-400 pb-2">
+                {parseLine(trimmed)}
+              </h3>
+            </div>
+          );
+        }
+
+        // Regular paragraph
+        if (trimmed) {
+          return (
+            <p key={i} className="leading-relaxed">
+              {parseLine(trimmed)}
+            </p>
+          );
+        }
+
+        return null;
       })}
     </div>
   );
