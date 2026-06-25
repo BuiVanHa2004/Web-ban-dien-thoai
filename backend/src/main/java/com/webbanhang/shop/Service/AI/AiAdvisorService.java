@@ -71,27 +71,25 @@ public class AiAdvisorService {
 
         List<Product> sample = pickRelevantProducts(products, userMessage, 40);
 
-        String systemPrompt = "Bạn là trợ lý tư vấn mua điện thoại cho website bán hàng. "
-                + "Chỉ trả lời nội dung liên quan mua bán/tư vấn điện thoại. "
-                + "Tuyệt đối không trả lời câu hỏi ngoài lề (thời tiết, bóng đá, chính trị, sức khỏe, phim nhạc, lập trình...). "
-                + "Nếu câu hỏi không liên quan điện thoại, chỉ từ chối ngắn và điều hướng về tư vấn mua điện thoại. "
-                + (wantsIphone ? "Người dùng đang yêu cầu iPhone/Apple, vì vậy chỉ được gợi ý iPhone/Apple và không được đề xuất hãng khác. " : "")
-                + "Chỉ được sử dụng danh sách sản phẩm được cung cấp. "
-                + "Không bịa thông tin và không tạo productId không có trong danh sách. "
-                + "QUAN TRỌNG: Mỗi sản phẩm có status (CÒN_HÀNG hoặc HẾT_HÀNG). "
-                + "Ưu tiên gợi ý sản phẩm CÒN_HÀNG. Nếu gợi ý sản phẩm HẾT_HÀNG, phải nói rõ 'hiện đã hết hàng' hoặc 'tạm hết hàng'. "
-                + "Trong phần answer: tuyệt đối KHÔNG được nhắc tới productId hay ký hiệu kiểu (productId=123). "
-                + "Tuyệt đối không được nhắc tới bất kỳ sản phẩm/nhãn hàng nào không có trong danh sách cung cấp. "
-                + "Kết quả phải là JSON đúng chuẩn với schema: {\"answer\": string, \"recommendedProductIds\": number[]}";
+        String systemPrompt = "Bạn là trợ lý tư vấn mua điện thoại chuyên nghiệp của MyPhone Store. "
+                + "CHỈ TƯ VẤN điện thoại có trong danh sách cung cấp. "
+                + "KHÔNG trả lời câu hỏi ngoài lề (thời tiết, bóng đá, chính trị, sức khỏe, phim nhạc, lập trình, v.v.). "
+                + "Nếu câu hỏi không liên quan điện thoại trong shop, từ chối lịch sự và hướng về tư vấn điện thoại. "
+                + (wantsIphone ? "Người dùng YÊU CẦU iPhone/Apple → CHỈ gợi ý iPhone/Apple, KHÔNG đề xuất hãng khác. " : "")
+                + "CHỈ dùng sản phẩm trong danh sách. KHÔNG bịa thông tin hay productId. "
+                + "Mỗi sản phẩm có status (CÒN_HÀNG/HẾT_HÀNG). Ưu tiên CÒN_HÀNG. Nếu gợi ý HẾT_HÀNG phải nói rõ 'tạm hết hàng'. "
+                + "TRONG answer: KHÔNG nhắc productId hay (productId=123). CHỈ nhắc TÊN sản phẩm. "
+                + "KHÔNG nhắc sản phẩm/hãng KHÔNG có trong danh sách. "
+                + "Phong cách: Ngắn gọn (60-80 từ), tự nhiên, emoji phù hợp (🔥💪⚡🎮📸), tập trung vào điểm mạnh chính. "
+                + "JSON schema: {\"answer\": string, \"recommendedProductIds\": number[]}";
 
-        String userPrompt = "Nhu cầu người dùng: " + userMessage + "\n\n"
-                + "Danh sách sản phẩm (chỉ dùng các productId này, CHÚ Ý status CÒN_HÀNG/HẾT_HÀNG):\n"
+        String userPrompt = "Nhu cầu: " + userMessage + "\n\n"
+                + "Sản phẩm (CHỈ dùng productId này, CHÚ Ý status):\n"
                 + buildCompactProductContext(sample)
-                + "\n\nYêu cầu: chọn đúng " + k + " sản phẩm phù hợp nhất (hoặc ít hơn nếu không đủ). "
-                + "Ưu tiên sản phẩm CÒN_HÀNG. Nếu gợi ý sản phẩm HẾT_HÀNG thì phải thông báo rõ trong answer. "
-                + "Trong answer, hãy giải thích ngắn gọn theo tiêu chí người dùng (giá, pin, camera, hiệu năng, màn hình...). "
-                + "Trong answer chỉ được nhắc TÊN sản phẩm, không được nhắc productId. "
-                + "Trả lời ngắn gọn, dưới 80 từ.";
+                + "\n\nChọn " + k + " sản phẩm phù hợp nhất. Ưu tiên CÒN_HÀNG. "
+                + "Giải thích NGẮN GỌN (1-2 câu/máy) tại sao phù hợp: chip, RAM, pin, camera... "
+                + "CHỈ nhắc TÊN sản phẩm, KHÔNG nhắc productId. "
+                + "60-80 từ, tự nhiên, emoji.";
 
         String raw = aiChatService.chat(systemPrompt, userPrompt);
         Parsed parsed = parseJsonResponse(raw);
@@ -134,23 +132,79 @@ public class AiAdvisorService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng cung cấp productIds để so sánh.");
         }
 
-        List<Integer> ids = productIds.stream().filter(Objects::nonNull).distinct().limit(3).toList();
+        List<Integer> ids = productIds.stream().filter(Objects::nonNull).distinct().limit(5).toList();
         List<Product> products = productRepository.findAllActiveByProductIdInWithGraph(ids);
         if (products.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm để so sánh.");
         }
 
-        String systemPrompt = "Bạn là trợ lý so sánh điện thoại. "
-                + "Chỉ dùng dữ liệu sản phẩm được cung cấp. Không bịa. "
-                + "Tuyệt đối không được nhắc tới bất kỳ sản phẩm/nhãn hàng nào không có trong danh sách cung cấp. "
-                + "Kết quả phải là JSON đúng chuẩn với schema: {\"answer\": string, \"comparedProductIds\": number[]}.";
+        int productCount = products.size();
+        
+        String systemPrompt = "Bạn là chuyên gia so sánh điện thoại của MyPhone Store. "
+                + "SO SÁNH chi tiết " + productCount + " sản phẩm theo từng mục. "
+                + "CHỈ dùng dữ liệu được cung cấp. KHÔNG bịa. KHÔNG nhắc sản phẩm/hãng NGOÀI danh sách. "
+                + "\n\nQUY TẮC:"
+                + "\n- Trả lời ĐẦY ĐỦ nhưng NGẮN GỌN. Mỗi mục 2-3 câu so sánh + 1 kết luận tốt nhất."
+                + "\n- 💰 Giá: Liệt kê giá thấp nhất/cao nhất, chọn rẻ nhất."
+                + "\n- 📸 Camera: So camera sau/trước, chọn tốt nhất chụp hình."
+                + "\n- 🎮 Hiệu năng: So chip/RAM, chọn mạnh nhất chơi game."
+                + "\n- 🔋 Pin: So dung lượng/sạc nhanh, chọn pin trâu nhất."
+                + "\n- 📱 Màn hình: So kích thước/tần số, chọn đẹp/mượt nhất."
+                + "\n- 🏆 Kết luận: Chọn 1 sản phẩm tốt nhất TỔNG THỂ + 1 câu khuyên mua."
+                + "\n- Dùng emoji, viết tự nhiên, tối đa 150-200 từ TOÀN BỘ."
+                + "\n\nJSON schema: {\"answer\": string, \"comparedProductIds\": number[]}";
 
-        String userPrompt = "Câu hỏi so sánh (có thể trống): " + (question == null ? "" : question.trim()) + "\n\n"
-                + "Dữ liệu sản phẩm để so sánh:\n"
-                + buildProductContext(products)
-                + "\n\nYêu cầu: So sánh theo bảng/nhóm tiêu chí (giá, hiệu năng, camera, pin/sạc, màn hình, bộ nhớ). "
-                + "Cuối cùng kết luận nên chọn máy nào theo từng nhu cầu. "
-                + "Trả về comparedProductIds đúng theo danh sách input.";
+        // Build detailed product context
+        StringBuilder productContext = new StringBuilder();
+        for (Product p : products) {
+            productContext.append("\n--- SẢN PHẨM ---\n");
+            productContext.append("ProductID: ").append(p.getProductId()).append("\n");
+            productContext.append("Tên: ").append(safe(p.getProductName())).append("\n");
+            if (p.getBrand() != null) productContext.append("Hãng: ").append(safe(p.getBrand().getBrandName())).append("\n");
+            
+            // Price with variants
+            if (p.getProductColors() != null && !p.getProductColors().isEmpty()) {
+                productContext.append("Giá và biến thể:\n");
+                for (var color : p.getProductColors()) {
+                    if (color.getVariants() != null) {
+                        for (var variant : color.getVariants()) {
+                            productContext.append("  - Màu ").append(safe(color.getColorName()))
+                                .append(", RAM ").append(variant.getRamGb() != null ? variant.getRamGb() : "?").append("GB")
+                                .append(", Bộ nhớ ").append(variant.getStorageGb() != null ? variant.getStorageGb() : "?").append("GB")
+                                .append(": ").append(variant.getFinalPrice() != null ? variant.getFinalPrice() : "0").append("đ\n");
+                        }
+                    }
+                }
+            }
+            
+            // Specs
+            if (p.getProductSpecs() != null && !p.getProductSpecs().isEmpty()) {
+                ProductSpec spec = p.getProductSpecs().iterator().next();
+                productContext.append("Thông số:\n");
+                if (spec.getChip() != null) productContext.append("  Chip: ").append(spec.getChip()).append("\n");
+                if (spec.getScreen() != null) productContext.append("  Màn hình: ").append(spec.getScreen()).append("\n");
+                if (spec.getRefreshRate() != null) productContext.append("  Tần số quét: ").append(spec.getRefreshRate()).append("\n");
+                if (spec.getBattery() != null) productContext.append("  Pin: ").append(spec.getBattery()).append("\n");
+                if (spec.getFastCharge() != null) productContext.append("  Sạc nhanh: ").append(spec.getFastCharge()).append("\n");
+                if (spec.getCameraRear() != null) productContext.append("  Camera sau: ").append(spec.getCameraRear()).append("\n");
+                if (spec.getCameraFront() != null) productContext.append("  Camera trước: ").append(spec.getCameraFront()).append("\n");
+                if (spec.getOperatingSystem() != null) productContext.append("  Hệ điều hành: ").append(spec.getOperatingSystem()).append("\n");
+                if (spec.getSupport5g() != null) productContext.append("  5G: ").append(spec.getSupport5g() ? "Có" : "Không").append("\n");
+                if (spec.getNfc() != null) productContext.append("  NFC: ").append(spec.getNfc() ? "Có" : "Không").append("\n");
+            }
+        }
+
+        String userPrompt = (question != null && !question.isBlank() ? "Câu hỏi: " + question.trim() + "\n\n" : "")
+                + "Sản phẩm so sánh:"
+                + productContext.toString()
+                + "\n\nSo sánh theo mục:\n"
+                + "1) 💰 Giá (thấp→cao)\n"
+                + "2) 📸 Camera (sau+trước)\n"
+                + "3) 🎮 Hiệu năng (chip+RAM)\n"
+                + "4) 🔋 Pin (dung lượng+sạc)\n"
+                + "5) 📱 Màn hình (size+Hz)\n"
+                + "6) 🏆 Kết luận (chọn 1 tốt nhất)\n\n"
+                + "Mỗi mục: 2-3 câu ngắn + chọn tốt nhất. NGẮN GỌN, 150-200 từ TOÀN BỘ.";
 
         String raw = aiChatService.chat(systemPrompt, userPrompt);
         Parsed parsed = parseJsonResponse(raw);
@@ -367,7 +421,32 @@ public class AiAdvisorService {
                 if (!safe(spec.getCameraRear()).isBlank() || !safe(spec.getCameraFront()).isBlank()) score += 1.5;
             }
             if (msg.contains("game") || msg.contains("chơi")) {
-                if (!safe(spec.getChip()).isBlank()) score += 1.5;
+                // Gaming needs: good chip + high RAM
+                if (!safe(spec.getChip()).isBlank()) {
+                    String chipLower = safe(spec.getChip()).toLowerCase();
+                    // High-end gaming chips get massive boost
+                    if (chipLower.contains("a17") || chipLower.contains("a18") || 
+                        chipLower.contains("snapdragon 8 gen") || chipLower.contains("dimensity 9") ||
+                        chipLower.contains("a16") || chipLower.contains("snapdragon 8+")) {
+                        score += 8.0; // Flagship chips
+                    } else if (chipLower.contains("a15") || chipLower.contains("snapdragon 888") || 
+                               chipLower.contains("dimensity 8") || chipLower.contains("snapdragon 7+")) {
+                        score += 5.0; // High-end chips
+                    } else {
+                        score += 2.0; // Any chip
+                    }
+                }
+                // Check RAM from variants
+                if (p.getProductColors() != null) {
+                    int maxRam = p.getProductColors().stream()
+                        .flatMap(c -> c.getVariants() != null ? c.getVariants().stream() : java.util.stream.Stream.empty())
+                        .map(v -> v.getRamGb())
+                        .filter(ram -> ram != null)
+                        .max(Integer::compareTo)
+                        .orElse(0);
+                    if (maxRam >= 12) score += 3.0; // 12GB+ RAM excellent for gaming
+                    else if (maxRam >= 8) score += 2.0; // 8GB+ RAM good for gaming
+                }
             }
             if (msg.contains("nước") || msg.contains("water") || msg.contains("chống")) {
                 if (!safe(spec.getWaterResistance()).isBlank()) score += 2;
