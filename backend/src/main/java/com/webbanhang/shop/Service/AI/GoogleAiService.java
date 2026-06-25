@@ -107,52 +107,32 @@ public class GoogleAiService {
     private String buildPrompt(List<AiChatTurn> messages) {
         StringBuilder fullPrompt = new StringBuilder();
         
-        // Thêm system message ở đầu
+        // Gộp tất cả messages thành 1 prompt (system + user + assistant)
         for (AiChatTurn msg : messages) {
             if ("system".equals(msg.role())) {
-                fullPrompt.append("System Instructions: ").append(msg.content()).append("\n\n");
-            }
-        }
-        
-        // Thêm conversation history (user và assistant)
-        for (AiChatTurn msg : messages) {
-            if ("user".equals(msg.role())) {
-                fullPrompt.append("User: ").append(msg.content()).append("\n\n");
+                fullPrompt.append(msg.content()).append("\n\n");
+            } else if ("user".equals(msg.role())) {
+                fullPrompt.append(msg.content()).append("\n\n");
             } else if ("assistant".equals(msg.role())) {
-                fullPrompt.append("Assistant: ").append(msg.content()).append("\n\n");
+                fullPrompt.append(msg.content()).append("\n\n");
             }
         }
         
-        return fullPrompt.toString();
+        return fullPrompt.toString().trim();
     }
 
     private AiProviderService.AiProviderResult callGoogleAi(String prompt, String modelName) {
         Map<String, Object> payload = new LinkedHashMap<>();
         
-        // Build contents array
+        // Build contents array - chỉ gửi text thuần, không dùng systemInstruction
         Map<String, Object> content = new LinkedHashMap<>();
         content.put("parts", List.of(Map.of("text", prompt)));
         
         payload.put("contents", List.of(content));
         
-        // System instruction (nếu có trong prompt)
-        if (prompt.startsWith("System Instructions:")) {
-            String[] parts = prompt.split("\n\n", 2);
-            if (parts.length > 1) {
-                String systemInstr = parts[0].replace("System Instructions: ", "");
-                payload.put("systemInstruction", Map.of(
-                    "parts", List.of(Map.of("text", systemInstr))
-                ));
-                // Update content với phần còn lại
-                content.put("parts", List.of(Map.of("text", parts[1])));
-            }
-        }
-        
-        // Generation config - không giới hạn output để tránh cắt, nhưng prompt sẽ yêu cầu súc tích
+        // Generation config - không giới hạn output để tránh cắt
         Map<String, Object> generationConfig = new LinkedHashMap<>();
         generationConfig.put("temperature", 0.7);
-        // Không set maxOutputTokens hoặc set rất cao để không bị cắt giữa chừng
-        // AI sẽ tự điều chỉnh độ dài dựa trên system prompt
         generationConfig.put("topP", 0.95);
         generationConfig.put("topK", 40);
         payload.put("generationConfig", generationConfig);
