@@ -194,25 +194,35 @@ public class AiAdvisorService {
         int productCount = products.size();
         
         String systemPrompt = "Bạn là chuyên gia so sánh điện thoại của MyPhone Store với kiến thức chuyên sâu về phần cứng. "
-                + "SO SÁNH chi tiết " + productCount + " sản phẩm theo đúng format ngắn gọn bên dưới. "
-                + "CHỈ dùng dữ liệu được cung cấp. KHÔNG bịa thông tin. "
-                + "\n\n### FORMAT BẮT BUỘC (Tổng cộng dưới 120 từ):"
-                + "\n📊 **So sánh thông số:**"
-                + "\n- **[Tên sản phẩm 1](/product/ID1)**: Giá từ Xđ, Chip Y, Camera Z, Pin K, Màn hình M."
-                + "\n- **[Tên sản phẩm 2](/product/ID2)**: Giá từ Xđ, Chip Y, Camera Z, Pin K, Màn hình M."
-                + "\n"
-                + "\n⚖️ **Điểm khác biệt chính:**"
-                + "\n• 🎮 Hiệu năng: [Tên sản phẩm] mạnh hơn với chip [Chip]."
-                + "\n• 📸 Camera: [Tên sản phẩm] chụp tốt hơn nhờ [Camera]."
-                + "\n• 🔋 Pin & Màn: [Tên sản phẩm] vượt trội hơn ở [Pin/Màn]."
-                + "\n"
-                + "\n🏆 **Kết luận:** Nên chọn **[Tên sản phẩm](/product/ID)** nếu bạn ưu tiên [Lý do ngắn gọn]."
+                + "Hãy SO SÁNH chi tiết " + productCount + " sản phẩm theo đúng cấu trúc 5 khía cạnh và kết luận bên dưới. "
+                + "CHỈ dùng dữ liệu được cung cấp. KHÔNG tự bịa thông tin. "
+                + "\n\n### FORMAT BẮT BUỘC (Phân tách rõ ràng giữa các phần bằng chuỗi '\\\\n\\\\n'):"
+                + "\n\n💰 **Giá bán & Biến thể**"
+                + "\n- **[Tên sản phẩm 1](/product/ID1)**: Giá từ X VNĐ cho các phiên bản RAM/ROM cụ thể."
+                + "\n- **[Tên sản phẩm 2](/product/ID2)**: Giá từ Y VNĐ cho các phiên bản RAM/ROM cụ thể."
+                + "\n\n🎮 **Hiệu năng & Chip xử lý**"
+                + "\n- **[Tên sản phẩm 1](/product/ID1)**: Chip A, đặc điểm hiệu năng/Gaming."
+                + "\n- **[Tên sản phẩm 2](/product/ID2)**: Chip B, đặc điểm hiệu năng/Gaming."
+                + "\n\n📸 **Chụp ảnh & Camera**"
+                + "\n- **[Tên sản phẩm 1](/product/ID1)**: Camera sau X, Camera trước Y. Khả năng quay chụp..."
+                + "\n- **[Tên sản phẩm 2](/product/ID2)**: Camera sau A, Camera trước B. Khả năng quay chụp..."
+                + "\n\n🔋 **Pin & Công nghệ sạc**"
+                + "\n- **[Tên sản phẩm 1](/product/ID1)**: Dung lượng X mAh, sạc nhanh Y W."
+                + "\n- **[Tên sản phẩm 2](/product/ID2)**: Dung lượng A mAh, sạc nhanh B W."
+                + "\n\n📱 **Màn hình & Hiển thị**"
+                + "\n- **[Tên sản phẩm 1](/product/ID1)**: Kích thước X, tấm nền Y, tần số quét Z Hz."
+                + "\n- **[Tên sản phẩm 2](/product/ID2)**: Kích thước A, tấm nền B, tần số quét C Hz."
+                + "\n\n🏆 **Kết luận**"
+                + "\nNên chọn **[Tên sản phẩm](/product/ID)** nếu bạn cần [Lý do cụ thể] và chọn **[Tên sản phẩm](/product/ID)** nếu bạn muốn [Lý do cụ thể]."
                 + "\n\n⚠️ QUY TẮC NGHIÊM NGẶT:"
-                + "\n- So sánh cực kỳ cô đọng, súc tích (tránh dài dòng, lặp từ, tổng dưới 120 từ)."
+                + "\n- Phải đưa ra đầy đủ thông số thực tế của từng sản phẩm cho mỗi khía cạnh, không được nói chung chung hoặc bỏ sót khía cạnh nào."
+                + "\n- Phân tách rõ ràng giữa các đề mục lớn bằng chuỗi '\\\\n\\\\n' (hai dấu gạch chéo ngược n) để đảm bảo hiển thị phân dòng đẹp mắt trên UI."
+                + "\n- Đối với các dòng trong cùng một phần, xuống dòng bằng chuỗi '\\\\n'."
+                + "\n- Tổng số từ của toàn bộ so sánh phải dưới 350 từ để súc tích và trực quan."
                 + "\n- BẮT BUỘC CHỈ PHẢN HỒI JSON: Bạn CHỈ ĐƯỢC PHÉP trả về một đối tượng JSON hợp lệ duy nhất, tuyệt đối không viết thêm lời dẫn, không bọc trong ký tự markdown như ```json. "
                 + "Đối tượng JSON có cấu trúc chính xác như sau:\n"
                 + "{\n"
-                + "  \"answer\": \"Toàn bộ nội dung so sánh chi tiết theo đúng format yêu cầu ở trên phải được đặt hoàn toàn trong trường này. BẮT BUỘC: Nếu cần xuống dòng trong câu trả lời, hãy sử dụng chuỗi '\\\\n' (hai ký tự là dấu gạch chéo ngược và chữ n) thay vì ký tự xuống dòng thực tế để tránh làm hỏng định dạng JSON.\",\n"
+                + "  \"answer\": \"Toàn bộ nội dung so sánh chi tiết theo đúng format yêu cầu ở trên phải được đặt hoàn toàn trong trường này. BẮT BUỘC: Sử dụng chuỗi '\\\\n\\\\n' để phân tách các phần và '\\\\n' để phân dòng.\",\n"
                 + "  \"comparedProductIds\": [id_các_sản_phẩm_được_so_sánh]\n"
                 + "}";
 
@@ -259,8 +269,8 @@ public class AiAdvisorService {
         String userPrompt = (question != null && !question.isBlank() ? "Câu hỏi: " + question.trim() + "\n\n" : "")
                 + "Sản phẩm so sánh:"
                 + productContext.toString()
-                + "\n\nHãy so sánh chi tiết các sản phẩm trên theo đúng format yêu cầu. Câu trả lời trong 'answer' phải cực kỳ NGẮN GỌN (dưới 120 từ).\n"
-                + "BẮT BUỘC CHỈ TRẢ VỀ ĐỐI TƯỢNG JSON: {\"answer\": string, \"comparedProductIds\": number[]}. Sử dụng chuỗi '\\\\n' để xuống dòng.";
+                + "\n\nHãy so sánh chi tiết các sản phẩm trên theo đúng cấu trúc 5 khía cạnh và kết luận ở trên. Trình bày chi tiết thông số thực tế của từng sản phẩm. Câu trả lời trong 'answer' phải dưới 350 từ.\n"
+                + "BẮT BUỘC CHỈ TRẢ VỀ ĐỐI TƯỢNG JSON: {\"answer\": string, \"comparedProductIds\": number[]}. Sử dụng chuỗi '\\\\n\\\\n' để phân tách các phần và '\\\\n' để phân dòng.";
 
         String raw = aiChatService.chat(systemPrompt, userPrompt);
         Parsed parsed = parseJsonResponse(raw);
