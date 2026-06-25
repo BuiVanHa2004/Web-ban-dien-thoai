@@ -27,6 +27,7 @@ public class AiAdvisorService {
     private final ProductRepository productRepository;
     private final AiChatService aiChatService;
     private final ObjectMapper objectMapper;
+    private final ObjectMapper localObjectMapper;
 
     public AiAdvisorService(
             ProductRepository productRepository,
@@ -36,6 +37,8 @@ public class AiAdvisorService {
         this.productRepository = productRepository;
         this.aiChatService = aiChatService;
         this.objectMapper = objectMapper;
+        this.localObjectMapper = objectMapper.copy()
+                .configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
     }
 
     private static final String OFF_TOPIC_REDIRECT_ANSWER =
@@ -93,62 +96,41 @@ public class AiAdvisorService {
                 + "\n\n### KIẾN THỨC CHUYÊN MÔN - PHÂN TÍCH CHIP (Gaming/Hiệu năng):"
                 + "\n\n### XỬ LÝ CÂU HỎI SO SÁNH:"
                 + "\nNếu user hỏi SO SÁNH (ví dụ: 'so sánh camera Samsung vs iPhone', 'iPhone hay Samsung tốt hơn'):"
-                + "\n1. Chọn 2-3 sản phẩm ĐẠI DIỆN tốt nhất của mỗi hãng"
-                + "\n2. So sánh CHI TIẾT từng khía cạnh user quan tâm:"
-                + "\n   - Nếu hỏi camera → So sánh: MP, cảm biến, OIS, zoom, night mode"
-                + "\n   - Nếu hỏi hiệu năng → So sánh: Chip (theo ranking), RAM, benchmark"
-                + "\n   - Nếu hỏi pin → So sánh: Dung lượng mAh, thời gian sử dụng, sạc nhanh"
-                + "\n   - Nếu hỏi chung → So sánh đầy đủ: camera, chip, pin, màn hình, giá"
-                + "\n3. KẾT LUẬN RÕ RÀNG: Sản phẩm nào tốt hơn và tại sao (dựa kiến thức chuyên môn)"
-                + "\n4. Format ngắn gọn, dễ đọc với emoji và bullet points"
-                + "\n\nVí dụ câu trả lời SO SÁNH TốT:"
-                + "\n📸 **So sánh camera Samsung vs iPhone:**"
-                + "\n"
-                + "\n🔷 [Samsung Galaxy S25 Ultra](/product/X):"
-                + "\n• Camera sau: 200MP chính + 50MP telephoto 5x + 12MP ultrawide"
-                + "\n• Zoom quang học 5x, zoom số 100x"
-                + "\n• OIS trên cả 3 camera"
-                + "\n"
-                + "\n🔷 [iPhone 17 Pro Max](/product/Y):"
-                + "\n• Camera sau: 48MP chính + 48MP ultrawide + 12MP telephoto 3x"
-                + "\n• Cảm biến lớn 1/1.28\", xử lý Photonic Engine vượt trội"
-                + "\n• OIS trên camera chính"
-                + "\n"
-                + "\n✅ **Kết luận:** Samsung S25 Ultra thắng về số MP và zoom xa (200MP, zoom 100x) 🔭, "
-                + "iPhone 17 Pro Max thắng về chất lượng ảnh ban đêm nhờ cảm biến lớn và xử lý AI 🌙. "
-                + "Chọn Samsung nếu thích zoom xa, chọn iPhone nếu ưu tiên chụp đêm tự nhiên."
-                + "\n\nPhong cách: Ngắn gọn (60-80 từ cho tư vấn thường, 100-150 từ cho so sánh), tự nhiên, emoji phù hợp (🔥💪⚡🎮📸), tập trung vào điểm mạnh chính. "
-                + "JSON schema: {\"answer\": string, \"recommendedProductIds\": number[]}";
+                + "\n1. Chọn sản phẩm ĐẠI DIỆN tốt nhất của mỗi hãng"
+                + "\n2. So sánh ngắn gọn khía cạnh user quan tâm (camera, hiệu năng, pin, hoặc chung)"
+                + "\n3. KẾT LUẬN RÕ RÀNG: Sản phẩm nào tốt hơn và tại sao"
+                + "\n4. Format cực kỳ ngắn gọn, dễ đọc với emoji và bullet points"
+                + "\n\nVí dụ câu trả lời SO SÁNH TỐT:"
+                + "\n📸 **So sánh camera:**"
+                + "\n• [Samsung Galaxy S25 Ultra](/product/X): 200MP, zoom 100x 🔭"
+                + "\n• [iPhone 17 Pro Max](/product/Y): 48MP, xử lý đêm tốt 🌙"
+                + "\n✅ Chọn Samsung để zoom xa, chọn iPhone để chụp đêm đẹp tự nhiên."
+                + "\n\nBẮT BUỘC CHỈ PHẢN HỒI JSON: Bạn CHỈ ĐƯỢC PHÉP trả về một đối tượng JSON hợp lệ duy nhất, tuyệt đối không viết thêm lời dẫn, không bọc trong ký tự markdown như ```json. "
+                + "Đối tượng JSON có cấu trúc chính xác như sau:\n"
+                + "{\n"
+                + "  \"answer\": \"Nội dung câu trả lời tư vấn bằng tiếng Việt ở đây. Câu trả lời phải cực kỳ NGẮN GỌN và cô đọng (dưới 60 từ cho câu thường, dưới 100 từ cho câu so sánh). Sử dụng emoji và markdown bold/link phù hợp. BẮT BUỘC: Nếu cần xuống dòng trong câu trả lời, hãy sử dụng chuỗi '\\\\n' (hai ký tự là dấu gạch chéo ngược và chữ n) thay vì ký tự xuống dòng thực tế để tránh làm hỏng định dạng JSON.\",\n"
+                + "  \"recommendedProductIds\": [id_sản_phẩm_được_gợi_ý]\n"
+                + "}";
 
         String userPrompt = "Nhu cầu: " + userMessage + "\n\n"
                 + "Sản phẩm trong Shop (CHỈ dùng productId này, CHÚ Ý status):\n"
                 + buildCompactProductContext(sample)
                 + "\n\n🎯 NHIỆM VỤ CỦA BẠN:"
-                + "\n1. ĐỌC KỸ thông số THỰC TẾ của từng sản phẩm (chip, camera, pin, RAM...)"
-                + "\n2. PHÂN TÍCH dựa trên KIẾN THỨC CHUYÊN MÔN đã cung cấp (ranking chip, đánh giá camera)"
-                + "\n3. Chọn " + k + " sản phẩm PHÙ HỢP NHẤT với nhu cầu"
-                + "\n4. GIẢI THÍCH CỤ THỂ tại sao từng sản phẩm phù hợp:"
-                + "\n   - Nêu THÔNG SỐ THỰC TẾ (chip A19, camera 200MP, pin 5000mAh, RAM 12GB...)"
-                + "\n   - So sánh với sản phẩm khác NẾU CẦN"
-                + "\n   - Chỉ ra ưu/nhược điểm RÕ RÀNG"
-                + "\n5. Ưu tiên sản phẩm CÒN_HÀNG"
-                + "\n6. Nếu gợi ý sản phẩm HẾT_HÀNG phải nói rõ 'tạm hết hàng'"
-                + "\n\n⚠️ TRÁNH:"
-                + "\n- KHÔNG trả lời chung chung kiểu 'cả hai đều tốt', 'phù hợp với mọi nhu cầu'"
-                + "\n- KHÔNG nói 'có camera xuất sắc' mà PHẢI nói cụ thể '200MP với OIS'"
-                + "\n- KHÔNG nói 'hiệu năng mạnh' mà PHẢI nói 'chip A19 Pro thế hệ mới nhất'"
-                + "\n- KHÔNG bịa thông số KHÔNG CÓ trong data"
+                + "\n1. ĐỌC KỸ thông số THỰC TẾ của từng sản phẩm"
+                + "\n2. Chọn " + k + " sản phẩm PHÙ HỢP NHẤT"
+                + "\n3. GIẢI THÍCH cực kỳ ngắn gọn (1 câu ngắn cho mỗi sản phẩm) tại sao phù hợp:"
+                + "\n   - Nêu THÔNG SỐ THỰC TẾ ngắn gọn"
+                + "\n   - Ưu tiên sản phẩm CÒN_HÀNG"
+                + "\n   - Nếu gợi ý sản phẩm HẾT_HÀNG phải nói rõ 'tạm hết hàng'"
                 + "\n\n💬 PHONG CÁCH TRẢ LỜI:"
-                + "\n- Tự nhiên, thân thiện như đang tư vấn trực tiếp"
-                + "\n- Ngắn gọn (60-80 từ cho câu hỏi đơn giản, 100-150 từ cho so sánh)"
+                + "\n- Thân thiện, tự nhiên nhưng Cực kỳ ngắn gọn và súc tích (dưới 60 từ cho câu thường, dưới 100 từ cho so sánh)"
                 + "\n- Dùng emoji phù hợp (🔥💪⚡🎮📸💰)"
                 + "\n- CHỈ nhắc TÊN sản phẩm với link [Tên](/product/ID), KHÔNG nhắc productId"
-                + "\n\n📝 VÍ DỤ TRẢ LỜI TỐT:"
-                + "\nCâu hỏi: 'Điện thoại chơi game tốt?'"
-                + "\nTrả lời: 'Để chơi game mượt, bạn nên chọn [iPhone 17 Pro Max](/product/123) 🎮 với chip A19 Pro mạnh nhất hiện nay, "
-                + "RAM 12GB xử lý đa nhiệm tốt. Nếu thích Android thì [Samsung S25 Ultra](/product/456) với Snapdragon 8 Elite cũng rất ngon, "
-                + "màn hình 120Hz mượt mà. Cả 2 đều chơi Genshin Impact max setting dễ dàng nhé! 🔥'"
-                + "\n\nĐẦU RA JSON: {\"answer\": string, \"recommendedProductIds\": number[]}";
+                + "\n\nBẮT BUỘC CHỈ TRẢ VỀ ĐỐI TƯỢNG JSON theo schema sau (không thêm bất kỳ văn bản nào khác ngoài JSON):\n"
+                + "{\n"
+                + "  \"answer\": \"Nội dung câu trả lời cực kỳ NGẮN GỌN (dưới 60 từ cho câu thường, dưới 100 từ cho so sánh), thân thiện, có emoji và markdown link. Sử dụng chuỗi '\\\\n' để xuống dòng.\",\n"
+                + "  \"recommendedProductIds\": [id_sản_phẩm_được_gợi_ý]\n"
+                + "}";
 
         String raw = aiChatService.chat(systemPrompt, userPrompt);
         Parsed parsed = parseJsonResponse(raw);
@@ -173,6 +155,18 @@ public class AiAdvisorService {
         }
 
         String answer = parsed.answer == null || parsed.answer.isBlank() ? raw : parsed.answer;
+        if (answer.contains("```json")) {
+            int idx = answer.indexOf("```json");
+            String preText = answer.substring(0, idx).trim();
+            if (!preText.isBlank()) {
+                answer = preText;
+            } else {
+                answer = tryExtractAnswerFromRaw(answer);
+            }
+        } else if (answer.contains("{\"answer\"") || answer.contains("{\n  \"answer\"")) {
+            answer = tryExtractAnswerFromRaw(answer);
+        }
+
         String cleanedAnswer = answer
                 .replaceAll("(?i)\\(\\s*product\\s*id\\s*=\\s*\\d+\\s*\\)", "")
                 .replaceAll("(?i)product\\s*id\\s*=\\s*\\d+", "")
@@ -200,97 +194,27 @@ public class AiAdvisorService {
         int productCount = products.size();
         
         String systemPrompt = "Bạn là chuyên gia so sánh điện thoại của MyPhone Store với kiến thức chuyên sâu về phần cứng. "
-                + "SO SÁNH chi tiết " + productCount + " sản phẩm theo ĐÚNG format dưới đây. "
-                + "CHỈ dùng dữ liệu được cung cấp. KHÔNG bịa. KHÔNG nhắc sản phẩm/hãng NGOÀI danh sách. "
-                + "\n\n### KIẾN THỨC CHUYÊN MÔN - PHÂN TÍCH CHIP:"
-                + "\nRanking chip (mạnh → yếu):"
-                + "\n- Apple: A19 Pro > A18 Pro > A17 Pro > A16 > A15 > A14"
-                + "\n- Snapdragon: 8 Elite ≈ 8 Gen 3 > 8+ Gen 2 > 8 Gen 2 > 8+ Gen 1 > 8 Gen 1 > 888 > 7+ Gen 3 > 7 Gen 3"
-                + "\n- Dimensity: 9300+ > 9300 > 9200+ > 9200 > 9000 > 8300 > 8200"
-                + "\nQUY TẮC: Thế hệ cao hơn = mạnh hơn, KHÔNG chỉ dựa text mô tả."
-                + "\n\n### KIẾN THỨC CHUYÊN MÔN - PHÂN TÍCH CAMERA:"
-                + "\n- Xuất sắc: ≥50MP cảm biến lớn, có OIS, Telephoto, Ultra-wide"
-                + "\n- Tốt: 48MP (đặc biệt iPhone 14 Pro+), 64MP"
-                + "\n- Trung bình: 12-16MP (iPhone cũ vẫn tốt nhờ xử lý)"
-                + "\nCamera trước: ≥32MP xuất sắc, ≥12MP tốt"
-                + "\n\n### CÁCH PHÂN TÍCH MỖI MỤC:"
-                + "\n- 🎮 Hiệu năng: Dùng bảng ranking chip, so sánh thế hệ"
-                + "\n- 📸 Camera: Dựa MP + công nghệ (OIS, zoom), không chỉ số MP"
-                + "\n- 💰 Giá: So sánh giá thấp nhất của từng máy"
-                + "\n- 🔋 Pin: Dung lượng mAh + công suất sạc (W)"
-                + "\n- 📱 Màn hình: Kích thước + tần số quét (Hz)"
-                + "\n\nFORMAT BẮT BUỘC - XUỐNG DÒNG SAU MỖI SẢN PHẨM:"
-                + "\n\n💰 **Giá cả**"
+                + "SO SÁNH chi tiết " + productCount + " sản phẩm theo đúng format ngắn gọn bên dưới. "
+                + "CHỈ dùng dữ liệu được cung cấp. KHÔNG bịa thông tin. "
+                + "\n\n### FORMAT BẮT BUỘC (Tổng cộng dưới 120 từ):"
+                + "\n📊 **So sánh thông số:**"
+                + "\n- **[Tên sản phẩm 1](/product/ID1)**: Giá từ Xđ, Chip Y, Camera Z, Pin K, Màn hình M."
+                + "\n- **[Tên sản phẩm 2](/product/ID2)**: Giá từ Xđ, Chip Y, Camera Z, Pin K, Màn hình M."
                 + "\n"
-                + "\n1️⃣ [Sản phẩm A](/product/ID): giá thấp nhất - cao nhất"
+                + "\n⚖️ **Điểm khác biệt chính:**"
+                + "\n• 🎮 Hiệu năng: [Tên sản phẩm] mạnh hơn với chip [Chip]."
+                + "\n• 📸 Camera: [Tên sản phẩm] chụp tốt hơn nhờ [Camera]."
+                + "\n• 🔋 Pin & Màn: [Tên sản phẩm] vượt trội hơn ở [Pin/Màn]."
                 + "\n"
-                + "\n2️⃣ [Sản phẩm B](/product/ID): giá thấp nhất - cao nhất"
-                + "\n"
-                + "\n3️⃣ [Sản phẩm C](/product/ID): giá thấp nhất - cao nhất"
-                + "\n"
-                + "\n✅ **Tốt nhất:** [Tên](/product/ID) - lý do"
-                + "\n"
-                + "\n---"
-                + "\n"
-                + "\n📸 **Camera**"
-                + "\n"
-                + "\n1️⃣ [Sản phẩm A](/product/ID): Camera sau XXX, trước YYY"
-                + "\n"
-                + "\n2️⃣ [Sản phẩm B](/product/ID): Camera sau XXX, trước YYY"
-                + "\n"
-                + "\n3️⃣ [Sản phẩm C](/product/ID): Camera sau XXX, trước YYY"
-                + "\n"
-                + "\n✅ **Tốt nhất:** [Tên](/product/ID) - lý do camera"
-                + "\n"
-                + "\n---"
-                + "\n"
-                + "\n🎮 **Hiệu năng**"
-                + "\n"
-                + "\n1️⃣ [Sản phẩm A](/product/ID): Chip XXX, RAM YYY"
-                + "\n"
-                + "\n2️⃣ [Sản phẩm B](/product/ID): Chip XXX, RAM YYY"
-                + "\n"
-                + "\n3️⃣ [Sản phẩm C](/product/ID): Chip XXX, RAM YYY"
-                + "\n"
-                + "\n✅ **Tốt nhất:** [Tên](/product/ID) - lý do chip"
-                + "\n"
-                + "\n---"
-                + "\n"
-                + "\n🔋 **Pin & Sạc**"
-                + "\n"
-                + "\n1️⃣ [Sản phẩm A](/product/ID): Pin XXXmAh, sạc YYW"
-                + "\n"
-                + "\n2️⃣ [Sản phẩm B](/product/ID): Pin XXXmAh, sạc YYW"
-                + "\n"
-                + "\n3️⃣ [Sản phẩm C](/product/ID): Pin XXXmAh, sạc YYW"
-                + "\n"
-                + "\n✅ **Tốt nhất:** [Tên](/product/ID) - lý do"
-                + "\n"
-                + "\n---"
-                + "\n"
-                + "\n📱 **Màn hình**"
-                + "\n"
-                + "\n1️⃣ [Sản phẩm A](/product/ID): Kích thước, Hz"
-                + "\n"
-                + "\n2️⃣ [Sản phẩm B](/product/ID): Kích thước, Hz"
-                + "\n"
-                + "\n3️⃣ [Sản phẩm C](/product/ID): Kích thước, Hz"
-                + "\n"
-                + "\n✅ **Tốt nhất:** [Tên](/product/ID) - lý do"
-                + "\n"
-                + "\n---"
-                + "\n"
-                + "\n🏆 **Kết luận**"
-                + "\n"
-                + "\nSản phẩm tốt nhất tổng thể: **[Tên](/product/ID)** - lý do tổng hợp."
+                + "\n🏆 **Kết luận:** Nên chọn **[Tên sản phẩm](/product/ID)** nếu bạn ưu tiên [Lý do ngắn gọn]."
                 + "\n\n⚠️ QUY TẮC NGHIÊM NGẶT:"
-                + "\n- Liệt kê ĐẦY ĐỦ " + productCount + " sản phẩm ở MỖI mục"
-                + "\n- MỖI sản phẩm PHẢI CÓ DÒNG TRỐNG (\\n\\n) phía trước"
-                + "\n- Dùng số thứ tự (1️⃣ 2️⃣ 3️⃣...) cho mỗi sản phẩm"
-                + "\n- Dùng --- để ngăn cách giữa các mục"
-                + "\n- PHẢI dùng markdown link [Tên](/product/ID)"
-                + "\n- Ngắn gọn, dễ đọc (150-250 từ)"
-                + "\n\nJSON: {\"answer\": string, \"comparedProductIds\": number[]}";
+                + "\n- So sánh cực kỳ cô đọng, súc tích (tránh dài dòng, lặp từ, tổng dưới 120 từ)."
+                + "\n- BẮT BUỘC CHỈ PHẢN HỒI JSON: Bạn CHỈ ĐƯỢC PHÉP trả về một đối tượng JSON hợp lệ duy nhất, tuyệt đối không viết thêm lời dẫn, không bọc trong ký tự markdown như ```json. "
+                + "Đối tượng JSON có cấu trúc chính xác như sau:\n"
+                + "{\n"
+                + "  \"answer\": \"Toàn bộ nội dung so sánh chi tiết theo đúng format yêu cầu ở trên phải được đặt hoàn toàn trong trường này. BẮT BUỘC: Nếu cần xuống dòng trong câu trả lời, hãy sử dụng chuỗi '\\\\n' (hai ký tự là dấu gạch chéo ngược và chữ n) thay vì ký tự xuống dòng thực tế để tránh làm hỏng định dạng JSON.\",\n"
+                + "  \"comparedProductIds\": [id_các_sản_phẩm_được_so_sánh]\n"
+                + "}";
 
         // Build detailed product context
         StringBuilder productContext = new StringBuilder();
@@ -335,14 +259,8 @@ public class AiAdvisorService {
         String userPrompt = (question != null && !question.isBlank() ? "Câu hỏi: " + question.trim() + "\n\n" : "")
                 + "Sản phẩm so sánh:"
                 + productContext.toString()
-                + "\n\nSo sánh theo mục:\n"
-                + "1) 💰 Giá (thấp→cao)\n"
-                + "2) 📸 Camera (sau+trước)\n"
-                + "3) 🎮 Hiệu năng (chip+RAM)\n"
-                + "4) 🔋 Pin (dung lượng+sạc)\n"
-                + "5) 📱 Màn hình (size+Hz)\n"
-                + "6) 🏆 Kết luận (chọn 1 tốt nhất)\n\n"
-                + "Mỗi mục: 2-3 câu ngắn + chọn tốt nhất. NGẮN GỌN, 150-200 từ TOÀN BỘ.";
+                + "\n\nHãy so sánh chi tiết các sản phẩm trên theo đúng format yêu cầu. Câu trả lời trong 'answer' phải cực kỳ NGẮN GỌN (dưới 120 từ).\n"
+                + "BẮT BUỘC CHỈ TRẢ VỀ ĐỐI TƯỢNG JSON: {\"answer\": string, \"comparedProductIds\": number[]}. Sử dụng chuỗi '\\\\n' để xuống dòng.";
 
         String raw = aiChatService.chat(systemPrompt, userPrompt);
         Parsed parsed = parseJsonResponse(raw);
@@ -353,8 +271,21 @@ public class AiAdvisorService {
                 .distinct()
                 .toList();
 
+        String answer = parsed.answer == null || parsed.answer.isBlank() ? raw : parsed.answer;
+        if (answer.contains("```json")) {
+            int idx = answer.indexOf("```json");
+            String preText = answer.substring(0, idx).trim();
+            if (!preText.isBlank()) {
+                answer = preText;
+            } else {
+                answer = tryExtractAnswerFromRaw(answer);
+            }
+        } else if (answer.contains("{\"answer\"") || answer.contains("{\n  \"answer\"")) {
+            answer = tryExtractAnswerFromRaw(answer);
+        }
+
         return new AiResponse(
-                parsed.answer == null || parsed.answer.isBlank() ? raw : parsed.answer,
+                answer,
                 List.of(),
                 compared
         );
@@ -997,19 +928,12 @@ public class AiAdvisorService {
         if (products.isEmpty()) return null;
         if (products.size() == 1) return products.get(0);
 
-        // Ưu tiên sản phẩm còn hàng
-        List<Product> inStock = products.stream()
-                .filter(this::hasSellableVariant)
-                .toList();
-        
-        List<Product> pool = inStock.isEmpty() ? products : inStock;
-
-        return pool.stream()
+        return products.stream()
                 .max((a, b) -> Double.compare(
                     scoreProductForAspect(a, aspect),
                     scoreProductForAspect(b, aspect)
                 ))
-                .orElse(pool.get(0));
+                .orElse(products.get(0));
     }
 
     /**
@@ -1052,6 +976,11 @@ public class AiAdvisorService {
             if (price != null) {
                 score -= price.doubleValue() / 1_000_000; // Trừ điểm theo triệu
             }
+        }
+
+        // Ưu tiên nhẹ cho sản phẩm còn hàng như một tie-breaker
+        if (hasSellableVariant(p)) {
+            score += 0.5;
         }
 
         return score;
@@ -1197,11 +1126,11 @@ public class AiAdvisorService {
         String trimmed = raw.trim();
         String json = extractFirstJsonObject(trimmed);
         if (json == null) {
-            return new Parsed(trimmed, null, null);
+            return tryRegexFallback(trimmed);
         }
 
         try {
-            JsonNode node = objectMapper.readTree(json);
+            JsonNode node = localObjectMapper.readTree(json);
             String answer = node.path("answer").asText("").trim();
 
             List<Integer> rec = readIntList(node.get("recommendedProductIds"));
@@ -1209,8 +1138,125 @@ public class AiAdvisorService {
 
             return new Parsed(answer, rec, cmp);
         } catch (Exception e) {
-            return new Parsed(trimmed, null, null);
+            // Fallback to regex on the extracted JSON first, if that fails, try regex on full raw
+            Parsed p = tryRegexFallback(json);
+            if (p.answer != null && !p.answer.isBlank() && !p.answer.equals(json)) {
+                return p;
+            }
+            return tryRegexFallback(trimmed);
         }
+    }
+
+    private Parsed tryRegexFallback(String raw) {
+        if (raw == null) {
+            return new Parsed(null, null, null);
+        }
+        
+        // Try to find the "answer" field with closed quotes first, allowing escaped quotes inside
+        Pattern pattern = Pattern.compile("\"answer\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
+        Matcher matcher = pattern.matcher(raw);
+        if (matcher.find()) {
+            String answer = matcher.group(1);
+            answer = unescapeJsonString(answer);
+            return new Parsed(answer, extractIdsWithRegex(raw, "recommendedProductIds"), extractIdsWithRegex(raw, "comparedProductIds"));
+        }
+        
+        // If not found with closed quotes, try to find unclosed quotes (e.g. truncated JSON)
+        Pattern unclosedPattern = Pattern.compile("\"answer\"\\s*:\\s*\"(.*)", Pattern.DOTALL);
+        Matcher unclosedMatcher = unclosedPattern.matcher(raw);
+        if (unclosedMatcher.find()) {
+            String answer = unclosedMatcher.group(1);
+            int endQuoteIdx = findUnescapedQuoteIndex(answer);
+            if (endQuoteIdx >= 0) {
+                answer = answer.substring(0, endQuoteIdx);
+            }
+            answer = unescapeJsonString(answer);
+            return new Parsed(answer, extractIdsWithRegex(raw, "recommendedProductIds"), extractIdsWithRegex(raw, "comparedProductIds"));
+        }
+
+        // If even regex fallback fails, clean up markdown wrapper if possible
+        String cleaned = raw;
+        if (cleaned.contains("```json")) {
+            cleaned = cleaned.substring(cleaned.indexOf("```json") + 7).trim();
+        } else if (cleaned.contains("```")) {
+            cleaned = cleaned.substring(cleaned.indexOf("```") + 3).trim();
+        }
+        if (cleaned.startsWith("{")) {
+            cleaned = cleaned.replaceAll("^\\{\\s*\"answer\"\\s*:\\s*\"", "");
+            cleaned = cleaned.replaceAll("\"\\s*,?\\s*\"(recommended|compared)ProductIds.*$", "");
+            cleaned = cleaned.replaceAll("\"\\s*\\}$", "");
+        }
+        cleaned = unescapeJsonString(cleaned);
+        return new Parsed(cleaned, null, null);
+    }
+
+    private int findUnescapedQuoteIndex(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '"') {
+                int backslashes = 0;
+                for (int j = i - 1; j >= 0; j--) {
+                    if (s.charAt(j) == '\\') {
+                        backslashes++;
+                    } else {
+                        break;
+                    }
+                }
+                if (backslashes % 2 == 0) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private String unescapeJsonString(String s) {
+        if (s == null) return null;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\\' && i + 1 < s.length()) {
+                char next = s.charAt(i + 1);
+                if (next == 'n') {
+                    sb.append('\n');
+                    i++;
+                } else if (next == 't') {
+                    sb.append('\t');
+                    i++;
+                } else if (next == 'r') {
+                    sb.append('\r');
+                    i++;
+                } else if (next == '\"') {
+                    sb.append('\"');
+                    i++;
+                } else if (next == '\\') {
+                    sb.append('\\');
+                    i++;
+                } else {
+                    sb.append(c);
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    private List<Integer> extractIdsWithRegex(String raw, String fieldName) {
+        Pattern p = Pattern.compile("\"" + fieldName + "\"\\s*:\\s*\\[([^\\]]*)\\]");
+        Matcher m = p.matcher(raw);
+        if (m.find()) {
+            String listContent = m.group(1);
+            List<Integer> out = new ArrayList<>();
+            Pattern numPat = Pattern.compile("\\d+");
+            Matcher numMat = numPat.matcher(listContent);
+            while (numMat.find()) {
+                try {
+                    out.add(Integer.parseInt(numMat.group()));
+                } catch (NumberFormatException ignored) {}
+            }
+            return out;
+        }
+        return null;
     }
 
     private List<Integer> readIntList(JsonNode arrNode) {
@@ -1242,6 +1288,30 @@ public class AiAdvisorService {
             }
         }
         return null;
+    }
+
+    private String tryExtractAnswerFromRaw(String text) {
+        if (text == null) return "";
+        Parsed p = tryRegexFallback(text);
+        if (p.answer != null && !p.answer.isBlank() && !p.answer.equals(text)) {
+            return p.answer;
+        }
+        
+        // If it starts with markdown code block or JSON brackets but contains unparsed response
+        String json = extractFirstJsonObject(text);
+        if (json != null) {
+            Parsed pj = tryRegexFallback(json);
+            if (pj.answer != null && !pj.answer.isBlank() && !pj.answer.equals(json)) {
+                return pj.answer;
+            }
+        }
+        
+        // If everything fails, strip JSON curly braces and quotes to be safe
+        String cleaned = text.replaceAll("\\{[\\s\\S]*?\\}", "").trim();
+        if (cleaned.isBlank()) {
+            return text.replace("```json", "").replace("```", "").replace("{", "").replace("}", "").trim();
+        }
+        return cleaned;
     }
 
     private static class Parsed {
