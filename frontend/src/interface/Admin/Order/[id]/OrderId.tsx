@@ -99,6 +99,7 @@ export default function OrderId() {
 
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   const [order, setOrder] = React.useState<OrderDto | null>(null);
   const [status, setStatus] = React.useState<OrderStatus>("PENDING_CONFIRM");
