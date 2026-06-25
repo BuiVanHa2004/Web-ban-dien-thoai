@@ -25,17 +25,18 @@ public class GoogleAiService {
     private final List<String> models;
 
     // Danh sách model dự phòng khi model chính bị quá tải
-    // Chỉ sử dụng models có sẵn trong API v1
+    // Bao gồm cả models mới nhất (experimental) và stable models
     private static final String[] FALLBACK_MODELS = {
-        "gemini-2.0-flash-exp",
-        "gemini-1.5-flash",
-        "gemini-1.5-flash-8b", 
-        "gemini-1.5-pro"
+        "gemini-2.0-flash-exp",           // Gemini 2.0 Flash (experimental)
+        "gemini-exp-1206",                 // Gemini 3.0 (experimental)  
+        "gemini-1.5-flash",                // Stable
+        "gemini-1.5-flash-8b",             // Stable, nhỹ
+        "gemini-1.5-pro"                   // Stable, mạnh nhất
     };
 
     public GoogleAiService(
             @Value("${google-ai.api-key:}") String apiKey,
-            @Value("${google-ai.model:gemini-1.5-flash}") String model
+            @Value("${google-ai.model:gemini-2.0-flash-exp}") String model
     ) {
         this.apiKey = apiKey;
         // Xây dựng danh sách model: model chính + các model dự phòng (loại trùng)
@@ -60,8 +61,8 @@ public class GoogleAiService {
         // Build prompt once
         String prompt = buildPrompt(messages);
 
-        // Try each model in order, max 3 attempts
-        int maxAttempts = Math.min(3, models.size());
+        // Try each model in order, max 4 attempts
+        int maxAttempts = Math.min(4, models.size());
         Exception lastException = null;
         
         for (int i = 0; i < maxAttempts; i++) {
@@ -71,6 +72,8 @@ public class GoogleAiService {
                     log.info("Thử model dự phòng Google AI #{}: {}", i + 1, currentModel);
                     // Chờ 1 giây trước khi thử model tiếp theo
                     Thread.sleep(1000);
+                } else {
+                    log.info("Thử model Google AI chính: {}", currentModel);
                 }
                 return callGoogleAi(prompt, currentModel);
             } catch (Exception e) {
