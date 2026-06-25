@@ -696,7 +696,7 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
                   Đăng nhập để tiếp tục hỏi đáp không giới hạn!
                 </p>
                 <Link
-                  href="/auth/login"
+                  href="/login"
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 py-2 text-sm font-black text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Sparkles size={16} />
