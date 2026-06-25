@@ -245,20 +245,21 @@ export default function CompareWidget({ chatOpen, forceOpen, onClose }: { chatOp
     setError(null);
     setCompareResult(null);
     try {
-      const res = await fetch("/api/compare", {
+      const backendUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
+      const res = await fetch(`${backendUrl}/api/ai/compare`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productIds: selectedIds }),
+        body: JSON.stringify({ productIds: selectedIds, question: null }),
       });
       const data = await res.json();
       if (!res.ok) {
-        const serverError = data.error || `Lỗi server (${res.status})`;
+        const serverError = data.error || data.message || `Lỗi server (${res.status})`;
         if (res.status === 429 || isTokenLimitErrorMessage(serverError)) {
           throw new Error(AI_MAINTENANCE_MESSAGE);
         }
         throw new Error(serverError);
       }
-      setCompareResult(data.reply || "Không có kết quả.");
+      setCompareResult(data.answer || "Không có kết quả.");
     } catch (err) {
       const rawError = err instanceof Error ? err.message : "Có lỗi xảy ra";
       setError(isTokenLimitErrorMessage(rawError) ? AI_MAINTENANCE_MESSAGE : rawError);
