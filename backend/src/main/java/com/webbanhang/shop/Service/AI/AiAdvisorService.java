@@ -682,7 +682,11 @@ public class AiAdvisorService {
         if (p == null || p.getProductColors() == null) return false;
         return p.getProductColors().stream()
                 .flatMap(c -> c.getVariants() != null ? c.getVariants().stream() : java.util.stream.Stream.empty())
-                .anyMatch(v -> v.getQuantity() != null && v.getQuantity() > 0);
+                .anyMatch(v -> {
+                    // Use availableStock (totalStock - reservedStock) instead of deprecated quantity field
+                    Integer available = v.getAvailableStock();
+                    return available != null && available > 0;
+                });
     }
 
     private double scoreShopHighlight(Product p) {
