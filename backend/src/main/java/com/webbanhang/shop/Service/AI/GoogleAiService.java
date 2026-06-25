@@ -1,29 +1,51 @@
 package com.webbanhang.shop.Service.AI;
 
 import com.webbanhang.shop.DTO.AI.AiChatTurn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClientResponseException;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class GoogleAiService {
+    private static final Logger log = LoggerFactory.getLogger(GoogleAiService.class);
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final String apiKey;
-    private final String model;
+    private final List<String> models;
+
+    // Danh sách model dự phòng khi model chính bị quá tải
+    private static final String[] FALLBACK_MODELS = {
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-1.5-flash-latest",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro"
+    };
 
     public GoogleAiService(
             @Value("${google-ai.api-key:}") String apiKey,
-            @Value("${google-ai.model:gemini-1.5-flash-latest}") String model
+            @Value("${google-ai.model:gemini-2.0-flash}") String model
     ) {
         this.apiKey = apiKey;
-        this.model = model;
+        // Xây dựng danh sách model: model chính + các model dự phòng (loại trùng)
+        this.models = new ArrayList<>();
+        this.models.add(model);
+        for (String fallback : FALLBACK_MODELS) {
+            if (!this.models.contains(fallback)) {
+                this.models.add(fallback);
+            }
+        }
     }
 
     public boolean isConfigured() {
@@ -35,26 +57,59 @@ public class GoogleAiService {
             throw new RuntimeException("Google AI API key not configured");
         }
 
-        // Convert messages to Gemini format
-        // Gemini uses "parts" with "text" instead of "content"
-        // System messages are treated as initial user message
+        // Build prompt once
+        String prompt = buildPrompt(messages);
+
+        // Try each model in order
+        Exception lastException = null;
+        for (int i = 0; i < models.size(); i++) {
+            String currentModel = models.get(i);
+            try {
+                if (i > 0) {
+                    log.info("Thử model dự phòng Google AI: {}", currentModel);
+                    // Chờ 1 giây trước khi thử model tiếp theo
+                    Thread.sleep(1000);
+                }
+                return callGoogleAi(prompt, currentModel);
+            } catch (Exception e) {
+                lastException = e;
+                String msg = e.getMessage() != null ? e.getMessage() : "";
+                boolean isOverloaded = msg.contains("503") || msg.contains("429")
+                        || msg.contains("UNAVAILABLE") || msg.contains("high demand")
+                        || msg.contains("overloaded") || msg.contains("rate limit");
+                
+                if (isOverloaded && i < models.size() - 1) {
+                    log.warn("Google AI model {} bị quá tải ({}), thử model tiếp theo...", currentModel, msg.length() > 120 ? msg.substring(0, 120) : msg);
+                    continue;
+                }
+                // Nếu không phải lỗi quá tải hoặc hết model dự phòng, throw luôn
+                break;
+            }
+        }
+
+        throw new RuntimeException("Google AI API error (đã thử " + models.size() + " models): " 
+                + (lastException != null ? lastException.getMessage() : "unknown"), lastException);
+    }
+
+    private String buildPrompt(List<AiChatTurn> messages) {
         StringBuilder fullPrompt = new StringBuilder();
-        
         for (AiChatTurn msg : messages) {
             if ("system".equals(msg.role())) {
                 fullPrompt.append("System Instructions: ").append(msg.content()).append("\n\n");
             } else if ("user".equals(msg.role())) {
                 fullPrompt.append(msg.content()).append("\n");
-            } else if ("assistant".equals(msg.role())) {
-                // Skip assistant messages for simplicity in fallback
             }
+            // Skip assistant messages for simplicity in fallback
         }
+        return fullPrompt.toString();
+    }
 
+    private AiProviderService.AiProviderResult callGoogleAi(String prompt, String modelName) {
         Map<String, Object> payload = new LinkedHashMap<>();
         
         // Build contents array
         Map<String, Object> content = new LinkedHashMap<>();
-        content.put("parts", List.of(Map.of("text", fullPrompt.toString())));
+        content.put("parts", List.of(Map.of("text", prompt)));
         
         payload.put("contents", List.of(content));
         
@@ -68,8 +123,7 @@ public class GoogleAiService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Use v1 API instead of v1beta
-        String url = "https://generativelanguage.googleapis.com/v1/models/" + model + ":generateContent?key=" + apiKey;
+        String url = "https://generativelanguage.googleapis.com/v1/models/" + modelName + ":generateContent?key=" + apiKey;
 
         try {
             @SuppressWarnings("unchecked")
@@ -80,14 +134,14 @@ public class GoogleAiService {
             );
 
             if (response == null) {
-                throw new RuntimeException("Empty response from Google AI");
+                throw new RuntimeException("Empty response from Google AI (" + modelName + ")");
             }
 
             // Parse response
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
             if (candidates == null || candidates.isEmpty()) {
-                throw new RuntimeException("No candidates in Google AI response");
+                throw new RuntimeException("No candidates in Google AI response (" + modelName + ")");
             }
 
             @SuppressWarnings("unchecked")
@@ -111,15 +165,23 @@ public class GoogleAiService {
                 completionTokens = ((Number) usageMetadata.getOrDefault("candidatesTokenCount", 0)).intValue();
             }
 
+            log.info("Google AI trả lời thành công với model: {}", modelName);
             return new AiProviderService.AiProviderResult(
                     reply != null ? reply : "",
                     promptTokens,
                     completionTokens,
-                    model
+                    modelName
             );
 
+        } catch (RestClientResponseException e) {
+            int status = e.getStatusCode().value();
+            String body = e.getResponseBodyAsString();
+            throw new RuntimeException(status + " " + e.getStatusText() + ": " + (body.length() > 300 ? body.substring(0, 300) : body));
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Google AI API error: " + e.getMessage(), e);
+            throw new RuntimeException("Google AI API error (" + modelName + "): " + e.getMessage(), e);
         }
     }
 }
+

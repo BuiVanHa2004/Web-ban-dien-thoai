@@ -38,12 +38,16 @@ public class AiProviderService {
     }
 
     public AiProviderResult chat(List<AiChatTurn> messages) {
+        Exception groqException = null;
+        
         // Try Groq first
         if (groqApiKey != null && !groqApiKey.isBlank()) {
             try {
+                log.info("Attempting to use Groq API...");
                 return chatWithGroq(messages);
             } catch (Exception e) {
-                log.warn("Groq API failed, falling back to Google AI: {}", e.getMessage());
+                groqException = e;
+                log.warn("Groq API failed ({}), falling back to Google AI...", e.getMessage());
                 // Fall through to Google AI fallback
             }
         }
@@ -55,10 +59,24 @@ public class AiProviderService {
                 return googleAiService.chat(messages);
             } catch (Exception e) {
                 log.error("Google AI fallback also failed: {}", e.getMessage());
-                throw new BadRequestException("Cả Groq và Google AI đều không khả dụng. Vui lòng thử lại sau.");
+                
+                // Provide detailed error message
+                String errorMsg = "Cả Groq và Google AI đều không khả dụng. ";
+                if (groqException != null) {
+                    errorMsg += "Groq: " + groqException.getMessage() + ". ";
+                }
+                errorMsg += "Google AI: " + e.getMessage();
+                
+                throw new BadRequestException(errorMsg);
             }
         }
 
+        // If no API keys configured
+        if (groqException != null) {
+            log.error("Groq failed and no Google AI configured: {}", groqException.getMessage());
+            throw new BadRequestException("Groq API lỗi và chưa cấu hình Google AI. Chi tiết: " + groqException.getMessage());
+        }
+        
         throw new BadRequestException("Chưa cấu hình API key cho AI provider.");
     }
 
@@ -87,22 +105,27 @@ public class AiProviderService {
             );
         } catch (RestClientResponseException ex) {
             int status = ex.getStatusCode().value();
+            String errorBody = ex.getResponseBodyAsString();
+            
+            // Log chi tiết lỗi
+            log.error("Groq API error - Status: {}, Body: {}", status, errorBody.length() > 200 ? errorBody.substring(0, 200) : errorBody);
+            
             if (status == 401 || status == 403) {
-                throw new BadRequestException("GROQ API key không hợp lệ hoặc không có quyền.");
+                throw new RuntimeException("GROQ API key không hợp lệ hoặc không có quyền.");
             }
             if (status == 429) {
-                throw new BadRequestException("Groq rate limit exceeded");
+                throw new RuntimeException("Groq rate limit exceeded - đã hết token miễn phí hoặc vượt quá giới hạn");
             }
-            throw new BadRequestException("AI provider lỗi (HTTP " + status + ").");
+            throw new RuntimeException("Groq API lỗi (HTTP " + status + "): " + errorBody);
         } catch (ResourceAccessException ex) {
-            throw new BadRequestException("Không kết nối được tới AI provider.");
+            throw new RuntimeException("Không kết nối được tới Groq API: " + ex.getMessage());
         }
         
-        if (res == null) throw new BadRequestException("Không nhận được phản hồi từ AI provider.");
+        if (res == null) throw new RuntimeException("Không nhận được phản hồi từ Groq API.");
 
         List<?> choices = (List<?>) res.get("choices");
         if (choices == null || choices.isEmpty()) {
-            throw new BadRequestException("AI provider trả về dữ liệu không hợp lệ.");
+            throw new RuntimeException("Groq API trả về dữ liệu không hợp lệ.");
         }
         Map<?, ?> c0 = (Map<?, ?>) choices.get(0);
         Map<?, ?> msg = (Map<?, ?>) c0.get("message");
@@ -113,6 +136,7 @@ public class AiProviderService {
         int promptTokens = usage != null && usage.get("prompt_tokens") != null ? ((Number) usage.get("prompt_tokens")).intValue() : 0;
         int completionTokens = usage != null && usage.get("completion_tokens") != null ? ((Number) usage.get("completion_tokens")).intValue() : 0;
 
+        log.info("Groq API thành công - Model: {}, Tokens: {}/{}", model, promptTokens, completionTokens);
         return new AiProviderResult(reply, promptTokens, completionTokens, model);
     }
 
