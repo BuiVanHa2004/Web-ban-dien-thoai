@@ -24,19 +24,16 @@ public class GoogleAiService {
     private final String apiKey;
     private final List<String> models;
 
-    // Danh sách model dự phòng - bao gồm models mới nhất
+    // Danh sách model dự phòng - CHỈ dùng models TỒN TẠI trên API v1
     private static final String[] FALLBACK_MODELS = {
-        "gemini-2.0-flash-exp",           // Gemini 2.0 Flash (experimental)
-        "gemini-exp-1206",                 // Gemini 3.0 (experimental)
-        "gemini-1.5-flash",                // Stable, nhanh
-        "gemini-1.5-flash-8b",             // Stable, nhẹ
-        "gemini-1.5-pro",                  // Stable, mạnh nhất
-        "gemini-pro"                       // Fallback cuối cùng
+        "gemini-1.5-flash-latest",         // Stable, nhanh nhất
+        "gemini-1.5-pro-latest",           // Stable, mạnh nhất
+        "gemini-1.0-pro-latest"            // Fallback cuối cùng
     };
 
     public GoogleAiService(
             @Value("${google-ai.api-key:}") String apiKey,
-            @Value("${google-ai.model:gemini-2.0-flash-exp}") String model
+            @Value("${google-ai.model:gemini-1.5-flash-latest}") String model
     ) {
         this.apiKey = apiKey;
         // Xây dựng danh sách model: model chính + các model dự phòng (loại trùng)
