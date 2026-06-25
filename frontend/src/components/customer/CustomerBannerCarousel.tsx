@@ -108,10 +108,10 @@ export default function CustomerBannerCarousel({
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-cyan-900/20" />
                 
                 {/* Content container */}
-                <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-6 sm:p-10 lg:p-16">
+                <div className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 sm:p-10 lg:p-16">
                   {/* Title with modern styling */}
                   <h2 
-                    className={`text-xl font-black tracking-tight sm:text-2xl lg:text-4xl xl:text-5xl text-white transition-all duration-700 leading-tight ${
+                    className={`text-lg font-black tracking-tight sm:text-2xl lg:text-4xl xl:text-5xl text-white transition-all duration-700 leading-tight line-clamp-2 ${
                       isActive 
                         ? "opacity-100 translate-y-0 translate-x-0" 
                         : "opacity-0 -translate-y-8 translate-x-4"
@@ -119,7 +119,9 @@ export default function CustomerBannerCarousel({
                     style={{ 
                       textShadow: '0 4px 20px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.8)',
                       transitionDelay: isActive ? '300ms' : '0ms',
-                      letterSpacing: '-0.02em'
+                      letterSpacing: '-0.02em',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word'
                     }}
                   >
                     {slide.title}
@@ -128,14 +130,16 @@ export default function CustomerBannerCarousel({
                   {/* Subtitle with modern styling */}
                   {slide.subtitle && (
                     <p 
-                      className={`mt-3 max-w-2xl text-xs font-semibold text-slate-100 sm:mt-4 sm:text-sm lg:text-base transition-all duration-700 leading-relaxed ${
+                      className={`mt-2 max-w-2xl text-xs font-semibold text-slate-100 sm:mt-4 sm:text-sm lg:text-base transition-all duration-700 leading-relaxed line-clamp-3 ${
                         isActive 
                           ? "opacity-100 translate-y-0 translate-x-0" 
                           : "opacity-0 -translate-y-6 translate-x-8"
                       }`}
                       style={{ 
                         textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.7)',
-                        transitionDelay: isActive ? '500ms' : '0ms'
+                        transitionDelay: isActive ? '500ms' : '0ms',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word'
                       }}
                     >
                       {slide.subtitle}
@@ -145,7 +149,7 @@ export default function CustomerBannerCarousel({
                   {/* CTA Button with modern styling */}
                   {slide.linkUrl && (
                     <div 
-                      className={`pointer-events-auto mt-6 sm:mt-8 transition-all duration-700 ${
+                      className={`pointer-events-auto mt-4 sm:mt-8 transition-all duration-700 ${
                         isActive 
                           ? "opacity-100 translate-y-0 scale-100" 
                           : "opacity-0 translate-y-4 scale-95"
@@ -155,10 +159,10 @@ export default function CustomerBannerCarousel({
                       <Link
                         href={slide.linkUrl}
                         tabIndex={isActive ? 0 : -1}
-                        className="group/btn inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-4 text-sm font-black uppercase tracking-wider text-white shadow-2xl shadow-purple-500/30 transition-all hover:from-purple-500 hover:to-purple-600 hover:shadow-purple-500/50 active:scale-95 sm:rounded-3xl sm:px-10 sm:py-5 sm:text-base"
+                        className="group/btn inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 px-5 py-3 text-xs font-black uppercase tracking-wider text-white shadow-2xl shadow-purple-500/30 transition-all hover:from-purple-500 hover:to-purple-600 hover:shadow-purple-500/50 active:scale-95 sm:gap-3 sm:rounded-2xl sm:px-8 sm:py-4 sm:text-sm lg:rounded-3xl lg:px-10 lg:py-5 lg:text-base"
                       >
                         <span>Khám phá ngay</span>
-                        <svg className="h-5 w-5 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <svg className="h-4 w-4 transition-transform group-hover/btn:translate-x-1 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
                       </Link>
