@@ -151,12 +151,13 @@ public class GoogleAiService {
             }
         }
         
-        // Generation config - tăng maxOutputTokens để response chi tiết hơn
+        // Generation config - không giới hạn output để tránh cắt, nhưng prompt sẽ yêu cầu súc tích
         Map<String, Object> generationConfig = new LinkedHashMap<>();
-        generationConfig.put("temperature", 0.7);  // Tăng creativity một chút
-        generationConfig.put("maxOutputTokens", 8192);  // Tăng lên 8K để đủ chỗ cho response dài
-        generationConfig.put("topP", 0.95);  // Tăng diversity
-        generationConfig.put("topK", 40);  // Thêm topK
+        generationConfig.put("temperature", 0.7);
+        // Không set maxOutputTokens hoặc set rất cao để không bị cắt giữa chừng
+        // AI sẽ tự điều chỉnh độ dài dựa trên system prompt
+        generationConfig.put("topP", 0.95);
+        generationConfig.put("topK", 40);
         payload.put("generationConfig", generationConfig);
 
         HttpHeaders headers = new HttpHeaders();
