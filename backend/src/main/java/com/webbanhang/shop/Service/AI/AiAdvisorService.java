@@ -929,12 +929,81 @@ public class AiAdvisorService {
         }
 
         String[] keywords = new String[]{
-                "điện thoại", "smartphone", "phone", "iphone", "ipad", "samsung", "xiaomi", "oppo", "vivo", "realme", "oneplus",
-                "galaxy", "redmi", "poco", "pixel", "nokia", "sony",
-                "ram", "rom", "bộ nhớ", "storage", "gb", "camera", "cam", "pin", "battery", "sạc", "charge", "màn", "screen", "màu", "color",
-                "chip", "snapdragon", "mediatek", "exynos", "dimensity", "ios", "android", "kháng nước", "chống nước", "waterproof",
-                "giá", "triệu", "dưới", "tầm", "so sánh", "review", "cấu hình", "gaming", "game", "chơi game",
-                "myphone", "cửa hàng", "mua máy", "đổi máy", "tư vấn điện thoại", "tư vấn máy"
+                // Tên thiết bị và thương hiệu
+                "điện thoại", "smartphone", "phone", "di động", "mobile", "máy", "thiết bị",
+                "iphone", "ipad", "apple", "samsung", "galaxy", "xiaomi", "redmi", "poco",
+                "oppo", "vivo", "realme", "oneplus", "nokia", "sony", "pixel", "google",
+                "huawei", "honor", "asus", "rog phone", "lenovo", "motorola", "lg",
+                
+                // Thông số kỹ thuật
+                "ram", "rom", "bộ nhớ", "storage", "gb", "tb", "dung lượng",
+                "chip", "cpu", "gpu", "vi xử lý", "snapdragon", "mediatek", "exynos", "dimensity", "bionic", "apple silicon",
+                "pin", "battery", "mah", "dung lượng pin", "thời lượng pin",
+                "sạc", "charge", "sạc nhanh", "fast charge", "sạc không dây", "wireless charging",
+                "màn", "screen", "display", "màn hình", "inch", "hz", "tần số quét", "refresh rate",
+                "amoled", "oled", "lcd", "ips", "super amoled", "dynamic amoled", "retina",
+                
+                // Camera và chụp ảnh
+                "camera", "cam", "chụp", "ảnh", "chụp ảnh", "chụp hình", "nhiếp ảnh",
+                "quay", "video", "quay video", "quay phim", "record",
+                "selfie", "tự sướng", "camera trước", "camera sau",
+                "zoom", "tele", "telephoto", "góc rộng", "wide", "ultrawide", "macro",
+                "chụp đêm", "night mode", "chân dung", "portrait", "xóa phông", "bokeh",
+                "ois", "chống rung", "4k", "8k", "slow motion", "time lapse",
+                "mp", "megapixel", "độ phân giải", "cảm biến",
+                
+                // Màu sắc
+                "màu", "color", "đen", "trắng", "xanh", "đỏ", "vàng", "hồng", "tím", "xám",
+                "black", "white", "blue", "red", "gold", "silver", "purple", "green",
+                "titan", "titanium", "natural", "pro max",
+                
+                // Tính năng
+                "5g", "4g", "lte", "wifi", "bluetooth", "nfc", "sim", "esim", "dual sim",
+                "kháng nước", "chống nước", "waterproof", "ip68", "ip67", "ip69",
+                "vân tay", "fingerprint", "face id", "mở khóa khuôn mặt", "bảo mật",
+                "jack tai nghe", "headphone jack", "type-c", "lightning", "usb-c",
+                "loa", "speaker", "stereo", "dolby atmos", "âm thanh",
+                
+                // Hệ điều hành và phần mềm
+                "ios", "android", "hệ điều hành", "operating system", "one ui", "miui", "coloros",
+                "ai", "trí tuệ nhân tạo", "artificial intelligence", "galaxy ai", "apple intelligence", "gemini",
+                
+                // Nhu cầu sử dụng
+                "gaming", "game", "chơi game", "chiến game", "cày game",
+                "làm việc", "work", "văn phòng", "office", "học tập", "học online",
+                "giải trí", "entertainment", "xem phim", "nghe nhạc", "netflix", "youtube",
+                "mạng xã hội", "facebook", "instagram", "tiktok", "zalo",
+                "livestream", "stream", "phát trực tiếp",
+                
+                // Giá cả và mua sắm
+                "giá", "price", "triệu", "tr", "nghìn", "k", "m", "vnđ", "đồng",
+                "dưới", "trên", "tầm", "khoảng", "từ", "đến", "rẻ", "mềm", "bình dân",
+                "cao cấp", "flagship", "tầm trung", "giá rẻ", "phổ thông",
+                "khuyến mãi", "giảm giá", "sale", "ưu đãi", "trả góp",
+                "mua", "mua máy", "mua phone", "đổi máy", "lên đời", "thay máy",
+                
+                // Đánh giá và so sánh
+                "so sánh", "compare", "vs", "hay", "tốt hơn", "khác nhau", "giống nhau",
+                "review", "đánh giá", "nhận xét", "ưu điểm", "nhược điểm",
+                "tốt nhất", "best", "top", "xịn", "ngon", "chất lượng", "bền", "đẹp",
+                "mới nhất", "latest", "new", "ra mắt", "launch",
+                
+                // Thương hiệu và cửa hàng
+                "myphone", "my phone", "cửa hàng", "shop", "store",
+                "tư vấn", "gợi ý", "đề xuất", "recommend", "suggest",
+                "chọn", "lựa chọn", "pick", "select",
+                
+                // Thiết kế và vật liệu
+                "thiết kế", "design", "đẹp", "sang", "xịn", "cao cấp", "premium",
+                "khung", "frame", "viền", "bezel", "notch", "punch hole",
+                "kính", "glass", "ceramic", "nhôm", "aluminum", "thép", "steel",
+                "mỏng", "thin", "nhẹ", "light", "gọn", "compact",
+                "to", "lớn", "big", "nhỏ", "small", "size", "kích thước",
+                
+                // Cấu hình
+                "cấu hình", "config", "spec", "thông số", "specification",
+                "mạnh", "yếu", "khỏe", "mượt", "lag", "giật", "nhanh", "chậm",
+                "đa nhiệm", "multitasking", "hiệu năng", "performance"
         };
         for (String kw : keywords) {
             if (m.contains(kw)) return true;
