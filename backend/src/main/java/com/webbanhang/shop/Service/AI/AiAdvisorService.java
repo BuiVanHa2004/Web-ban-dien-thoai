@@ -47,12 +47,15 @@ public class AiAdvisorService {
                     + "Dưới đây là 5 sản phẩm nổi bật tại MyPhone Store:";
 
     public AiResponse advise(String message, Integer topK) {
-        int k = (topK == null || topK <= 0) ? 5 : Math.min(topK, 10);
         if (message == null || message.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập nhu cầu (message).");
         }
 
         String userMessage = normalizeUserMessage(message);
+        
+        // Phát hiện số lượng sản phẩm yêu cầu từ message
+        Integer detectedCount = detectProductCount(userMessage);
+        int k = detectedCount != null ? detectedCount : ((topK == null || topK <= 0) ? 5 : Math.min(topK, 10));
 
         if (!isPhoneRelated(userMessage)) {
             List<Product> allProducts = productRepository.findAllVisibleWithGraph();
@@ -141,7 +144,7 @@ public class AiAdvisorService {
                 + buildCompactProductContext(sample)
                 + "\n\n# NHIỆM VỤ CỦA BẠN\n"
                 + "🎯 1. ĐỌC KỸ thông số THỰC TẾ của từng sản phẩm\n"
-                + "🎯 2. Chọn " + k + " sản phẩm PHÙ HỢP NHẤT với nhu cầu khách hàng\n"
+                + "🎯 2. ⚠️ **QUAN TRỌNG:** Khách hàng yêu cầu " + k + " sản phẩm → BẮT BUỘC chỉ trả về ĐÚNG " + k + " sản phẩm, KHÔNG ĐƯỢC nhiều hơn hoặc ít hơn\n"
                 + "🎯 3. GIẢI THÍCH cực kỳ ngắn gọn (1 câu ngắn cho mỗi sản phẩm) tại sao phù hợp:\n"
                 + "   - Nêu THÔNG SỐ THỰC TẾ ngắn gọn\n"
                 + "   - Ưu tiên sản phẩm CÒN_HÀNG\n"
@@ -151,6 +154,11 @@ public class AiAdvisorService {
                 + "💬 Dùng emoji phù hợp (🔥💪⚡🎮📸💰)\n"
                 + "💬 CHỈ nhắc TÊN sản phẩm với link [Tên](/product/ID), KHÔNG nhắc productId\n"
                 + "💬 Luôn xưng hô: 'Shop' và 'bạn'\n"
+                + (k == 1 ? "\n# ⚠️ ĐẶC BIỆT: KHÁCH YÊU CẦU 1 SẢN PHẨM DUY NHẤT\n"
+                    + "- CHỈ được trả về MỘT sản phẩm duy nhất\n"
+                    + "- KHÔNG được đưa ra danh sách nhiều sản phẩm\n"
+                    + "- Giải thích: Vì sao chọn, Ưu điểm, Nhược điểm (nếu có), Phù hợp với ai\n"
+                    + "- Format: Giới thiệu 1 sản phẩm chi tiết thay vì liệt kê danh sách\n\n" : "")
                 + "\n# XỬ LÝ CÂU HỎI 'CHỌN MỘT'\n"
                 + "⚠️ Nếu đây là câu hỏi tiếp theo yêu cầu 'chọn một' từ danh sách đã gợi ý trước đó:\n"
                 + "   - CHỈ chọn MỘT sản phẩm duy nhất từ danh sách đó\n"
@@ -160,7 +168,7 @@ public class AiAdvisorService {
                 + "Theo schema sau (không thêm bất kỳ văn bản nào khác ngoài JSON):\n"
                 + "{\n"
                 + "  \"answer\": \"Nội dung câu trả lời cực kỳ NGẮN GỌN (dưới 60 từ cho câu thường, dưới 100 từ cho so sánh), thân thiện, có emoji và markdown link. Sử dụng chuỗi '\\\\n' để xuống dòng.\",\n"
-                + "  \"recommendedProductIds\": [id_sản_phẩm_được_gợi_ý]\n"
+                + "  \"recommendedProductIds\": [ĐÚNG " + k + " id sản phẩm - KHÔNG ĐƯỢC nhiều hơn hoặc ít hơn]\n"
                 + "}";
 
         String raw = aiChatService.chat(systemPrompt, userPrompt);
@@ -242,12 +250,24 @@ public class AiAdvisorService {
                 + "- Không thiên vị thương hiệu\n"
                 + "- Chỉ so sánh đúng các sản phẩm được cung cấp\n"
                 + "\n# FORMAT SO SÁNH\n"
-                + "Đối với MỖI tiêu chí hệ thống cung cấp, thực hiện theo đúng thứ tự sau:\n"
-                + "\n**[Tên tiêu chí]**\n"
+                + "Đối với MỖI tiêu chí, thực hiện theo đúng format sau:\n"
+                + "\n**[Icon] [Tên tiêu chí]:**\n"
                 + "- **[Tên SP1](/product/ID1)**: Thông số chính. Điểm: X/10\n"
                 + "- **[Tên SP2](/product/ID2)**: Thông số chính. Điểm: Y/10\n"
-                + "(Nếu có thêm sản phẩm thì tiếp tục liệt kê)\n"
-                + "➡️ *Kết luận:* Viết đúng MỘT câu. Nêu rõ sản phẩm nào nổi bật nhất ở tiêu chí này và lý do.\n"
+                + "➡️ *Kết luận:* Viết đúng MỘT câu. Nêu rõ sản phẩm nào nổi bật nhất.\n"
+                + "\n# ICON CHO MỖI TIÊU CHÍ\n"
+                + "BẮT BUỘC sử dụng đúng icon sau:\n"
+                + "- 💰 Giá bán & Biến thể\n"
+                + "- 🎮 Hiệu năng & Chip\n"
+                + "- 📸 Camera\n"
+                + "- 🔋 Pin & Sạc\n"
+                + "- 📱 Màn hình\n"
+                + "- 🏆 Tổng kết\n"
+                + "\n# VÍ DỤ FORMAT ĐÚNG\n"
+                + "**📸 Camera:**\n"
+                + "- **[iPhone 17 Pro Max](/product/1)**: 48MP + 48MP + 48MP. Điểm: 8/10\n"
+                + "- **[Samsung Galaxy S25 Ultra](/product/2)**: 200MP + 50MP + 50MP + 10MP. Điểm: 9/10\n"
+                + "➡️ *Kết luận:* Samsung Galaxy S25 Ultra có hệ thống camera tốt nhất.\n"
                 + "\n# QUY TẮC CHẤM ĐIỂM\n"
                 + "- Thang điểm từ 0 đến 10\n"
                 + "- Không cho tất cả sản phẩm cùng điểm\n"
@@ -283,6 +303,8 @@ public class AiAdvisorService {
                 + "- Luôn dùng Markdown Link: [Tên sản phẩm](/product/ID)\n"
                 + "- Sử dụng '\\\\n\\\\n' để ngăn cách các phần\n"
                 + "- Luôn xưng hô: 'Shop' và 'bạn'\n"
+                + "- BẮT BUỘC xuống dòng sau tên tiêu chí (có dấu :)\n"
+                + "- BẮT BUỘC mỗi sản phẩm một dòng riêng (bắt đầu bằng -)\n"
                 + "\n# ĐỊNH DẠNG JSON\n"
                 + "Chỉ trả về đúng JSON: {\"answer\": string, \"comparedProductIds\": number[]}\n"
                 + "Không thêm bất kỳ nội dung nào ngoài JSON.";
@@ -750,6 +772,87 @@ public class AiAdvisorService {
             return trimmed.substring(0, instructionIdx).trim();
         }
         return trimmed;
+    }
+    
+    /**
+     * Phát hiện số lượng sản phẩm yêu cầu từ message
+     * Ví dụ: "đưa ra 1 sản phẩm" -> 1, "cho tôi 3 máy" -> 3
+     */
+    private Integer detectProductCount(String message) {
+        if (message == null || message.isBlank()) return null;
+        
+        String m = message.toLowerCase();
+        
+        // Pattern: "1 sản phẩm", "một sản phẩm", "chọn 1", "đưa ra 1"...
+        String[] onePatterns = {
+            "\\b1\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b",
+            "\\bmột\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b",
+            "\\bchọn\\s+(1|một)\\b",
+            "\\bđưa\\s+ra\\s+(1|một)\\b",
+            "\\bcho\\s+(1|một)\\b",
+            "\\bgợi\\s+ý\\s+(1|một)\\b",
+            "\\btốt\\s+nhất\\b",
+            "\\bduy\\s+nhất\\b",
+            "\\bchỉ\\s+(1|một)\\b",
+            "\\bcụ\\s+thể\\s+nhất\\b"
+        };
+        
+        for (String pattern : onePatterns) {
+            if (m.matches(".*" + pattern + ".*")) {
+                return 1;
+            }
+        }
+        
+        // Pattern: "2 sản phẩm", "hai máy"...
+        String[] twoPatterns = {
+            "\\b2\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b",
+            "\\bhai\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b"
+        };
+        
+        for (String pattern : twoPatterns) {
+            if (m.matches(".*" + pattern + ".*")) {
+                return 2;
+            }
+        }
+        
+        // Pattern: "3 sản phẩm", "ba máy"...
+        String[] threePatterns = {
+            "\\b3\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b",
+            "\\bba\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b"
+        };
+        
+        for (String pattern : threePatterns) {
+            if (m.matches(".*" + pattern + ".*")) {
+                return 3;
+            }
+        }
+        
+        // Pattern: "4 sản phẩm", "bốn máy", "tứ máy"...
+        String[] fourPatterns = {
+            "\\b4\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b",
+            "\\bbốn\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b",
+            "\\btư\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b"
+        };
+        
+        for (String pattern : fourPatterns) {
+            if (m.matches(".*" + pattern + ".*")) {
+                return 4;
+            }
+        }
+        
+        // Pattern: "5 sản phẩm", "năm máy"...
+        String[] fivePatterns = {
+            "\\b5\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b",
+            "\\bnăm\\s+(sản phẩm|máy|điện thoại|cái|chiếc|sp)\\b"
+        };
+        
+        for (String pattern : fivePatterns) {
+            if (m.matches(".*" + pattern + ".*")) {
+                return 5;
+            }
+        }
+        
+        return null;
     }
 
     private List<Product> pickBestShopProducts(List<Product> products, int k) {
