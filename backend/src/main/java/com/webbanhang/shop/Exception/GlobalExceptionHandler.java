@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
             if (ex.getQuota() != null && ex.getQuota().isGuest()) {
                 message = "Bạn đã hết lượt hỏi trong hôm nay. Đăng nhập để tiếp tục tư vấn và nhận gợi ý cá nhân hóa.";
             } else {
-                message = "Bạn đã hết lượt hỏi trong hôm nay. Vui lòng quay lại sau.";
+                message = "Phiên đăng nhập hôm nay đã hết hạn, xin vui lòng đăng nhập lại.";
             }
         } else if ("RATE_LIMITED".equals(ex.getCode())) {
             message = "Bạn thao tác quá nhanh. Vui lòng thử lại sau vài giây.";

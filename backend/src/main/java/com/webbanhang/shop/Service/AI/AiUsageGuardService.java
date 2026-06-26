@@ -68,7 +68,7 @@ public class AiUsageGuardService {
                 AiQuotaDto q = currentQuota(messageLimit, msgCountKey, isGuest);
                 String msg = isGuest
                         ? "Bạn đã hết lượt hỏi trong hôm nay. Đăng nhập để tiếp tục tư vấn và nhận gợi ý cá nhân hóa."
-                        : "Bạn đã hết lượt hỏi trong hôm nay. Vui lòng quay lại sau.";
+                        : "Phiên đăng nhập hôm nay đã hết hạn, xin vui lòng đăng nhập lại.";
                 return AiUsageDecision.blocked(403, "QUOTA_EXCEEDED", msg, q, estimatedTokens);
             }
 
