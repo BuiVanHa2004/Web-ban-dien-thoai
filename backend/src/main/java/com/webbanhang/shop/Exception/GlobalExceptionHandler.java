@@ -1,5 +1,6 @@
 package com.webbanhang.shop.Exception;
 
+import com.webbanhang.shop.Service.AI.AiGuardBlockedException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,6 +14,36 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    // Handle AiGuardBlockedException (AI quota exceeded or rate limited)
+    @ExceptionHandler(AiGuardBlockedException.class)
+    public ResponseEntity<Map<String, Object>> handleAiGuardBlocked(AiGuardBlockedException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", ex.getStatusCode());
+        body.put("error", ex.getCode());
+        
+        // Thay đổi message thân thiện hơn
+        String message = ex.getMessage();
+        if ("QUOTA_EXCEEDED".equals(ex.getCode())) {
+            // Nếu là hết quota, hiển thị message thân thiện
+            if (ex.getQuota() != null && ex.getQuota().isGuest()) {
+                message = "Bạn đã hết lượt hỏi trong hôm nay. Đăng nhập để tiếp tục tư vấn và nhận gợi ý cá nhân hóa.";
+            } else {
+                message = "Bạn đã hết lượt hỏi trong hôm nay. Vui lòng quay lại sau.";
+            }
+        } else if ("RATE_LIMITED".equals(ex.getCode())) {
+            message = "Bạn thao tác quá nhanh. Vui lòng thử lại sau vài giây.";
+        }
+        
+        body.put("message", message);
+        
+        // Thêm thông tin quota nếu có
+        if (ex.getQuota() != null) {
+            body.put("quota", ex.getQuota());
+        }
+        
+        return ResponseEntity.status(ex.getStatusCode()).body(body);
+    }
 
     // Handle ResponseStatusException (409 CONFLICT, 400 BAD_REQUEST, etc.)
     @ExceptionHandler(ResponseStatusException.class)
