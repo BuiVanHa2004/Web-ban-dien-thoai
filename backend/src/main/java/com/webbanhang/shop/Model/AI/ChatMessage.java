@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
-@Table(name = "chat_messages")
+@Table(name = "ai_chat_messages")
 @Getter
 @Setter
 public class ChatMessage {
