@@ -18,7 +18,13 @@ public class AiController {
 
     @PostMapping("/advice")
     public AiResponse advice(@RequestBody AiAdviceRequest req) {
-        return aiAdvisorService.advise(req.message(), req.topK());
+        return aiAdvisorService.advise(
+            req.message(), 
+            req.topK(), 
+            req.userId(), 
+            req.guestSessionId(), 
+            req.sessionId()
+        );
     }
 
     @PostMapping("/compare")

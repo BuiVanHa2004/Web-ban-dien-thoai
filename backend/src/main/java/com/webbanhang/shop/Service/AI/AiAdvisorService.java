@@ -3,8 +3,12 @@ package com.webbanhang.shop.Service.AI;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webbanhang.shop.DTO.AI.AiResponse;
+import com.webbanhang.shop.Model.AI.ChatMessage;
+import com.webbanhang.shop.Model.AI.ChatSession;
 import com.webbanhang.shop.Model.Products.Product;
 import com.webbanhang.shop.Model.Products.ProductSpec;
+import com.webbanhang.shop.Repository.AI.ChatMessageRepository;
+import com.webbanhang.shop.Repository.AI.ChatSessionRepository;
 import com.webbanhang.shop.Repository.Products.ProductRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,16 +31,22 @@ public class AiAdvisorService {
 
     private final ProductRepository productRepository;
     private final AiChatService aiChatService;
+    private final ChatSessionRepository chatSessionRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final ObjectMapper objectMapper;
     private final ObjectMapper localObjectMapper;
 
     public AiAdvisorService(
             ProductRepository productRepository,
             AiChatService aiChatService,
+            ChatSessionRepository chatSessionRepository,
+            ChatMessageRepository chatMessageRepository,
             ObjectMapper objectMapper
     ) {
         this.productRepository = productRepository;
         this.aiChatService = aiChatService;
+        this.chatSessionRepository = chatSessionRepository;
+        this.chatMessageRepository = chatMessageRepository;
         this.objectMapper = objectMapper;
         this.localObjectMapper = objectMapper.copy()
                 .configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
@@ -46,10 +57,23 @@ public class AiAdvisorService {
                     + "Bạn cho Shop biết nhu cầu (tầm giá, hãng, pin, camera, chơi game...) để Shop gợi ý máy phù hợp nhé!\n\n"
                     + "Dưới đây là 5 sản phẩm nổi bật tại MyPhone Store:";
 
-    public AiResponse advise(String message, Integer topK) {
+    public AiResponse advise(String message, Integer topK, Integer userId, String guestSessionId, Long sessionId) {
         if (message == null || message.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập nhu cầu (message).");
         }
+
+        // ✅ Bước 1: Lấy hoặc tạo chat session
+        ChatSession session = getOrCreateSession(userId, guestSessionId, sessionId);
+        
+        // ✅ Bước 2: Lưu tin nhắn của user vào database
+        ChatMessage userMsg = new ChatMessage();
+        userMsg.setSessionId(session.getId());
+        userMsg.setUserId(userId);
+        userMsg.setRole("user");
+        userMsg.setContent(message);
+        userMsg.setCreatedAt(Instant.now());
+        ChatMessage savedUserMsg = chatMessageRepository.save(userMsg);
+        System.out.println("✅ [AI Advisor] Saved user message ID: " + savedUserMsg.getId() + " to ai_chat_messages");
 
         String userMessage = normalizeUserMessage(message);
         
@@ -200,6 +224,17 @@ public class AiAdvisorService {
 
         String raw = aiChatService.chat(systemPrompt, userPrompt);
         Parsed parsed = parseJsonResponse(raw);
+        
+        // ✅ Bước 3: Lưu tin nhắn AI response vào database
+        String aiAnswer = parsed.answer == null || parsed.answer.isBlank() ? raw : parsed.answer;
+        ChatMessage assistantMsg = new ChatMessage();
+        assistantMsg.setSessionId(session.getId());
+        assistantMsg.setUserId(userId);
+        assistantMsg.setRole("assistant");
+        assistantMsg.setContent(aiAnswer);
+        assistantMsg.setCreatedAt(Instant.now());
+        ChatMessage savedAssistant = chatMessageRepository.save(assistantMsg);
+        System.out.println("✅ [AI Advisor] Saved assistant message ID: " + savedAssistant.getId() + " to ai_chat_messages");
 
         List<Integer> allowIds = sample.stream().map(Product::getProductId).filter(Objects::nonNull).toList();
         Set<Integer> allowSet = new HashSet<>(allowIds);
@@ -433,6 +468,37 @@ public class AiAdvisorService {
                 compared,
                 compared
         );
+    }
+
+    // ============================================
+    // HELPER METHODS
+    // ============================================
+    
+    /**
+     * Lấy hoặc tạo mới chat session
+     */
+    private ChatSession getOrCreateSession(Integer userId, String guestSessionId, Long sessionId) {
+        // Nếu có sessionId, tìm session cũ
+        if (sessionId != null) {
+            if (userId != null) {
+                return chatSessionRepository.findByIdAndUserId(sessionId, userId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session không hợp lệ."));
+            }
+            return chatSessionRepository.findByIdAndGuestSessionId(sessionId, guestSessionId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session không hợp lệ."));
+        }
+        
+        // Tạo session mới
+        ChatSession s = new ChatSession();
+        s.setUserId(userId);
+        s.setGuestSessionId(userId == null ? guestSessionId : null);
+        s.setTitle("Tư vấn sản phẩm");
+        s.setIsActive(true);
+        s.setCreatedAt(Instant.now());
+        s.setUpdatedAt(Instant.now());
+        ChatSession saved = chatSessionRepository.save(s);
+        System.out.println("✅ [AI Advisor] Created new session ID: " + saved.getId());
+        return saved;
     }
 
     private String buildProductContext(List<Product> products) {
