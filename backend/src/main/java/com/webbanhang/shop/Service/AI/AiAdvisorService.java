@@ -53,6 +53,12 @@ public class AiAdvisorService {
 
         String userMessage = normalizeUserMessage(message);
         
+        // Phát hiện màu sắc trong câu hỏi
+        String requestedColor = detectColor(userMessage);
+        if (requestedColor != null) {
+            System.out.println("🎨 DEBUG: Detected color request: " + requestedColor);
+        }
+        
         // Phát hiện số lượng sản phẩm yêu cầu từ message
         Integer detectedCount = detectProductCount(userMessage);
         int k = detectedCount != null ? detectedCount : ((topK == null || topK <= 0) ? 5 : Math.min(topK, 10));
@@ -84,6 +90,25 @@ public class AiAdvisorService {
         if (wantsIphone) {
             products = products.stream().filter(this::isIphoneProduct).toList();
         }
+        
+        // ✅ LỌC THEO MÀU NẾU KHÁCH YÊU CẦU
+        if (requestedColor != null) {
+            final String color = requestedColor;
+            int beforeFilter = products.size();
+            products = products.stream()
+                    .filter(p -> productHasColor(p, color))
+                    .toList();
+            System.out.println("🎨 DEBUG: Filtered products by color '" + color + "': " + beforeFilter + " → " + products.size());
+            
+            // Nếu không tìm thấy sản phẩm nào có màu đó
+            if (products.isEmpty()) {
+                return new AiResponse(
+                    "Rất tiếc, Shop hiện không có sản phẩm màu " + color + ". Bạn có thể xem các màu khác hoặc cho Shop biết nhu cầu để Shop gợi ý sản phẩm phù hợp nhé! 🎨",
+                    List.of(),
+                    List.of()
+                );
+            }
+        }
 
         List<Product> sample = pickRelevantProducts(products, userMessage, 40);
 
@@ -97,9 +122,11 @@ public class AiAdvisorService {
                 + "\n# NGUYÊN TẮC QUAN TRỌNG\n"
                 + "- CHỈ dùng sản phẩm trong danh sách. KHÔNG bịa thông tin hay productId.\n"
                 + "- Mỗi sản phẩm có status (CÒN_HÀNG/HẾT_HÀNG). Ưu tiên CÒN_HÀNG. Nếu gợi ý HẾT_HÀNG phải nói rõ 'tạm hết hàng'.\n"
+                + "- ⚠️ **MÀU SẮC:** Mỗi sản phẩm có thông tin `colors=...` liệt kê các màu có sẵn. CHỈ gợi ý sản phẩm có đúng màu khách yêu cầu. KHÔNG bịa màu không có trong danh sách.\n"
                 + "- Luôn đọc toàn bộ ngữ cảnh và lịch sử hội thoại trước khi trả lời.\n"
                 + "- Không bỏ qua ngữ cảnh. Không trả lời lan man. Không suy đoán.\n"
                 + (wantsIphone ? "- Người dùng YÊU CẦU iPhone/Apple → CHỈ gợi ý iPhone/Apple, KHÔNG đề xuất hãng khác.\n" : "")
+                + (requestedColor != null ? "- ⚠️ KHÁCH YÊU CẦU MÀU " + requestedColor.toUpperCase() + " → CHỈ gợi ý sản phẩm có màu " + requestedColor + " trong danh sách colors. KIỂM TRA KỸ trước khi gợi ý!\n" : "")
                 + "\n# FORMAT TRÍCH DẪN SẢN PHẨM\n"
                 + "BẮT BUỘC: Khi nhắc tên sản phẩm, PHẢI dùng markdown link: [Tên sản phẩm](/product/productId)\n"
                 + "Ví dụ: [iPhone 14 Pro Max](/product/123) thay vì chỉ iPhone 14 Pro Max.\n"
@@ -1631,14 +1658,87 @@ public class AiAdvisorService {
             }
         }
         
-        // If everything fails, strip JSON curly braces and quotes to be safe
-        String cleaned = text.replaceAll("\\{[\\s\\S]*?\\}", "").trim();
-        if (cleaned.isBlank()) {
-            return text.replace("```json", "").replace("```", "").replace("{", "").replace("}", "").trim();
-        }
-        return cleaned;
+        return text;
     }
-
+    
+    // ============================================
+    // MÀU SẮC DETECTION
+    // ============================================
+    
+    /**
+     * Phát hiện màu sắc trong câu hỏi của khách hàng
+     */
+    private String detectColor(String message) {
+        if (message == null || message.isBlank()) return null;
+        
+        String msg = message.toLowerCase().trim();
+        
+        // Map các từ khóa màu tiếng Việt sang tên màu chuẩn
+        if (msg.contains("màu đỏ") || msg.contains("đỏ")) return "Đỏ";
+        if (msg.contains("màu xanh dương") || msg.contains("xanh dương")) return "Xanh Dương";
+        if (msg.contains("màu xanh lá") || msg.contains("xanh lá") || msg.contains("xanh lục")) return "Xanh Lá";
+        if (msg.contains("màu vàng") || msg.contains("vàng")) return "Vàng";
+        if (msg.contains("màu cam") || msg.contains("cam")) return "Cam";
+        if (msg.contains("màu hồng") || msg.contains("hồng") || msg.contains("pink")) return "Hồng";
+        if (msg.contains("màu tím") || msg.contains("tím") || msg.contains("purple")) return "Tím";
+        if (msg.contains("màu đen") || msg.contains("đen") || msg.contains("black")) return "Đen";
+        if (msg.contains("màu trắng") || msg.contains("trắng") || msg.contains("white")) return "Trắng";
+        if (msg.contains("màu xám") || msg.contains("xám") || msg.contains("gray") || msg.contains("grey")) return "Xám";
+        if (msg.contains("màu bạc") || msg.contains("bạc") || msg.contains("silver")) return "Bạc";
+        if (msg.contains("màu vàng đồng") || msg.contains("vàng đồng") || msg.contains("gold")) return "Vàng Đồng";
+        if (msg.contains("màu xanh lam") || msg.contains("xanh lam")) return "Xanh Lam";
+        if (msg.contains("màu xanh ngọc") || msg.contains("xanh ngọc")) return "Xanh Ngọc";
+        if (msg.contains("màu titan") || msg.contains("titan") || msg.contains("titanium")) return "Titan";
+        
+        return null;
+    }
+    
+    /**
+     * Kiểm tra sản phẩm có màu yêu cầu không
+     */
+    private boolean productHasColor(Product product, String requestedColor) {
+        if (product == null || product.getProductColors() == null || requestedColor == null) {
+            return false;
+        }
+        
+        String normalized = requestedColor.toLowerCase().trim();
+        
+        return product.getProductColors().stream()
+                .anyMatch(color -> {
+                    String colorName = color.getColorName();
+                    if (colorName == null) return false;
+                    
+                    String cn = colorName.toLowerCase().trim();
+                    
+                    // Exact match
+                    if (cn.equals(normalized)) return true;
+                    
+                    // Contains match
+                    if (cn.contains(normalized) || normalized.contains(cn)) return true;
+                    
+                    // Check for common variations
+                    if (normalized.equals("cam") && (cn.contains("orange") || cn.contains("cam"))) return true;
+                    if (normalized.equals("đỏ") && (cn.contains("red") || cn.contains("đỏ"))) return true;
+                    if (normalized.equals("xanh dương") && (cn.contains("blue") || cn.contains("xanh"))) return true;
+                    if (normalized.equals("xanh lá") && (cn.contains("green") || cn.contains("xanh"))) return true;
+                    if (normalized.equals("vàng") && (cn.contains("yellow") || cn.contains("vàng"))) return true;
+                    if (normalized.equals("hồng") && (cn.contains("pink") || cn.contains("hồng") || cn.contains("rose"))) return true;
+                    if (normalized.equals("tím") && (cn.contains("purple") || cn.contains("tím") || cn.contains("violet"))) return true;
+                    if (normalized.equals("đen") && (cn.contains("black") || cn.contains("đen"))) return true;
+                    if (normalized.equals("trắng") && (cn.contains("white") || cn.contains("trắng"))) return true;
+                    if (normalized.equals("xám") && (cn.contains("gray") || cn.contains("grey") || cn.contains("xám"))) return true;
+                    if (normalized.equals("bạc") && (cn.contains("silver") || cn.contains("bạc"))) return true;
+                    if (normalized.equals("vàng đồng") && (cn.contains("gold") || cn.contains("vàng đồng"))) return true;
+                    if (normalized.equals("titan") && (cn.contains("titan") || cn.contains("titanium"))) return true;
+                    
+                    return false;
+                });
+    }
+    
+    // ============================================
+    // INNER CLASS
+    // ============================================
+    
     private static class Parsed {
         final String answer;
         final List<Integer> recommendedProductIds;
