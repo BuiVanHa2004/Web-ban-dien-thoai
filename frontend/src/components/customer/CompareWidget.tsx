@@ -314,13 +314,28 @@ export default function CompareWidget({ chatOpen, forceOpen, onClose }: { chatOp
     setCompareResult(null);
     try {
       const backendUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      
+      // Add Authorization header if user is logged in
+      if (token && token !== "null" && token !== "undefined") {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      
       const res = await fetch(`${backendUrl}/api/ai/compare`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ productIds: selectedIds, question: null }),
       });
+      
       const data = await res.json();
+      
       if (!res.ok) {
+        // Handle 401 Unauthorized - Yêu cầu đăng nhập
+        if (res.status === 401) {
+          throw new Error("LOGIN_REQUIRED:Vui lòng đăng nhập để sử dụng tính năng so sánh sản phẩm.");
+        }
+        
         const serverError = data.error || data.message || `Lỗi server (${res.status})`;
         if (res.status === 429 || isTokenLimitErrorMessage(serverError)) {
           throw new Error(AI_MAINTENANCE_MESSAGE);
@@ -330,7 +345,14 @@ export default function CompareWidget({ chatOpen, forceOpen, onClose }: { chatOp
       setCompareResult(data.answer || "Không có kết quả.");
     } catch (err) {
       const rawError = err instanceof Error ? err.message : "Có lỗi xảy ra";
-      setError(isTokenLimitErrorMessage(rawError) ? AI_MAINTENANCE_MESSAGE : rawError);
+      
+      // Check if this is a login required error
+      if (rawError.startsWith("LOGIN_REQUIRED:")) {
+        const message = rawError.substring("LOGIN_REQUIRED:".length);
+        setError(`${message}\n\n[Đăng nhập ngay](/login)`);
+      } else {
+        setError(isTokenLimitErrorMessage(rawError) ? AI_MAINTENANCE_MESSAGE : rawError);
+      }
     } finally {
       setIsComparing(false);
     }
@@ -513,8 +535,23 @@ export default function CompareWidget({ chatOpen, forceOpen, onClose }: { chatOp
                   </div>
 
                   {error && (
-                    <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600 dark:border-rose-900/30 dark:bg-rose-900/10 dark:text-rose-400">
-                      {error}
+                    <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm dark:border-rose-900/30 dark:bg-rose-900/10">
+                      {error.includes("[Đăng nhập ngay]") ? (
+                        <div className="space-y-3">
+                          <p className="text-rose-600 dark:text-rose-400">
+                            {error.split("\n\n[")[0]}
+                          </p>
+                          <Link
+                            href="/login"
+                            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 text-sm font-bold text-white shadow-lg transition-transform hover:scale-[1.02]"
+                          >
+                            <Sparkles size={16} />
+                            Đăng nhập ngay
+                          </Link>
+                        </div>
+                      ) : (
+                        <p className="text-rose-600 dark:text-rose-400">{error}</p>
+                      )}
                     </div>
                   )}
 

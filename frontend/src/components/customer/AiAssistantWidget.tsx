@@ -82,6 +82,7 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
   const [productNames, setProductNames] = React.useState<Record<number, string>>({});
   const [quotaHint, setQuotaHint] = React.useState<string | null>(null);
   const [chatSessionId, setChatSessionId] = React.useState<number | null>(null);
+  const [guestSessionId] = React.useState(() => getOrCreateGuestSessionId());
   const [recommendMap, setRecommendMap] = React.useState<Record<number, number[]>>({}); // msgIndex -> productIds
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -305,15 +306,36 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
         body: JSON.stringify({
           message: msg,
           topK: 5,
+          guestSessionId: reallyLoggedIn ? null : guestSessionId,
+          sessionId: chatSessionId,
         }),
       });
       const data = (await res.json()) as {
         answer?: string;
         recommendedProductIds?: number[];
         error?: string;
+        message?: string;
+        sessionId?: number;
       };
+      
       if (!res.ok) {
-        const serverError = data.error || `Lỗi server (${res.status})`;
+        // Handle 403 Forbidden - Guest đã hết lượt
+        if (res.status === 403) {
+          const errorMsg = data.error || data.message || "Bạn đã hết lượt hỏi. Vui lòng đăng nhập để tiếp tục.";
+          // Hiển thị thông báo yêu cầu đăng nhập
+          setMessages((prev) => {
+            // Avoid duplicate limit messages
+            if (prev[prev.length - 1]?.content.includes("hết lượt hỏi")) return prev;
+            return [
+              ...prev,
+              { role: "assistant", content: errorMsg },
+            ];
+          });
+          setLoading(false);
+          return;
+        }
+        
+        const serverError = data.error || data.message || `Lỗi server (${res.status})`;
         if (res.status === 429 || isTokenLimitErrorMessage(serverError)) {
           throw new Error(AI_MAINTENANCE_MESSAGE);
         }
@@ -362,6 +384,12 @@ export default function AiAssistantWidget({ onOpenChange, forceOpen }: { onOpenC
         }
         return [...prev, { role: "assistant", content }];
       });
+      
+      // Lưu sessionId từ backend để sử dụng cho lần sau
+      if (data.sessionId && !chatSessionId) {
+        setChatSessionId(data.sessionId);
+      }
+      
       setQuotaHint(null);
     } catch (e) {
       const rawError = e instanceof Error ? e.message : "Có lỗi xảy ra";

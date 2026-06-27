@@ -16,25 +16,38 @@ export type AiResponse = {
 
 const API_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:8080";
 
+function getAuthHeaders(): HeadersInit {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("token");
+  if (!token || token === "null" || token === "undefined") return {};
+  return { Authorization: `Bearer ${token}` };
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}/api${path}`, {
     ...init,
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
+      ...getAuthHeaders(),
       ...(init?.headers || {}),
     },
   });
 
   if (!res.ok) {
     let message = "Có lỗi xảy ra.";
+    let statusCode = res.status;
     try {
-      const data = (await res.json()) as { message?: string };
-      message = data?.message || message;
+      const data = (await res.json()) as { message?: string; error?: string };
+      message = data?.message || data?.error || message;
     } catch {
       // ignore
     }
-    throw new Error(message);
+    
+    // Throw error with status code for special handling
+    const error = new Error(message) as Error & { statusCode?: number };
+    error.statusCode = statusCode;
+    throw error;
   }
 
   if (res.status === 204) {

@@ -57,13 +57,27 @@ public class AiAdvisorService {
                     + "Bạn cho Shop biết nhu cầu (tầm giá, hãng, pin, camera, chơi game...) để Shop gợi ý máy phù hợp nhé!\n\n"
                     + "Dưới đây là 5 sản phẩm nổi bật tại MyPhone Store:";
 
-    public AiResponse advise(String message, Integer topK, Integer userId, String guestSessionId, Long sessionId) {
+    public AiResponse advise(String message, Integer topK, Integer userId, String guestSessionId, Long sessionId, String ip) {
         if (message == null || message.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập nhu cầu (message).");
         }
 
         // ✅ Bước 1: Lấy hoặc tạo chat session
         ChatSession session = getOrCreateSession(userId, guestSessionId, sessionId);
+        
+        // ✅ Kiểm tra nếu là guest (chưa đăng nhập)
+        boolean isGuest = (userId == null);
+        
+        // ✅ Nếu là guest, kiểm tra số lượng tin nhắn đã gửi trong session này
+        if (isGuest && sessionId != null) {
+            long messageCount = chatMessageRepository.countBySessionIdAndRole(session.getId(), "user");
+            if (messageCount >= 1) {
+                throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, 
+                    "Bạn đã hết lượt hỏi. Vui lòng đăng nhập để tiếp tục tư vấn và nhận gợi ý cá nhân hóa."
+                );
+            }
+        }
         
         // ✅ Bước 2: Lưu tin nhắn của user vào database
         ChatMessage userMsg = new ChatMessage();
@@ -95,7 +109,7 @@ public class AiAdvisorService {
                     .distinct()
                     .limit(k)
                     .toList();
-            return new AiResponse(OFF_TOPIC_REDIRECT_ANSWER, topProductIds, List.of());
+            return new AiResponse(OFF_TOPIC_REDIRECT_ANSWER, topProductIds, List.of(), session.getId());
         }
 
         List<Product> products = productRepository.findAllVisibleWithGraph();
@@ -129,7 +143,8 @@ public class AiAdvisorService {
                 return new AiResponse(
                     "Rất tiếc, Shop hiện không có sản phẩm màu " + color + ". Bạn có thể xem các màu khác hoặc cho Shop biết nhu cầu để Shop gợi ý sản phẩm phù hợp nhé! 🎨",
                     List.of(),
-                    List.of()
+                    List.of(),
+                    session.getId()
                 );
             }
         }
@@ -277,7 +292,8 @@ public class AiAdvisorService {
         return new AiResponse(
                 cleanedAnswer,
                 rec,
-                List.of()
+                List.of(),
+                session.getId()
         );
     }
 
@@ -466,7 +482,8 @@ public class AiAdvisorService {
         return new AiResponse(
                 cleanedAnswer,
                 compared,
-                compared
+                compared,
+                null  // Compare không cần session tracking
         );
     }
 

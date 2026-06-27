@@ -7,4 +7,9 @@ import java.util.List;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     List<ChatMessage> findTop20BySessionIdOrderByCreatedAtDesc(Long sessionId);
+    
+    /**
+     * Đếm số lượng tin nhắn theo sessionId và role (user/assistant)
+     */
+    long countBySessionIdAndRole(Long sessionId, String role);
 }

@@ -5,6 +5,7 @@ import java.util.List;
 public record AiResponse(
         String answer,
         List<Integer> recommendedProductIds,
-        List<Integer> comparedProductIds
+        List<Integer> comparedProductIds,
+        Long sessionId  // Session ID để frontend track conversation
 ) {
 }
