@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -56,6 +57,24 @@ public class AiAdvisorService {
             "Shop chỉ hỗ trợ tư vấn mua bán điện thoại, nên Shop không trả lời câu hỏi ngoài chủ đề này. "
                     + "Bạn cho Shop biết nhu cầu (tầm giá, hãng, pin, camera, chơi game...) để Shop gợi ý máy phù hợp nhé!\n\n"
                     + "Dưới đây là 5 sản phẩm nổi bật tại MyPhone Store:";
+
+    /**
+     * Class lưu thông tin kiểm tra sản phẩm có trong shop không
+     */
+    private static class ProductAvailabilityCheck {
+        List<String> requestedProducts = new ArrayList<>();
+        List<String> unavailableProducts = new ArrayList<>();
+        boolean isComparisonQuery = false;
+        boolean isPurchaseQuery = false;
+
+        boolean hasUnavailableProducts() {
+            return !unavailableProducts.isEmpty();
+        }
+
+        boolean allProductsUnavailable() {
+            return !requestedProducts.isEmpty() && requestedProducts.size() == unavailableProducts.size();
+        }
+    }
 
     public AiResponse advise(String message, Integer topK, Integer userId, String guestSessionId, Long sessionId, String ip) {
         if (message == null || message.isBlank()) {
@@ -113,6 +132,12 @@ public class AiAdvisorService {
         }
 
         List<Product> products = productRepository.findAllVisibleWithGraph();
+
+        // ✅ BƯỚC MỚI: Phát hiện sản phẩm cụ thể không có trong shop
+        ProductAvailabilityCheck availabilityCheck = checkProductAvailability(userMessage, products);
+        if (availabilityCheck.hasUnavailableProducts()) {
+            return handleUnavailableProducts(availabilityCheck, products, k, session.getId());
+        }
 
         // Phát hiện câu hỏi so sánh 2 hãng
         BrandComparisonQuery brandComparison = detectBrandComparison(userMessage);
@@ -728,34 +753,129 @@ public class AiAdvisorService {
                     
                     // Extract chip generation number for smart comparison
                     int chipScore = 0;
+                    boolean chipFound = false;
                     
-                    // Apple A-series (higher number = newer/better)
-                    if (chipLower.contains("a19")) chipScore = 19;
-                    else if (chipLower.contains("a18")) chipScore = 18;
-                    else if (chipLower.contains("a17")) chipScore = 17;
-                    else if (chipLower.contains("a16")) chipScore = 16;
-                    else if (chipLower.contains("a15")) chipScore = 15;
-                    else if (chipLower.contains("a14")) chipScore = 14;
+                    // ✅ Apple A-series: Tự động trích xuất số (A10, A11, ..., A18, A19, A20, A21...)
+                    Pattern applePattern = Pattern.compile("a(\\d+)");
+                    Matcher appleMatcher = applePattern.matcher(chipLower);
+                    if (appleMatcher.find()) {
+                        try {
+                            chipScore = Integer.parseInt(appleMatcher.group(1));
+                            chipFound = true;
+                        } catch (Exception ignored) {}
+                    }
                     
-                    // Snapdragon (8 Gen series)
-                    else if (chipLower.contains("8 gen 3") || chipLower.contains("8 gen3")) chipScore = 17;
-                    else if (chipLower.contains("8 gen 2") || chipLower.contains("8 gen2")) chipScore = 16;
-                    else if (chipLower.contains("8 gen 1") || chipLower.contains("8 gen1")) chipScore = 15;
-                    else if (chipLower.contains("8+ gen 1") || chipLower.contains("8+")) chipScore = 16;
-                    else if (chipLower.contains("snapdragon 888")) chipScore = 14;
-                    else if (chipLower.contains("snapdragon 8 elite")) chipScore = 18;
+                    // ✅ Snapdragon 8 Elite: Tự động
+                    if (!chipFound && (chipLower.contains("8 elite") || chipLower.contains("8elite"))) {
+                        chipScore = 18;
+                        chipFound = true;
+                    }
                     
-                    // Dimensity
-                    else if (chipLower.contains("dimensity 9300")) chipScore = 17;
-                    else if (chipLower.contains("dimensity 9200")) chipScore = 16;
-                    else if (chipLower.contains("dimensity 9000")) chipScore = 15;
-                    else if (chipLower.contains("dimensity 8")) chipScore = 13;
+                    // ✅ Snapdragon 8 Gen series: Tự động trích xuất số (8 Gen 1, 2, 3, 4, 5, 6...)
+                    if (!chipFound) {
+                        Pattern snapdragon8GenPattern = Pattern.compile("8\\s*gen\\s*(\\d+)");
+                        Matcher snapdragonMatcher = snapdragon8GenPattern.matcher(chipLower);
+                        if (snapdragonMatcher.find()) {
+                            try {
+                                int genNumber = Integer.parseInt(snapdragonMatcher.group(1));
+                                // Map Gen number to score: Gen 3 = 17, Gen 4 = 18, Gen 5 = 19...
+                                chipScore = 14 + genNumber;  // Gen 1 = 15, Gen 2 = 16, Gen 3 = 17...
+                                chipFound = true;
+                            } catch (Exception ignored) {}
+                        }
+                    }
                     
-                    // Score based on chip tier
-                    if (chipScore >= 17) score += 10.0; // Latest flagship (A17+, SD 8 Gen 3, Dimensity 9300)
-                    else if (chipScore >= 15) score += 7.0; // Previous flagship
-                    else if (chipScore >= 13) score += 4.0; // High-end
-                    else score += 2.0; // Has chip info
+                    // ✅ Snapdragon 8+ Gen: Tự động (8+ Gen 1, 8+ Gen 2...)
+                    if (!chipFound) {
+                        Pattern snapdragon8PlusPattern = Pattern.compile("8\\+\\s*gen\\s*(\\d+)");
+                        Matcher snapdragon8PlusMatcher = snapdragon8PlusPattern.matcher(chipLower);
+                        if (snapdragon8PlusMatcher.find()) {
+                            try {
+                                int genNumber = Integer.parseInt(snapdragon8PlusMatcher.group(1));
+                                chipScore = 15 + genNumber;  // 8+ Gen 1 = 16, 8+ Gen 2 = 17...
+                                chipFound = true;
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                    
+                    // ✅ Snapdragon 8xx series: Tự động (888, 870, 865, 855...)
+                    if (!chipFound) {
+                        Pattern snapdragon8xxPattern = Pattern.compile("snapdragon\\s*8(\\d{2})");
+                        Matcher snapdragon8xxMatcher = snapdragon8xxPattern.matcher(chipLower);
+                        if (snapdragon8xxMatcher.find()) {
+                            try {
+                                String numberStr = snapdragon8xxMatcher.group(1);
+                                int number = Integer.parseInt(numberStr);
+                                // 888 = 14, 870 = 13, 865 = 13, 855 = 12
+                                if (number >= 88) chipScore = 14;
+                                else if (number >= 70) chipScore = 13;
+                                else if (number >= 60) chipScore = 12;
+                                else chipScore = 11;
+                                chipFound = true;
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                    
+                    // ✅ Dimensity 9xxx series: Tự động (9000, 9200, 9300, 9400...)
+                    if (!chipFound) {
+                        Pattern dimensity9xxxPattern = Pattern.compile("dimensity\\s*9(\\d{3})");
+                        Matcher dimensity9xxxMatcher = dimensity9xxxPattern.matcher(chipLower);
+                        if (dimensity9xxxMatcher.find()) {
+                            try {
+                                String numberStr = dimensity9xxxMatcher.group(1);
+                                int number = Integer.parseInt(numberStr);
+                                // 9300 = 17, 9200 = 16, 9000 = 15
+                                if (number >= 300) chipScore = 17;
+                                else if (number >= 200) chipScore = 16;
+                                else chipScore = 15;
+                                chipFound = true;
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                    
+                    // ✅ Dimensity 8xxx series: Tự động (8000, 8100, 8200, 8300...)
+                    if (!chipFound) {
+                        Pattern dimensity8xxxPattern = Pattern.compile("dimensity\\s*8(\\d{3})");
+                        Matcher dimensity8xxxMatcher = dimensity8xxxPattern.matcher(chipLower);
+                        if (dimensity8xxxMatcher.find()) {
+                            try {
+                                String numberStr = dimensity8xxxMatcher.group(1);
+                                int number = Integer.parseInt(numberStr);
+                                // 8300 = 14, 8200 = 13, 8100 = 13, 8000 = 12
+                                if (number >= 300) chipScore = 14;
+                                else if (number >= 100) chipScore = 13;
+                                else chipScore = 12;
+                                chipFound = true;
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                    
+                    // ✅ Exynos: Tự động (Exynos 2400, 2200, 1480...)
+                    if (!chipFound) {
+                        Pattern exynosPattern = Pattern.compile("exynos\\s*(\\d{4})");
+                        Matcher exynosMatcher = exynosPattern.matcher(chipLower);
+                        if (exynosMatcher.find()) {
+                            try {
+                                int number = Integer.parseInt(exynosMatcher.group(1));
+                                // 2400 = 16, 2200 = 15, 1480 = 12
+                                if (number >= 2400) chipScore = 16;
+                                else if (number >= 2200) chipScore = 15;
+                                else if (number >= 2100) chipScore = 14;
+                                else if (number >= 1480) chipScore = 12;
+                                else chipScore = 10;
+                                chipFound = true;
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                    
+                    // ✅ Score based on chip tier (linh hoạt cho tất cả chip hiện tại và tương lai)
+                    if (chipScore >= 18) score += 10.0;      // Latest flagship 2024+ (A18+, SD 8 Elite, SD 8 Gen 4+)
+                    else if (chipScore >= 16) score += 9.0;  // Flagship 2023-2024 (A16-A17, SD 8 Gen 2-3, Exynos 2400)
+                    else if (chipScore >= 14) score += 7.0;  // Flagship 2021-2022 (A14-A15, SD 888, Dimensity 9000)
+                    else if (chipScore >= 12) score += 4.0;  // Mid-range (A12-A13, Dimensity 8xxx, Exynos 1480)
+                    else if (chipScore >= 10) score += 1.5;  // Old (A10-A11)
+                    else if (chipFound) score += 0.5;        // Very old chip
+                    else score += 0.2;                       // Unknown chip
                 }
                 
                 // Check RAM from variants
@@ -1238,6 +1358,483 @@ public class AiAdvisorService {
     private String safe(String s) {
         if (s == null) return "";
         return s.replaceAll("\n+", " ").trim();
+    }
+
+    /**
+     * Kiểm tra sản phẩm cụ thể có trong shop không
+     */
+    private ProductAvailabilityCheck checkProductAvailability(String message, List<Product> allProducts) {
+        ProductAvailabilityCheck check = new ProductAvailabilityCheck();
+        String msg = message.toLowerCase();
+
+        // Phát hiện loại câu hỏi
+        check.isComparisonQuery = msg.contains("so sánh") || msg.contains("vs") || msg.contains("versus") ||
+                                   (msg.contains("hay") && (msg.contains("tốt hơn") || msg.contains("mạnh hơn") || 
+                                    msg.contains("đẹp hơn") || msg.contains("ngon hơn") || msg.contains("nên chọn"))) ||
+                                   msg.contains("cái nào");
+        
+        check.isPurchaseQuery = msg.contains("mua") || msg.contains("tư vấn") || msg.contains("gợi ý") || 
+                               msg.contains("chọn") || msg.contains("giá") || msg.contains("bao nhiêu") ||
+                               msg.contains("có không") || msg.contains("còn hàng") || msg.contains("tìm") ||
+                               msg.contains("xem") || msg.contains("cho tôi");
+
+        // ✅ Danh sách pattern MỞ RỘNG để phát hiện sản phẩm cụ thể
+        List<Pattern> productPatterns = List.of(
+            // iPhone patterns (bao gồm cả tên đầy đủ và viết tắt)
+            Pattern.compile("iphone\\s*(\\d+)\\s*(pro\\s*max|pro\\s*plus|pro|plus|mini|se|air)?", Pattern.CASE_INSENSITIVE),
+            
+            // Samsung Galaxy S series
+            Pattern.compile("samsung\\s*(?:galaxy\\s*)?(s)(\\d+)\\s*(ultra|plus|fe|\\+)?", Pattern.CASE_INSENSITIVE),
+            
+            // Samsung Galaxy Z series (Fold/Flip)
+            Pattern.compile("samsung\\s*(?:galaxy\\s*)?(z)\\s*(fold|flip)\\s*(\\d+)", Pattern.CASE_INSENSITIVE),
+            
+            // Samsung Galaxy A series
+            Pattern.compile("samsung\\s*(?:galaxy\\s*)?(a)(\\d+)\\s*(5g)?", Pattern.CASE_INSENSITIVE),
+            
+            // Xiaomi numbered series
+            Pattern.compile("xiaomi\\s*(\\d+)\\s*(ultra|pro\\s*max|pro\\s*plus|pro|plus|t|lite)?", Pattern.CASE_INSENSITIVE),
+            
+            // Redmi series
+            Pattern.compile("redmi\\s*(?:note\\s*)?(\\d+)\\s*(pro\\s*max|pro\\s*plus|pro|plus)?", Pattern.CASE_INSENSITIVE),
+            
+            // Oppo Find series
+            Pattern.compile("oppo\\s*(?:find\\s*)?([xn])(\\d+)\\s*(ultra|pro)?", Pattern.CASE_INSENSITIVE),
+            
+            // Oppo Reno series
+            Pattern.compile("oppo\\s*reno\\s*(\\d+)\\s*(pro\\s*plus|pro)?", Pattern.CASE_INSENSITIVE),
+            
+            // Oppo A series
+            Pattern.compile("oppo\\s*a(\\d+)", Pattern.CASE_INSENSITIVE),
+            
+            // Vivo X series
+            Pattern.compile("vivo\\s*x(\\d+)\\s*(pro\\s*plus|pro)?", Pattern.CASE_INSENSITIVE),
+            
+            // Vivo Y series
+            Pattern.compile("vivo\\s*y(\\d+)", Pattern.CASE_INSENSITIVE),
+            
+            // Vivo V series
+            Pattern.compile("vivo\\s*v(\\d+)\\s*(pro)?", Pattern.CASE_INSENSITIVE),
+            
+            // Realme GT series
+            Pattern.compile("realme\\s*gt\\s*(?:neo\\s*)?(\\d+)\\s*(pro|explorer)?", Pattern.CASE_INSENSITIVE),
+            
+            // OnePlus series
+            Pattern.compile("oneplus\\s*(\\d+)\\s*(pro|t|r)?", Pattern.CASE_INSENSITIVE),
+            
+            // Google Pixel
+            Pattern.compile("(?:google\\s*)?pixel\\s*(\\d+)\\s*(pro|xl|a)?", Pattern.CASE_INSENSITIVE),
+            
+            // Nokia
+            Pattern.compile("nokia\\s*([xg]?)(\\d+)\\s*(pro|plus)?", Pattern.CASE_INSENSITIVE),
+            
+            // Sony Xperia
+            Pattern.compile("sony\\s*(?:xperia\\s*)?(\\d+)\\s*(pro|compact|ultra)?", Pattern.CASE_INSENSITIVE),
+            
+            // Asus ROG Phone
+            Pattern.compile("asus\\s*(?:rog\\s*phone\\s*)?(\\d+)", Pattern.CASE_INSENSITIVE),
+            
+            // Huawei
+            Pattern.compile("huawei\\s*(?:p|mate)?(\\d+)\\s*(pro|plus)?", Pattern.CASE_INSENSITIVE)
+        );
+
+        Set<String> detectedProducts = new HashSet<>();
+        
+        // Phát hiện tất cả sản phẩm trong câu hỏi
+        for (Pattern pattern : productPatterns) {
+            Matcher matcher = pattern.matcher(msg);
+            while (matcher.find()) {
+                String detectedProduct = matcher.group(0).trim();
+                // Chuẩn hóa tên sản phẩm
+                detectedProduct = normalizeProductName(detectedProduct);
+                detectedProducts.add(detectedProduct);
+            }
+        }
+
+        if (detectedProducts.isEmpty()) {
+            return check; // Không phát hiện sản phẩm cụ thể
+        }
+
+        check.requestedProducts = new ArrayList<>(detectedProducts);
+
+        // ✅ Kiểm tra từng sản phẩm phát hiện được có trong shop không
+        for (String requestedProduct : detectedProducts) {
+            boolean found = allProducts.stream().anyMatch(p -> {
+                String productName = safe(p.getProductName()).toLowerCase();
+                String brandName = p.getBrand() != null ? safe(p.getBrand().getBrandName()).toLowerCase() : "";
+                String requested = requestedProduct.toLowerCase();
+                
+                // Kiểm tra nhiều cách
+                return productName.contains(requested) || 
+                       (brandName + " " + productName).contains(requested) ||
+                       calculateSimilarity(productName, requested) > 0.7 ||
+                       fuzzyMatch(productName, requested);
+            });
+
+            if (!found) {
+                check.unavailableProducts.add(requestedProduct);
+            }
+        }
+
+        return check;
+    }
+
+    /**
+     * Chuẩn hóa tên sản phẩm
+     */
+    private String normalizeProductName(String name) {
+        if (name == null) return "";
+        
+        // Chuẩn hóa khoảng trắng
+        name = name.trim().replaceAll("\\s+", " ");
+        
+        // Chuẩn hóa một số từ viết tắt
+        name = name.replace("promax", "pro max")
+                   .replace("proplus", "pro plus")
+                   .replace("ultra", " ultra")
+                   .replace("fe", " fe");
+        
+        return name;
+    }
+
+    /**
+     * Fuzzy matching nâng cao
+     */
+    private boolean fuzzyMatch(String productName, String searchTerm) {
+        // Tách thành các từ
+        String[] productWords = productName.toLowerCase().split("\\s+");
+        String[] searchWords = searchTerm.toLowerCase().split("\\s+");
+        
+        // Đếm số từ khớp
+        int matchCount = 0;
+        for (String searchWord : searchWords) {
+            for (String productWord : productWords) {
+                if (productWord.contains(searchWord) || searchWord.contains(productWord)) {
+                    matchCount++;
+                    break;
+                }
+            }
+        }
+        
+        // Nếu khớp >= 70% số từ → coi như match
+        return (double) matchCount / searchWords.length >= 0.7;
+    }
+
+    /**
+     * Tính độ tương đồng giữa 2 chuỗi (0.0 - 1.0)
+     */
+    private double calculateSimilarity(String s1, String s2) {
+        String longer = s1.length() > s2.length() ? s1 : s2;
+        String shorter = s1.length() > s2.length() ? s2 : s1;
+        
+        if (longer.length() == 0) return 1.0;
+        
+        int editDistance = computeLevenshteinDistance(longer, shorter);
+        return (longer.length() - editDistance) / (double) longer.length();
+    }
+
+    /**
+     * Tính Levenshtein distance
+     */
+    private int computeLevenshteinDistance(String s1, String s2) {
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
+
+        for (int i = 0; i <= s1.length(); i++) {
+            dp[i][0] = i;
+        }
+        for (int j = 0; j <= s2.length(); j++) {
+            dp[0][j] = j;
+        }
+
+        for (int i = 1; i <= s1.length(); i++) {
+            for (int j = 1; j <= s2.length(); j++) {
+                int cost = s1.charAt(i - 1) == s2.charAt(j - 1) ? 0 : 1;
+                dp[i][j] = Math.min(Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1), dp[i - 1][j - 1] + cost);
+            }
+        }
+
+        return dp[s1.length()][s2.length()];
+    }
+
+    /**
+     * Xử lý khi có sản phẩm không có trong shop
+     */
+    private AiResponse handleUnavailableProducts(ProductAvailabilityCheck check, List<Product> allProducts, 
+                                                  int k, Long sessionId) {
+        StringBuilder answer = new StringBuilder();
+        
+        // Format danh sách sản phẩm không có với số lượng linh hoạt
+        String unavailableList;
+        if (check.unavailableProducts.size() == 1) {
+            unavailableList = "**" + capitalizeWords(check.unavailableProducts.get(0)) + "**";
+        } else if (check.unavailableProducts.size() == 2) {
+            unavailableList = "**" + capitalizeWords(check.unavailableProducts.get(0)) + "**" + 
+                            " và **" + capitalizeWords(check.unavailableProducts.get(1)) + "**";
+        } else {
+            // 3+ sản phẩm
+            List<String> formatted = check.unavailableProducts.stream()
+                .map(p -> "**" + capitalizeWords(p) + "**")
+                .toList();
+            unavailableList = String.join(", ", formatted.subList(0, formatted.size() - 1)) + 
+                            " và " + formatted.get(formatted.size() - 1);
+        }
+
+        if (check.isComparisonQuery) {
+            // Trường hợp so sánh
+            if (check.allProductsUnavailable()) {
+                // Tất cả sản phẩm đều không có
+                answer.append("Rất tiếc, ");
+                if (check.requestedProducts.size() == 2) {
+                    answer.append("cả 2 sản phẩm ");
+                } else {
+                    answer.append("các sản phẩm ");
+                }
+                answer.append(unavailableList)
+                      .append(" hiện **không có trong shop** nên không thể so sánh được. 😔\n\n");
+                answer.append("💡 Shop gợi ý các sản phẩm tương tự đang có sẵn để bạn so sánh:");
+            } else {
+                // Một số sản phẩm không có, một số có
+                int availableCount = check.requestedProducts.size() - check.unavailableProducts.size();
+                answer.append("Rất tiếc, ").append(unavailableList)
+                      .append(" hiện **không có trong shop** nên không thể so sánh đầy đủ. 😔\n\n");
+                
+                if (availableCount == 1) {
+                    // Có 1 sản phẩm trong shop
+                    String availableProduct = check.requestedProducts.stream()
+                        .filter(p -> !check.unavailableProducts.contains(p))
+                        .findFirst()
+                        .orElse("");
+                    answer.append("💡 Shop có **").append(capitalizeWords(availableProduct))
+                          .append("**. Bạn có thể xem các sản phẩm tương tự để so sánh:");
+                } else {
+                    answer.append("💡 Shop có các sản phẩm khác trong danh sách của bạn. Xem thêm gợi ý tương tự:");
+                }
+            }
+        } else if (check.isPurchaseQuery) {
+            // Trường hợp mua/tư vấn/hỏi giá/hỏi thông số
+            boolean isPriceQuery = check.requestedProducts.stream()
+                .anyMatch(p -> check.unavailableProducts.contains(p)) &&
+                (check.isPurchaseQuery && 
+                 (check.requestedProducts.get(0).toLowerCase().contains("giá") || 
+                  check.requestedProducts.get(0).toLowerCase().contains("bao nhiêu")));
+            
+            answer.append("Rất tiếc, ").append(unavailableList)
+                  .append(" hiện **không có trong shop**");
+            
+            if (check.unavailableProducts.size() == 1) {
+                answer.append(" nên Shop không có thông tin về sản phẩm này. 😔\n\n");
+            } else {
+                answer.append(" nên Shop không có thông tin về các sản phẩm này. 😔\n\n");
+            }
+            
+            answer.append("💡 Shop gợi ý các sản phẩm tương tự đang có sẵn:");
+        } else {
+            // Trường hợp khác (hỏi chung chung)
+            answer.append("Rất tiếc, ").append(unavailableList)
+                  .append(" hiện **không có trong shop**. 😔\n\n");
+            answer.append("💡 Dưới đây là các sản phẩm nổi bật tại shop:");
+        }
+
+        // ✅ Lấy top sản phẩm - ưu tiên từ các thương hiệu được nhắc đến
+        List<Integer> topProductIds = getSmartProductSuggestions(
+            allProducts, 
+            check.requestedProducts, 
+            check.unavailableProducts,
+            Math.max(k, 5)
+        );
+
+        return new AiResponse(answer.toString(), topProductIds, List.of(), sessionId);
+    }
+
+    /**
+     * Gợi ý sản phẩm thông minh dựa trên sản phẩm khách yêu cầu
+     */
+    private List<Integer> getSmartProductSuggestions(List<Product> allProducts, 
+                                                     List<String> requestedProducts,
+                                                     List<String> unavailableProducts,
+                                                     int k) {
+        // Trích xuất thương hiệu từ sản phẩm yêu cầu
+        Set<String> requestedBrands = extractBrandsFromProductNames(requestedProducts);
+        
+        List<Product> prioritizedProducts = new ArrayList<>();
+        List<Product> otherProducts = new ArrayList<>();
+        
+        // Phân loại sản phẩm: ưu tiên thương hiệu được yêu cầu
+        for (Product p : allProducts) {
+            if (p.getBrand() == null || p.getBrand().getBrandName() == null) continue;
+            
+            String brandName = p.getBrand().getBrandName().toLowerCase();
+            boolean isRequestedBrand = requestedBrands.stream()
+                .anyMatch(rb -> brandName.contains(rb) || rb.contains(brandName));
+            
+            if (isRequestedBrand) {
+                prioritizedProducts.add(p);
+            } else {
+                otherProducts.add(p);
+            }
+        }
+        
+        // Sắp xếp theo điểm
+        prioritizedProducts.sort((a, b) -> Double.compare(
+            scoreProductForListing(b), 
+            scoreProductForListing(a)
+        ));
+        
+        otherProducts.sort((a, b) -> Double.compare(
+            scoreProductForListing(b), 
+            scoreProductForListing(a)
+        ));
+        
+        // Kết hợp: Lấy từ thương hiệu ưu tiên trước, sau đó đa dạng hóa
+        List<Product> result = new ArrayList<>();
+        
+        // Lấy top từ thương hiệu ưu tiên (tối đa 60%)
+        int priorityCount = Math.min(prioritizedProducts.size(), (int)(k * 0.6));
+        result.addAll(prioritizedProducts.subList(0, Math.min(priorityCount, prioritizedProducts.size())));
+        
+        // Lấy thêm từ các thương hiệu khác (đa dạng hóa)
+        if (result.size() < k) {
+            List<Integer> otherProductIds = getTopProductsFromDifferentBrands(
+                otherProducts, 
+                k - result.size()
+            );
+            
+            List<Product> additionalProducts = otherProducts.stream()
+                .filter(p -> otherProductIds.contains(p.getProductId()))
+                .toList();
+            
+            result.addAll(additionalProducts);
+        }
+        
+        return result.stream()
+            .map(Product::getProductId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .limit(k)
+            .toList();
+    }
+
+    /**
+     * Trích xuất tên thương hiệu từ tên sản phẩm
+     */
+    private Set<String> extractBrandsFromProductNames(List<String> productNames) {
+        Set<String> brands = new HashSet<>();
+        
+        for (String productName : productNames) {
+            String name = productName.toLowerCase();
+            
+            // Danh sách thương hiệu phổ biến
+            String[] knownBrands = {
+                "iphone", "apple", "samsung", "xiaomi", "redmi", 
+                "oppo", "vivo", "realme", "oneplus", "nokia", 
+                "sony", "google", "pixel", "huawei", "asus"
+            };
+            
+            for (String brand : knownBrands) {
+                if (name.contains(brand)) {
+                    // Chuẩn hóa: iPhone/Apple → apple
+                    if (brand.equals("iphone")) {
+                        brands.add("apple");
+                    } else {
+                        brands.add(brand);
+                    }
+                }
+            }
+        }
+        
+        return brands;
+    }
+
+    /**
+     * Lấy top sản phẩm từ các thương hiệu khác nhau
+     */
+    private List<Integer> getTopProductsFromDifferentBrands(List<Product> products, int k) {
+        Map<String, List<Product>> productsByBrand = products.stream()
+            .filter(p -> p.getBrand() != null && p.getBrand().getBrandName() != null)
+            .collect(Collectors.groupingBy(p -> p.getBrand().getBrandName()));
+
+        List<Product> result = new ArrayList<>();
+        List<String> brands = new ArrayList<>(productsByBrand.keySet());
+        
+        // Lấy 1 sản phẩm từ mỗi thương hiệu xen kẽ
+        int maxIterations = 10; // Tránh vòng lặp vô hạn
+        int iteration = 0;
+        
+        while (result.size() < k && iteration < maxIterations) {
+            for (String brand : brands) {
+                if (result.size() >= k) break;
+                
+                List<Product> brandProducts = productsByBrand.get(brand);
+                if (brandProducts != null && !brandProducts.isEmpty()) {
+                    // Lấy sản phẩm tốt nhất chưa được chọn
+                    Product best = brandProducts.stream()
+                        .filter(p -> !result.contains(p))
+                        .max((a, b) -> Double.compare(
+                            scoreProductForListing(a), 
+                            scoreProductForListing(b)
+                        ))
+                        .orElse(null);
+                    
+                    if (best != null) {
+                        result.add(best);
+                    }
+                }
+            }
+            iteration++;
+        }
+
+        return result.stream()
+            .map(Product::getProductId)
+            .filter(Objects::nonNull)
+            .limit(k)
+            .toList();
+    }
+
+    /**
+     * Chấm điểm sản phẩm cho mục đích listing
+     */
+    private double scoreProductForListing(Product p) {
+        double score = 0;
+        
+        // Ưu tiên sản phẩm còn hàng
+        if (hasSellableVariant(p)) score += 10.0;
+        
+        // Ưu tiên sản phẩm mới
+        if (p.getProductType() != null) {
+            switch (p.getProductType()) {
+                case NEW -> score += 5.0;
+                case BEST_SELLER -> score += 4.0;
+                case SALE -> score += 3.0;
+                default -> score += 0;
+            }
+        }
+        
+        // Ưu tiên sản phẩm có ID lớn (mới thêm vào)
+        if (p.getProductId() != null) {
+            score += p.getProductId() * 0.001;
+        }
+        
+        return score;
+    }
+
+    /**
+     * Viết hoa chữ cái đầu mỗi từ
+     */
+    private String capitalizeWords(String str) {
+        if (str == null || str.isEmpty()) return str;
+        
+        String[] words = str.split("\\s+");
+        StringBuilder result = new StringBuilder();
+        
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                result.append(Character.toUpperCase(word.charAt(0)))
+                      .append(word.substring(1).toLowerCase())
+                      .append(" ");
+            }
+        }
+        
+        return result.toString().trim();
     }
 
     /**
