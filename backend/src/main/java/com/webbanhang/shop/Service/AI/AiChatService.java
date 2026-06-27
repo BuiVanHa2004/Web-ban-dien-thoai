@@ -241,7 +241,8 @@ public class AiChatService {
         userMsg.setRole("user");
         userMsg.setContent(latestUser.content());
         userMsg.setInputTokens(decision.estimatedInputTokens());
-        chatMessageRepository.save(userMsg);
+        ChatMessage savedUserMsg = chatMessageRepository.save(userMsg);
+        System.out.println("✅ [AI] Saved user message ID: " + savedUserMsg.getId() + " to ai_chat_messages");
 
         List<AiChatTurn> context = buildContext(session.getId(), req.messages());
         AiProviderService.AiProviderResult ai = aiProviderService.chat(context);
@@ -255,7 +256,8 @@ public class AiChatService {
         assistant.setOutputTokens(ai.completionTokens());
         assistant.setModelName(ai.model());
         assistant.setCostUsd(estimateCost(ai.promptTokens(), ai.completionTokens()));
-        chatMessageRepository.save(assistant);
+        ChatMessage savedAssistant = chatMessageRepository.save(assistant);
+        System.out.println("✅ [AI] Saved assistant message ID: " + savedAssistant.getId() + " to ai_chat_messages");
 
         saveUsageLog(
                 userId,
