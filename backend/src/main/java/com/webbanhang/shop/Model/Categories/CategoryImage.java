@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.Instant;
 
 @Entity
@@ -19,6 +21,7 @@ public class CategoryImage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
+    @JsonIgnoreProperties({"categoryImages", "categoryPriceSegments"})
     private Category category;
 
     @Column(name = "image_url", nullable = false, length = 1024)

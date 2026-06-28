@@ -1,5 +1,6 @@
 package com.webbanhang.shop.Model.Products;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.webbanhang.shop.Model.Brands.Brand;
 import com.webbanhang.shop.Model.Categories.Category;
 import jakarta.persistence.Column;
@@ -47,10 +48,12 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
+    @JsonIgnoreProperties({"categoryImages", "categoryPriceSegments"})
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
+    @JsonIgnoreProperties({"products", "brandImages"})
     private Brand brand;
 
     @Enumerated(EnumType.STRING)
@@ -71,14 +74,17 @@ public class Product {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("productColorId ASC")
+    @JsonIgnoreProperties("product")
     private Set<ProductColor> productColors = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("specId ASC")
+    @JsonIgnoreProperties("product")
     private Set<ProductSpec> productSpecs = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
+    @JsonIgnoreProperties("product")
     private Set<ProductImage> productImages = new LinkedHashSet<>();
 
     @PrePersist

@@ -1,5 +1,6 @@
 package com.webbanhang.shop.Model.Brands;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,6 +39,7 @@ public class Brand {
     private String brandDescription;
 
     @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("brand")
     private List<BrandImage> brandImages = new ArrayList<>();
 
     @Column(name = "created_at")

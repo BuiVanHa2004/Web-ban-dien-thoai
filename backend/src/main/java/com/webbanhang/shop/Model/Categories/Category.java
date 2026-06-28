@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.webbanhang.shop.Model.PriceSegments.CategoryPriceSegment;
 
 import java.time.Instant;
@@ -41,9 +42,11 @@ public class Category {
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
+    @JsonIgnoreProperties("category")
     private Set<CategoryImage> categoryImages = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("category")
     private Set<CategoryPriceSegment> categoryPriceSegments = new LinkedHashSet<>();
 
     @PrePersist

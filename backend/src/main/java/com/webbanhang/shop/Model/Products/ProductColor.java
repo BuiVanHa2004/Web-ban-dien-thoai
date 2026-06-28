@@ -1,5 +1,6 @@
 package com.webbanhang.shop.Model.Products;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,6 +35,7 @@ public class ProductColor {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnoreProperties({"productColors", "productSpecs", "productImages", "category", "brand"})
     private Product product;
 
     @Column(name = "color_name", nullable = false, length = 255)
@@ -56,10 +58,12 @@ public class ProductColor {
 
     @OneToMany(mappedBy = "productColor", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
+    @JsonIgnoreProperties("productColor")
     private Set<ProductColorImage> colorImages = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "productColor", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("variantId ASC")
+    @JsonIgnoreProperties("productColor")
     private Set<ProductVariant> variants = new LinkedHashSet<>();
 
     @PrePersist

@@ -1,5 +1,6 @@
 package com.webbanhang.shop.Model.Products;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -28,6 +29,7 @@ public class ProductSpec {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnoreProperties({"productColors", "productSpecs", "productImages", "category", "brand"})
     private Product product;
 
     @Column(name = "version", length = 10)

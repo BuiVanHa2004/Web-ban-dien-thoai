@@ -1,5 +1,7 @@
 package com.webbanhang.shop.Config;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -83,10 +85,24 @@ public class RedisConfig {
     @Bean
     public ObjectMapper redisObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
+        
         // Đăng ký JavaTimeModule để hỗ trợ java.time.Instant, LocalDateTime, etc.
         mapper.registerModule(new JavaTimeModule());
+        
         // Disable viết date dưới dạng timestamps
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        
+        // ✅ FIX: Xử lý circular references (vòng lặp vô hạn) khi serialize entities
+        mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        mapper.disable(SerializationFeature.FAIL_ON_SELF_REFERENCES);
+        
+        // ✅ FIX: Bỏ qua Hibernate lazy-loading proxies và không serialize lazy collections
+        mapper.configure(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS, false);
+        
+        // Chỉ serialize các field có getter (bỏ qua Hibernate proxies)
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        
         return mapper;
     }
 
