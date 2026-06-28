@@ -18,6 +18,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -128,10 +129,11 @@ public class RedisConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // Sử dụng ObjectMapper đơn giản, KHÔNG có type information
-        // Spring Cache tự biết type từ method signature
-        GenericJackson2JsonRedisSerializer jsonSerializer = 
-            new GenericJackson2JsonRedisSerializer(redisObjectMapper());
+        // ✅ GIẢI PHÁP CUỐI CÙNG: Dùng JdkSerializationRedisSerializer
+        // Serialize binary (Java native) thay vì JSON
+        // Ưu điểm: Không bị LinkedHashMap error, giữ nguyên type
+        // Nhược điểm: Binary format (không đọc được), hơi lớn hơn JSON
+        JdkSerializationRedisSerializer jdkSerializer = new JdkSerializationRedisSerializer();
         
         // Cấu hình cache mặc định
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
@@ -140,7 +142,7 @@ public class RedisConfig {
                 RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
             )
             .serializeValuesWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer)
+                RedisSerializationContext.SerializationPair.fromSerializer(jdkSerializer)
             )
             .disableCachingNullValues(); // Không cache giá trị null
 
