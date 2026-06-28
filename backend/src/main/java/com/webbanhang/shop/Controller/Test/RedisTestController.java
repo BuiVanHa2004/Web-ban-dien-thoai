@@ -68,4 +68,23 @@ public class RedisTestController {
             return ResponseEntity.status(500).body(response);
         }
     }
+
+    @DeleteMapping("/clear-all")
+    public ResponseEntity<?> clearAll() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            redisTemplate.getConnectionFactory()
+                .getConnection()
+                .serverCommands()
+                .flushAll();
+            
+            response.put("status", "success");
+            response.put("message", "All Redis cache cleared");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 }

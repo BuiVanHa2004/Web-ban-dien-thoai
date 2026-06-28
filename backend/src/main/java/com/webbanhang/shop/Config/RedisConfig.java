@@ -128,18 +128,10 @@ public class RedisConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // ✅ FIX LinkedHashMap: Tạo GenericJackson2JsonRedisSerializer có ObjectMapper custom
-        ObjectMapper cacheMapper = redisObjectMapper().copy();
-        
-        // Bật type information CHỈ cho cache, với custom type property name
-        cacheMapper.activateDefaultTyping(
-            cacheMapper.getPolymorphicTypeValidator(),
-            ObjectMapper.DefaultTyping.NON_FINAL,
-            com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY
-        );
-        
+        // Sử dụng ObjectMapper đơn giản, KHÔNG có type information
+        // Spring Cache tự biết type từ method signature
         GenericJackson2JsonRedisSerializer jsonSerializer = 
-            new GenericJackson2JsonRedisSerializer(cacheMapper);
+            new GenericJackson2JsonRedisSerializer(redisObjectMapper());
         
         // Cấu hình cache mặc định
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
