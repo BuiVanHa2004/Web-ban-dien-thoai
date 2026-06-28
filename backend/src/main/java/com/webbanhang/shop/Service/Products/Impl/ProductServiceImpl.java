@@ -21,6 +21,8 @@ import com.webbanhang.shop.Repository.Products.ProductVariantRepository;
 import com.webbanhang.shop.Repository.Products.ProductColorRepository;
 import com.webbanhang.shop.Service.Products.ProductService;
 import com.webbanhang.shop.Service.Storage.MinioStorageService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -68,6 +70,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "products", key = "'all'")
     public List<Product> findAllActive() {
         return productRepository.findAllVisibleWithGraph();
     }
@@ -95,6 +98,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "productDetails", key = "#id")
     public Optional<Product> findById(Integer id) {
         Optional<Product> productOpt = productRepository.findByProductId(id);
         if (productOpt.isEmpty()) return Optional.empty();
@@ -138,6 +142,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = {"products", "productDetails"}, allEntries = true)
     public Product create(ProductUpsertRequest req) {
         Product product = new Product();
         applyRequest(product, req);
@@ -156,6 +161,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = {"products", "productDetails"}, allEntries = true)
     public Optional<Product> update(Integer id, ProductUpsertRequest req) {
         return productRepository.findByProductId(id).map(existing -> {
             // ✅ PHASE 1: Collect OLD stock values BEFORE any changes
@@ -468,6 +474,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = {"products", "productDetails"}, allEntries = true)
     public boolean softDelete(Integer id) {
         return productRepository.findById(id).map(existing -> {
             if (existing.getDeletedAt() != null) {
@@ -480,6 +487,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = {"products", "productDetails"}, allEntries = true)
     public boolean restore(Integer id) {
         return productRepository.findById(id).map(existing -> {
             existing.setDeletedAt(null);
