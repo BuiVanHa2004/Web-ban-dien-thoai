@@ -1,9 +1,12 @@
 package com.webbanhang.shop.Config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -95,13 +98,19 @@ public class RedisConfig {
         // ✅ FIX: Xử lý circular references (vòng lặp vô hạn) khi serialize entities
         mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         mapper.disable(SerializationFeature.FAIL_ON_SELF_REFERENCES);
-        
-        // ✅ FIX: Bỏ qua Hibernate lazy-loading proxies và không serialize lazy collections
         mapper.configure(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS, false);
         
         // Chỉ serialize các field có getter (bỏ qua Hibernate proxies)
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        
+        // ✅ FIX: Thêm type information để deserialize đúng class (tránh LinkedHashMap)
+        // Cho phép tất cả các package trong project
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+            .allowIfBaseType(Object.class)
+            .build();
+        
+        mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
         
         return mapper;
     }
