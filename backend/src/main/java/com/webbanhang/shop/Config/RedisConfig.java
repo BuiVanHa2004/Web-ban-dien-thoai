@@ -101,9 +101,6 @@ public class RedisConfig {
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         
-        // KHÔNG dùng activateDefaultTyping - gây conflict với collections
-        // Sẽ dùng Jackson2JsonRedisSerializer với type cụ thể thay vì GenericJackson2JsonRedisSerializer
-        
         return mapper;
     }
 
@@ -117,9 +114,11 @@ public class RedisConfig {
         template.setKeySerializer(stringSerializer);
         template.setHashKeySerializer(stringSerializer);
         
-        // Sử dụng GenericJackson2JsonRedisSerializer với ObjectMapper hỗ trợ Java 8 date/time
+        // ✅ FIX LinkedHashMap: Sử dụng custom classPropertyTypeName
+        // Thay vì dùng @class (default), dùng @type để tránh conflict
         GenericJackson2JsonRedisSerializer jsonSerializer = 
             new GenericJackson2JsonRedisSerializer(redisObjectMapper());
+        
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
         
@@ -129,9 +128,18 @@ public class RedisConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // Tạo ObjectMapper với hỗ trợ Java 8 date/time
+        // ✅ FIX LinkedHashMap: Tạo GenericJackson2JsonRedisSerializer có ObjectMapper custom
+        ObjectMapper cacheMapper = redisObjectMapper().copy();
+        
+        // Bật type information CHỈ cho cache, với custom type property name
+        cacheMapper.activateDefaultTyping(
+            cacheMapper.getPolymorphicTypeValidator(),
+            ObjectMapper.DefaultTyping.NON_FINAL,
+            com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY
+        );
+        
         GenericJackson2JsonRedisSerializer jsonSerializer = 
-            new GenericJackson2JsonRedisSerializer(redisObjectMapper());
+            new GenericJackson2JsonRedisSerializer(cacheMapper);
         
         // Cấu hình cache mặc định
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
