@@ -1,12 +1,9 @@
 package com.webbanhang.shop.Config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
@@ -100,17 +97,12 @@ public class RedisConfig {
         mapper.disable(SerializationFeature.FAIL_ON_SELF_REFERENCES);
         mapper.configure(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS, false);
         
-        // Chỉ serialize các field có getter (bỏ qua Hibernate proxies)
+        // Chỉ serialize các field (bỏ qua Hibernate proxies)
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         
-        // ✅ FIX: Thêm type information để deserialize đúng class (tránh LinkedHashMap)
-        // Cho phép tất cả các package trong project
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-            .allowIfBaseType(Object.class)
-            .build();
-        
-        mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
+        // KHÔNG dùng activateDefaultTyping - gây conflict với collections
+        // Sẽ dùng Jackson2JsonRedisSerializer với type cụ thể thay vì GenericJackson2JsonRedisSerializer
         
         return mapper;
     }
