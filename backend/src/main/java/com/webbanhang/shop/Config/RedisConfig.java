@@ -1,5 +1,8 @@
 package com.webbanhang.shop.Config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -78,6 +81,16 @@ public class RedisConfig {
     }
 
     @Bean
+    public ObjectMapper redisObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        // Đăng ký JavaTimeModule để hỗ trợ java.time.Instant, LocalDateTime, etc.
+        mapper.registerModule(new JavaTimeModule());
+        // Disable viết date dưới dạng timestamps
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
+
+    @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
@@ -87,8 +100,9 @@ public class RedisConfig {
         template.setKeySerializer(stringSerializer);
         template.setHashKeySerializer(stringSerializer);
         
-        // Sử dụng GenericJackson2JsonRedisSerializer cho value
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
+        // Sử dụng GenericJackson2JsonRedisSerializer với ObjectMapper hỗ trợ Java 8 date/time
+        GenericJackson2JsonRedisSerializer jsonSerializer = 
+            new GenericJackson2JsonRedisSerializer(redisObjectMapper());
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
         
@@ -98,6 +112,10 @@ public class RedisConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        // Tạo ObjectMapper với hỗ trợ Java 8 date/time
+        GenericJackson2JsonRedisSerializer jsonSerializer = 
+            new GenericJackson2JsonRedisSerializer(redisObjectMapper());
+        
         // Cấu hình cache mặc định
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
             .entryTtl(Duration.ofHours(1)) // Cache 1 giờ mặc định
@@ -105,7 +123,7 @@ public class RedisConfig {
                 RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
             )
             .serializeValuesWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())
+                RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer)
             )
             .disableCachingNullValues(); // Không cache giá trị null
 
