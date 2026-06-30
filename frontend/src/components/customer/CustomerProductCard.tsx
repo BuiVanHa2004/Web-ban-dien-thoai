@@ -65,13 +65,13 @@ export default function CustomerProductCard({
     <Link
       href={`/product/${p.productId}?returnUrl=${encodeURIComponent(returnUrl)}`}
       className={
-        "group mx-auto block max-w-[220px] cursor-pointer overflow-hidden rounded-3xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/60 shadow-md transition-all duration-300 " +
+        "group mx-auto block max-w-[220px] cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-md transition-all duration-300 " +
         (isOut
-          ? "opacity-75 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20"
-          : "hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/25")
+          ? "opacity-75 hover:-translate-y-1 hover:shadow-xl"
+          : "hover:-translate-y-2 hover:shadow-lg")
       }
     >
-      <div className="relative aspect-9/16 w-full overflow-hidden bg-zinc-900 cursor-pointer">
+      <div className="relative aspect-9/16 w-full overflow-hidden bg-slate-50 cursor-pointer">
         {previewImage ? (
           <Image
             src={resolveImageUrl(previewImage)!}
@@ -84,7 +84,7 @@ export default function CustomerProductCard({
           <div className="grid h-full place-items-center text-zinc-500">No image</div>
         )}
 
-        <div className="absolute inset-0 bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-slate-900/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <div className="pointer-events-none absolute inset-0 flex scale-95 items-center justify-center opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100">
           <span className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-cyan-600 to-fuchsia-600 px-4 py-1.5 text-xs font-semibold text-white shadow-lg shadow-cyan-500/15">
@@ -117,13 +117,13 @@ export default function CustomerProductCard({
       </div>
 
       <div className="p-3">
-        <h3 className="truncate text-sm font-semibold text-zinc-100 transition-colors group-hover:text-zinc-300">
+        <h3 className="truncate text-sm font-semibold text-slate-800 transition-colors group-hover:text-purple-600">
           {p.productName}
         </h3>
-        {meta ? <p className="mt-1 text-xs text-zinc-400">{meta}</p> : null}
+        {meta ? <p className="mt-1 text-xs text-slate-500">{meta}</p> : null}
 
         <div className="mt-3">
-          <div className="mt-1 text-[11px] text-zinc-500">Sản phẩm còn lại: {stockQuantity}</div>
+          <div className="mt-1 text-[11px] text-slate-400">Sản phẩm còn lại: {stockQuantity}</div>
         </div>
         <button
           type="button"
@@ -136,7 +136,7 @@ export default function CustomerProductCard({
           className={
             "mt-3 inline-flex h-9 w-full cursor-pointer items-center justify-center rounded-xl px-3 text-xs font-semibold transition " +
             (isOut
-              ? "cursor-not-allowed bg-zinc-700 text-zinc-500"
+              ? "cursor-not-allowed bg-slate-100 text-slate-400"
               : isRecentlyAdded
                 ? "bg-emerald-600 text-white"
                 : "keep-light bg-gradient-to-r from-cyan-600 to-fuchsia-600 text-white hover:opacity-95")

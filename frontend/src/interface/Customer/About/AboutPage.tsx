@@ -269,7 +269,7 @@ export default function AboutPage() {
       </motion.div>
 
       <div className="mb-16 sm:mb-24">
-        <div className="mx-auto max-w-6xl rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-8 shadow-2xl sm:p-12 lg:p-14">
+        <div className="mx-auto max-w-6xl rounded-[2.5rem] bg-gradient-to-br from-slate-50 via-purple-50/30 to-slate-50 p-8 border border-slate-200/80 shadow-sm sm:p-12 lg:p-14">
           <SocialQrContact title="Liên hệ nhanh qua mạng xã hội" />
         </div>
       </div>
@@ -280,48 +280,48 @@ export default function AboutPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ margin: "-100px" }}
         transition={{ duration: 0.8 }}
-        className="relative rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-8 shadow-2xl sm:p-16 overflow-hidden"
+        className="relative rounded-[2.5rem] bg-gradient-to-br from-slate-50 via-purple-50/30 to-slate-50 p-8 border border-slate-200/80 shadow-sm sm:p-16 overflow-hidden"
       >
         <div className="relative z-10 mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-black text-white sm:text-5xl">
+          <h2 className="mb-6 text-3xl font-black text-slate-850 sm:text-5xl">
             Sẵn sàng trải nghiệm?
           </h2>
-          <p className="mb-8 text-lg text-slate-300">
+          <p className="mb-8 text-lg text-slate-550">
             Ghé thăm cửa hàng hoặc liên hệ với chúng tôi để được tư vấn miễn phí
           </p>
 
           <div className="grid gap-6 sm:grid-cols-3">
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-3 rounded-2xl bg-white/5 p-6 backdrop-blur-sm"
+              className="flex flex-col items-center gap-3 rounded-2xl bg-white border border-slate-100 p-6 shadow-sm"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-50 text-cyan-600">
                 <Phone className="h-6 w-6" />
               </div>
-              <div className="text-sm font-bold text-slate-400">Hotline</div>
-              <div className="text-lg font-black text-white">0978 603 382</div>
+              <div className="text-sm font-bold text-slate-500">Hotline</div>
+              <div className="text-lg font-black text-slate-800">0978 603 382</div>
             </motion.div>
 
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-3 rounded-2xl bg-white/5 p-6 backdrop-blur-sm"
+              className="flex flex-col items-center gap-3 rounded-2xl bg-white border border-slate-100 p-6 shadow-sm"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/20 text-purple-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
                 <Mail className="h-6 w-6" />
               </div>
-              <div className="text-sm font-bold text-slate-400">Email</div>
-              <div className="text-sm font-black text-white">buivanha22032004@gmail.com</div>
+              <div className="text-sm font-bold text-slate-500">Email</div>
+              <div className="text-sm font-black text-slate-800">buivanha22032004@gmail.com</div>
             </motion.div>
 
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-3 rounded-2xl bg-white/5 p-6 backdrop-blur-sm"
+              className="flex flex-col items-center gap-3 rounded-2xl bg-white border border-slate-100 p-6 shadow-sm"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pink-500/20 text-pink-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
                 <MapPin className="h-6 w-6" />
               </div>
-              <div className="text-sm font-bold text-slate-400">Địa chỉ</div>
-              <div className="text-sm font-black text-white text-center">Hà Nội, Việt Nam</div>
+              <div className="text-sm font-bold text-slate-500">Địa chỉ</div>
+              <div className="text-sm font-black text-slate-800 text-center">Hà Nội, Việt Nam</div>
             </motion.div>
           </div>
         </div>
