@@ -226,12 +226,12 @@ img:hover {
   z-index: 10;
 }
 
-/* Customer portal: neutral gray dark + scroll reveal + touch-friendly images */
+/* Customer portal: light white theme + scroll reveal + touch-friendly images */
 .customer-portal {
-  --customer-bg: #252528;
-  --customer-surface: rgba(39, 39, 42, 0.72);
-  --customer-border: rgba(161, 161, 170, 0.2);
-  --customer-accent: #e4e4e7;
+  --customer-bg: #ffffff;
+  --customer-surface: rgba(255, 255, 255, 0.92);
+  --customer-border: rgba(226, 232, 240, 0.6);
+  --customer-accent: #334155;
 }
 
 @keyframes customer-bg-morph {
@@ -247,19 +247,19 @@ img:hover {
 }
 
 .customer-portal-bg-base {
-  background-color: #2e2e32;
+  background-color: #ffffff;
 }
 
 .customer-portal-bg-shift {
   background: linear-gradient(
     125deg,
-    #52525b 0%,
-    #3f3f46 18%,
-    #27272a 38%,
-    #18181b 55%,
-    #3f3f46 72%,
-    #52525b 88%,
-    #27272a 100%
+    #f8fafc 0%,
+    #f1f5f9 18%,
+    #ffffff 38%,
+    #f8fafc 55%,
+    #f1f5f9 72%,
+    #ffffff 88%,
+    #f8fafc 100%
   );
   background-size: 320% 320%;
   animation: customer-bg-morph 14s ease-in-out infinite;
@@ -303,79 +303,31 @@ img:hover {
   display: none;
 }
 
-/* Card & chữ: ghi đè bg-white / text-slate-900 còn sót trong customer */
-.customer-portal .bg-white:not(.keep-light):not([class*="text-white"]):not([class*="text-rose"]):not([class*="text-emerald"]),
-.customer-portal [class*="bg-white/"]:not(.keep-light) {
-  background-color: rgba(39, 39, 42, 0.72) !important;
-}
-
-.customer-portal .bg-white:not(.keep-light) {
-  border-color: rgba(113, 113, 122, 0.35);
-}
-
-.customer-portal .border-slate-100,
-.customer-portal .border-slate-200,
-.customer-portal .border-black\/5,
-.customer-portal .border-black\/10,
-.customer-portal .border-black\/15 {
-  border-color: rgba(161, 161, 170, 0.45) !important;
-}
-
-.customer-portal [class*="border-zinc-600"],
-.customer-portal [class*="border-zinc-700"] {
-  --tw-border-opacity: 1;
-  border-color: rgba(161, 161, 170, 0.68) !important;
-}
-
 .customer-portal .customer-header {
   border-bottom-width: 1px !important;
   border-bottom-style: solid !important;
-  border-bottom-color: rgba(161, 161, 170, 0.6) !important;
+  border-bottom-color: rgba(226, 232, 240, 0.8) !important;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transform: translateZ(0);
 }
 
 .customer-portal .customer-card-surface {
-  border-color: rgba(161, 161, 170, 0.68) !important;
-  box-shadow: 0 0 0 1px rgba(82, 82, 91, 0.35);
-}
-
-.customer-portal .text-slate-900:not(.keep-light),
-.customer-portal .text-slate-800:not(.keep-light),
-.customer-portal .text-black:not(.keep-light) {
-  color: #f4f4f5 !important;
-}
-
-.customer-portal .text-slate-700:not(.keep-light) {
-  color: #d4d4d8 !important;
-}
-
-.customer-portal .text-slate-600:not(.keep-light),
-.customer-portal .text-slate-500:not(.keep-light) {
-  color: #a1a1aa !important;
-}
-
-.customer-portal .bg-slate-50:not(.keep-light),
-.customer-portal .bg-slate-100:not(.keep-light) {
-  background-color: rgba(63, 63, 70, 0.45) !important;
-}
-
-.customer-portal .bg-slate-200:not(.keep-light) {
-  background-color: rgba(82, 82, 91, 0.5) !important;
+  border-color: rgba(226, 232, 240, 0.8) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .customer-portal input:not(.keep-light),
 .customer-portal textarea:not(.keep-light),
 .customer-portal select:not(.keep-light) {
-  background-color: rgba(39, 39, 42, 0.75) !important;
-  color: #f4f4f5 !important;
-  border-color: rgba(113, 113, 122, 0.4) !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-color: rgba(203, 213, 225, 0.7) !important;
 }
 
 .customer-portal input::placeholder,
 .customer-portal textarea::placeholder {
-  color: #71717a !important;
+  color: #94a3b8 !important;
 }
 
 @keyframes avatarModalScaleIn {

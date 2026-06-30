@@ -23,7 +23,7 @@ import CustomerNotifications from "./CustomerNotifications";
 import Avatar from "@/components/avatar/Avatar";
 
 const iconBtn =
-  "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-500/50 bg-zinc-800/80 text-zinc-100 transition hover:bg-zinc-700/90 sm:h-10 sm:w-10";
+  "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50/80 text-slate-700 transition hover:bg-slate-100 sm:h-10 sm:w-10";
 
 export default function PremiumHeader() {
   const router = useRouter();
@@ -235,7 +235,7 @@ export default function PremiumHeader() {
   return (
     <>
       <header
-        className="customer-header fixed inset-x-0 top-0 z-[200] box-border border-b border-zinc-500/60 bg-[#2a2a2e] shadow-sm shadow-black/15 sm:bg-[#2a2a2e]/98 sm:backdrop-blur-sm"
+        className="customer-header fixed inset-x-0 top-0 z-[200] box-border border-b border-slate-200/80 bg-white shadow-sm shadow-slate-200/30 sm:bg-white/98 sm:backdrop-blur-sm"
         style={{
           paddingTop: "max(0px, env(safe-area-inset-top))",
           paddingLeft: "max(0.75rem, env(safe-area-inset-left))",
@@ -249,12 +249,12 @@ export default function PremiumHeader() {
             aria-label="MyPhone Store - Trang chủ"
           >
             <Logo variant="header" />
-            <span className="text-sm font-black text-zinc-100 lg:hidden">
-              MyPhone <span className="text-cyan-400">Store</span>
+            <span className="text-sm font-black text-slate-800 lg:hidden">
+              MyPhone <span className="text-cyan-600">Store</span>
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 rounded-2xl border border-zinc-500/50 bg-zinc-900/70 p-1 shadow-sm backdrop-blur-md lg:flex">
+          <nav className="hidden items-center gap-1 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-1 shadow-sm backdrop-blur-md lg:flex">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -262,8 +262,8 @@ export default function PremiumHeader() {
                 onClick={(e) => requireAuth(e, item.href)}
                 className={`relative rounded-xl px-5 py-2.5 text-sm font-bold transition-all duration-300 ${
                   isActive(item.href)
-                    ? "bg-white/10 text-purple-300 shadow-lg shadow-purple-500/10 ring-1 ring-purple-500/40"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-indigo-500/10 text-indigo-600 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 {item.label}
@@ -277,7 +277,7 @@ export default function PremiumHeader() {
             <Link
               href="/order"
               onClick={(e) => requireAuth(e, "/order")}
-              className={`${iconBtn} hidden text-orange-400 sm:flex`}
+              className={`${iconBtn} hidden text-orange-500 sm:flex`}
               title="Đơn hàng"
               aria-label="Đơn hàng"
             >
@@ -292,7 +292,7 @@ export default function PremiumHeader() {
             <Link
               href="/cart"
               onClick={(e) => requireAuth(e, "/cart")}
-              className={`${iconBtn} text-purple-300`}
+              className={`${iconBtn} text-purple-600`}
               title="Giỏ hàng"
               aria-label="Giỏ hàng"
             >
@@ -309,7 +309,7 @@ export default function PremiumHeader() {
                 <button
                   type="button"
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex h-10 max-w-[140px] items-center gap-2 rounded-xl border border-zinc-500/50 bg-zinc-800/80 p-1 pr-2 transition hover:bg-zinc-700/90"
+                  className="flex h-10 max-w-[140px] items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 p-1 pr-2 transition hover:bg-slate-100"
                 >
                   <Avatar
                     src={user.avatarUrl}
@@ -317,11 +317,11 @@ export default function PremiumHeader() {
                     className="h-8 w-8 shrink-0 rounded-lg"
                     textClassName="text-sm font-black"
                   />
-                  <span className="hidden max-w-[72px] truncate text-xs font-bold text-zinc-200 md:block">
+                  <span className="hidden max-w-[72px] truncate text-xs font-bold text-slate-700 md:block">
                     {user.name}
                   </span>
                   <ChevronDown
-                    className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${showUserMenu ? "rotate-180" : ""}`}
                   />
                 </button>
 
@@ -331,26 +331,26 @@ export default function PremiumHeader() {
                       initial={{ opacity: 0, y: 8, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                      className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-500/55 bg-zinc-900 shadow-2xl"
+                      className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl"
                     >
-                      <div className="border-b border-zinc-600/50 bg-zinc-800/80 p-4">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Tài khoản</p>
-                        <p className="mt-1 truncate text-sm font-black text-zinc-100">{user.name}</p>
+                      <div className="border-b border-slate-200/60 bg-slate-50/80 p-4">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tài khoản</p>
+                        <p className="mt-1 truncate text-sm font-black text-slate-800">{user.name}</p>
                       </div>
                       <div className="p-2">
                         <Link
                           href="/profile"
                           onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-bold text-zinc-300 transition hover:bg-zinc-800 hover:text-purple-300"
+                          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-indigo-600"
                         >
                           <Settings className="h-4 w-4" /> Thông tin tài khoản
                         </Link>
                       </div>
-                      <div className="border-t border-zinc-600/50 p-2">
+                      <div className="border-t border-slate-200/60 p-2">
                         <button
                           type="button"
                           onClick={onLogout}
-                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-bold text-rose-400 transition hover:bg-rose-500/10"
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-bold text-rose-600 transition hover:bg-rose-500/10"
                         >
                           <LogOut className="h-4 w-4" /> Đăng xuất
                         </button>
@@ -362,7 +362,7 @@ export default function PremiumHeader() {
             ) : (
               <Link
                 href="/login"
-                className="hidden h-10 shrink-0 items-center gap-2 rounded-xl border border-zinc-500/50 bg-zinc-100 px-4 text-sm font-black text-zinc-900 transition hover:bg-white sm:flex"
+                className="hidden h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200/80 bg-indigo-600 px-4 text-sm font-black text-white transition hover:bg-indigo-700 sm:flex"
               >
                 <UserIcon className="h-4 w-4" />
                 Đăng nhập
@@ -374,7 +374,7 @@ export default function PremiumHeader() {
               onClick={() => setMobileOpen((v) => !v)}
               aria-label={mobileOpen ? "Đóng menu" : "Mở menu"}
               aria-expanded={mobileOpen}
-              className="ml-0.5 flex size-11 shrink-0 items-center justify-center overflow-visible rounded-xl border border-zinc-400/75 bg-zinc-700/95 text-zinc-50 shadow-md transition active:scale-95 lg:hidden"
+              className="ml-0.5 flex size-11 shrink-0 items-center justify-center overflow-visible rounded-xl border border-slate-200/80 bg-slate-50/95 text-slate-700 shadow-md transition active:scale-95 lg:hidden"
             >
               {mobileOpen ? (
                 <X className="size-5 shrink-0" strokeWidth={2.25} aria-hidden />
@@ -393,16 +393,16 @@ export default function PremiumHeader() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="fixed inset-0 z-[250] bg-[#2a2a2e]/98 backdrop-blur-xl lg:hidden"
+            className="fixed inset-0 z-[250] bg-white/98 backdrop-blur-xl lg:hidden"
           >
             <div className="flex h-full flex-col overflow-y-auto p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))]">
-              <div className="flex items-center justify-between gap-3 border-b border-zinc-600/50 pb-5">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200/60 pb-5">
                 <Logo variant="default" showText className="min-w-0 flex-1" />
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
                   aria-label="Đóng menu"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-500/60 bg-zinc-700 text-zinc-100"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-100 text-slate-700"
                 >
                   <X className="h-6 w-6" strokeWidth={2.5} />
                 </button>
@@ -415,7 +415,7 @@ export default function PremiumHeader() {
                     requireAuth(e, "/order");
                     setMobileOpen(false);
                   }}
-                  className="flex items-center justify-center gap-2 rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/60 py-3 text-sm font-bold text-orange-300 ring-1 ring-zinc-500/35"
+                  className="flex items-center justify-center gap-2 rounded-2xl customer-card-surface border border-slate-200/80 bg-slate-50/60 py-3 text-sm font-bold text-orange-600 ring-1 ring-slate-200/50"
                 >
                   <Package className="size-4" />
                   Đơn hàng
@@ -431,7 +431,7 @@ export default function PremiumHeader() {
                     requireAuth(e, "/cart");
                     setMobileOpen(false);
                   }}
-                  className="flex items-center justify-center gap-2 rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/60 py-3 text-sm font-bold text-purple-300 ring-1 ring-zinc-500/35"
+                  className="flex items-center justify-center gap-2 rounded-2xl customer-card-surface border border-slate-200/80 bg-slate-50/60 py-3 text-sm font-bold text-purple-600 ring-1 ring-slate-200/50"
                 >
                   <ShoppingCart className="size-4" />
                   Giỏ hàng
@@ -454,8 +454,8 @@ export default function PremiumHeader() {
                     }}
                     className={`rounded-2xl border px-6 py-4 text-lg font-black transition ${
                       isActive(item.href)
-                        ? "border-purple-500/50 bg-purple-500/15 text-purple-300"
-                        : "border-transparent text-zinc-300 hover:border-zinc-600/50 hover:bg-zinc-800/50"
+                        ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-600"
+                        : "border-transparent text-slate-600 hover:border-slate-200/60 hover:bg-slate-50/50"
                     }`}
                   >
                     {item.label}
@@ -463,10 +463,10 @@ export default function PremiumHeader() {
                 ))}
               </nav>
 
-              <div className="mt-auto border-t border-zinc-600/50 pt-6">
+              <div className="mt-auto border-t border-slate-200/60 pt-6">
                 {mounted && user ? (
                   <div className="space-y-4">
-                    <div className="flex items-center gap-4 rounded-2xl border border-zinc-600/50 bg-zinc-800/60 p-4">
+                    <div className="flex items-center gap-4 rounded-2xl border border-slate-200/60 bg-slate-50/60 p-4">
                       <Avatar
                         src={user.avatarUrl}
                         name={user.name}
@@ -474,21 +474,21 @@ export default function PremiumHeader() {
                         textClassName="text-xl font-black"
                       />
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-black text-zinc-100">{user.name}</p>
-                        <p className="text-xs text-zinc-500">Khách hàng thân thiết</p>
+                        <p className="truncate text-sm font-black text-slate-800">{user.name}</p>
+                        <p className="text-xs text-slate-500">Khách hàng thân thiết</p>
                       </div>
                     </div>
                     <Link
                       href="/profile"
                       onClick={() => setMobileOpen(false)}
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-zinc-600/50 bg-zinc-800/60 py-3 text-sm font-bold text-zinc-200"
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200/60 bg-slate-50/60 py-3 text-sm font-bold text-slate-700"
                     >
                       <Settings className="h-4 w-4" /> Tài khoản
                     </Link>
                     <button
                       type="button"
                       onClick={onLogout}
-                      className="flex w-full items-center justify-center gap-3 rounded-2xl border border-rose-500/40 bg-rose-500/10 py-4 font-black text-rose-400"
+                      className="flex w-full items-center justify-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-50 py-4 font-black text-rose-600"
                     >
                       <LogOut className="h-5 w-5" /> Đăng xuất
                     </button>
@@ -497,7 +497,7 @@ export default function PremiumHeader() {
                   <Link
                     href="/login"
                     onClick={() => setMobileOpen(false)}
-                    className="flex h-14 items-center justify-center rounded-2xl border border-zinc-500/50 bg-zinc-100 font-black text-zinc-900"
+                    className="flex h-14 items-center justify-center rounded-2xl border border-slate-200/80 bg-indigo-600 font-black text-white"
                   >
                     Đăng nhập tài khoản
                   </Link>

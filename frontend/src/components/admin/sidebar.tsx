@@ -107,7 +107,7 @@ export default function Sidebar({ collapsed, mobileOpen = false, onMobileClose }
     <aside
       aria-label="Admin Sidebar"
       className={`
-      fixed inset-y-0 left-0 z-50 h-screen shrink-0 border-r border-zinc-500/60 bg-[#2a2a2e]/98 shadow-sm shadow-black/15 backdrop-blur-sm transition-all duration-300 ease-in-out transform-gpu
+      fixed inset-y-0 left-0 z-50 h-screen shrink-0 border-r border-slate-200/80 bg-white/98 shadow-sm shadow-slate-200/30 backdrop-blur-sm transition-all duration-300 ease-in-out transform-gpu
         ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
         sm:relative sm:translate-x-0 sm:sticky sm:top-0
         ${collapsed ? "sm:w-[80px]" : "sm:w-[280px]"}
@@ -120,7 +120,7 @@ export default function Sidebar({ collapsed, mobileOpen = false, onMobileClose }
           href="/statistical"
           title="MyPhone Store - Trang quản trị"
           aria-label="MyPhone Store - Trang quản trị"
-          className={`group flex h-20 shrink-0 items-center border-b border-zinc-500/60 bg-[#2a2a2e]/95 transition-all duration-300 ${
+          className={`group flex h-20 shrink-0 items-center border-b border-slate-200/80 bg-white/95 transition-all duration-300 ${
             collapsed ? "justify-center px-0" : "justify-start px-6"
           }`}
         >
@@ -149,14 +149,14 @@ export default function Sidebar({ collapsed, mobileOpen = false, onMobileClose }
                     collapsed ? "h-14 w-14 justify-center rounded-full p-0" : "gap-3 rounded-2xl p-2"
                   } ${
                     active 
-                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/40 dark:bg-indigo-500/20 dark:text-indigo-300 dark:shadow-none ring-1 ring-indigo-500/50" 
-                      : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
+                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 ring-1 ring-indigo-500/50" 
+                      : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
                   }`}
                 >
                   <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center transition-all duration-300 group-hover:scale-110 ${
                     collapsed ? "rounded-full" : "rounded-xl ring-1 ring-inset"
                   } ${
-                    active ? "bg-white/20 ring-white/30 dark:bg-indigo-500/20 dark:ring-indigo-500/40" : colorScheme
+                    active ? "bg-white/20 ring-white/30" : colorScheme
                   }`}>
                     <IconComp className="h-5 w-5" />
                   </div>
@@ -168,7 +168,7 @@ export default function Sidebar({ collapsed, mobileOpen = false, onMobileClose }
                   )}
 
                   {collapsed && (
-                    <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-4 -translate-y-1/2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white opacity-0 shadow-2xl transition-all group-hover:opacity-100 dark:bg-indigo-600 dark:text-white">
+                    <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-4 -translate-y-1/2 rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-white opacity-0 shadow-2xl transition-all group-hover:opacity-100">
                       {item.label}
                     </div>
                   )}
@@ -176,7 +176,7 @@ export default function Sidebar({ collapsed, mobileOpen = false, onMobileClose }
                   {active && !collapsed && (
                     <motion.div 
                       layoutId="active-indicator"
-                      className="absolute right-3 h-1.5 w-1.5 rounded-full bg-white dark:bg-indigo-400 shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                      className="absolute right-3 h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
                     />
                   )}
                 </Link>
@@ -187,14 +187,14 @@ export default function Sidebar({ collapsed, mobileOpen = false, onMobileClose }
 
         {/* Footer - Minimalist Support Section */}
         <div className="mt-auto px-4 pb-6 pt-4">
-          <div className="mb-6 h-px w-full bg-zinc-600/50" />
+          <div className="mb-6 h-px w-full bg-slate-200/70" />
           {!collapsed ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500">Hỗ trợ nhanh</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500">Hỗ trợ nhanh</span>
               </div>
-              <p className="text-[11px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] font-medium leading-relaxed text-slate-500">
                 Lọc dữ liệu theo thương hiệu để tối ưu hóa quản lý.
               </p>
             </div>

@@ -53,12 +53,12 @@ export default function CustomerFooter() {
   const mapOpenHref = `https://www.google.com/maps?q=${encodeURIComponent(address)}`;
 
   return (
-    <footer className="relative mt-8 overflow-hidden border-t border-zinc-600/25 bg-[#252528]/88 pt-8 pb-6 backdrop-blur-sm sm:mt-12 sm:pt-10 sm:pb-8">
+    <footer className="relative mt-8 overflow-hidden border-t border-slate-200 bg-white/90 pt-8 pb-6 backdrop-blur-sm sm:mt-12 sm:pt-10 sm:pb-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-12">
           {/* Brand Identity */}
           <div className="flex flex-col space-y-4 lg:col-span-4">
-            <h4 className="text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-white">Về chúng tôi</h4>
+            <h4 className="text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Về chúng tôi</h4>
             <Link
               href="/home"
               className="inline-flex w-fit max-w-full transition-transform hover:scale-[1.02]"
@@ -66,15 +66,15 @@ export default function CustomerFooter() {
             >
               <Logo variant="footer" />
             </Link>
-            <p className="max-w-sm text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="max-w-sm text-sm font-medium leading-relaxed text-slate-600">
               MyPhone Store cam kết mang đến sản phẩm chính hãng, bảo hành uy tín và dịch vụ khách hàng tận tâm nhất.
             </p>
             <div className="flex gap-2">
-              <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
                 <ShieldCheck className="h-3 w-3" />
                 <span className="text-[9px] font-black uppercase">Chính hãng</span>
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
+              <div className="flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-blue-700">
                 <Truck className="h-3 w-3" />
                 <span className="text-[9px] font-black uppercase">Giao nhanh</span>
               </div>
@@ -83,7 +83,7 @@ export default function CustomerFooter() {
 
           {/* Map Section - Middle */}
           <div className="flex flex-col space-y-4 lg:col-span-4">
-            <h4 className="text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-white">Vị trí cửa hàng</h4>
+            <h4 className="text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Vị trí cửa hàng</h4>
             <MapEmbed address={address} />
             <a
               href={mapOpenHref}
@@ -97,23 +97,23 @@ export default function CustomerFooter() {
 
           {/* Contact Section */}
           <div className="flex flex-col space-y-4 lg:col-span-4 lg:items-start lg:pl-[50px]">
-            <h4 className="w-full text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-white">Thông tin liên hệ</h4>
+            <h4 className="w-full text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Thông tin liên hệ</h4>
             <div className="space-y-4 lg:text-left">
               <div className="flex flex-col items-start gap-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Địa chỉ</span>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Địa chỉ</span>
+                <p className="text-xs font-bold text-slate-700">
                   {address}
                 </p>
               </div>
               <div className="flex flex-col items-start gap-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hotline</span>
-                <a href={`tel:${phone}`} className="text-sm font-black text-slate-900 hover:text-purple-600 dark:text-white">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Hotline</span>
+                <a href={`tel:${phone}`} className="text-sm font-black text-slate-800 hover:text-purple-600">
                   {phone}
                 </a>
               </div>
               <div className="flex flex-col items-start gap-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</span>
-                <a href={`mailto:${email}`} className="text-xs font-black text-slate-900 hover:text-purple-600 dark:text-white">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Email</span>
+                <a href={`mailto:${email}`} className="text-xs font-black text-slate-800 hover:text-purple-600">
                   {email}
                 </a>
               </div>
@@ -123,11 +123,11 @@ export default function CustomerFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-50 pt-8 dark:border-white/5 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-100 pt-8 sm:flex-row">
           <p className="text-[10px] font-bold text-slate-400">
             © {year} MyPhone Store. All rights reserved.
           </p>
-          <div className="flex gap-6 text-[9px] font-black uppercase tracking-widest text-slate-400">
+          <div className="flex gap-6 text-[9px] font-black uppercase tracking-widest text-slate-500">
             <Link href="#" className="hover:text-purple-600 transition">Chính sách</Link>
             <Link href="#" className="hover:text-purple-600 transition">Bảo mật</Link>
           </div>

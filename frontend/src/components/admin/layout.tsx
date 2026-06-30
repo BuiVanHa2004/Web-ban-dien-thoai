@@ -123,26 +123,26 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
   // Show loading state while verifying
   if (isVerifying) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
           <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
-          <p className="text-zinc-400">Đang xác thực...</p>
+          <p className="text-slate-500">Đang xác thực...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="customer-portal dark customer-portal-bg-base relative min-h-dvh text-zinc-100 antialiased" style={{ overflow: "visible" }}>
+    <div className="customer-portal customer-portal-bg-base relative min-h-dvh text-slate-800 antialiased" style={{ overflow: "visible" }}>
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="customer-portal-bg-shift absolute inset-0" aria-hidden />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(228,228,231,0.12),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,rgba(24,24,27,0.45),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(99,102,241,0.04),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,rgba(241,245,249,0.5),transparent_55%)]" />
         <div
-          className="absolute inset-0 opacity-[0.1]"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage:
-              "radial-gradient(circle, rgba(212,212,216,0.22) 1px, transparent 1px)",
+              "radial-gradient(circle, rgba(148,163,184,0.3) 1px, transparent 1px)",
             backgroundSize: "44px 44px",
           }}
         />
@@ -152,7 +152,7 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
         {/* Overlay mobile - z-index thấp hơn sidebar */}
         {mobileOpen && (
           <div
-            className="fixed inset-0 z-30 bg-black/60 sm:hidden"
+            className="fixed inset-0 z-30 bg-black/30 sm:hidden"
             onClick={() => setMobileOpen(false)}
           />
         )}
@@ -183,7 +183,7 @@ export default function AdminLayout({ children, userName }: AdminLayoutProps) {
             }}
           />
           <main className="min-w-0 p-4 sm:p-6">
-            <div className="customer-card-surface relative rounded-2xl border border-zinc-500/70 bg-zinc-800/40 p-4 shadow-xl shadow-black/20 ring-1 ring-zinc-500/35 backdrop-blur-xl transition-all duration-300 sm:rounded-[2.5rem] sm:p-6">
+            <div className="customer-card-surface relative rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-xl transition-all duration-300 sm:rounded-[2.5rem] sm:p-6">
               {children}
             </div>
           </main>
