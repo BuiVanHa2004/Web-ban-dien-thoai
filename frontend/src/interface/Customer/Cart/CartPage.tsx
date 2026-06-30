@@ -595,11 +595,11 @@ export default function CartPage() {
             </div>
 
             {/* Sidebar Summary */}
-                            <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50"
-                >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="lg:col-span-4 overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50"
+            >
                   <div className="mb-8">
                     <div className="flex items-center justify-between mb-2">
                        <h2 className="text-xl font-black text-slate-850">Tổng đơn hàng</h2>
