@@ -376,3 +376,75 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.8);
 }
+
+/* --- Color overrides to adapt dark-theme text classes to light-theme backgrounds --- */
+.customer-portal .text-zinc-50,
+.customer-portal .text-zinc-100,
+.customer-portal .text-slate-100,
+.customer-portal .text-slate-50,
+.customer-portal .text-zinc-200,
+.customer-portal .text-zinc-300,
+.customer-portal .text-slate-300,
+.customer-portal .text-slate-200 {
+  color: #0f172a !important; /* slate-900 */
+}
+
+.customer-portal .text-zinc-400,
+.customer-portal .text-zinc-500,
+.customer-portal .text-slate-400,
+.customer-portal .text-slate-500 {
+  color: #475569 !important; /* slate-600 */
+}
+
+/* Background overrides: change dark card & section backgrounds to white/light gray */
+.customer-portal .bg-zinc-950,
+.customer-portal .bg-slate-950,
+.customer-portal .bg-zinc-900,
+.customer-portal .bg-slate-900,
+.customer-portal .bg-zinc-800,
+.customer-portal .bg-slate-800 {
+  background-color: #ffffff !important;
+}
+
+.customer-portal .bg-zinc-900\/50,
+.customer-portal .bg-slate-900\/50,
+.customer-portal .bg-zinc-800\/50,
+.customer-portal .bg-slate-800\/50,
+.customer-portal .bg-zinc-800\/60,
+.customer-portal .bg-zinc-800\/70,
+.customer-portal .bg-zinc-900\/70,
+.customer-portal .bg-zinc-900\/80,
+.customer-portal .bg-zinc-800\/40 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.customer-portal .bg-zinc-700,
+.customer-portal .bg-zinc-700\/50,
+.customer-portal .bg-zinc-700\/70,
+.customer-portal .bg-slate-700,
+.customer-portal .bg-slate-700\/50 {
+  background-color: #f1f5f9 !important; /* slate-100 */
+}
+
+/* Border overrides */
+.customer-portal .border-zinc-700,
+.customer-portal .border-zinc-600,
+.customer-portal .border-zinc-500,
+.customer-portal .border-slate-800,
+.customer-portal .border-slate-700,
+.customer-portal .border-white\/10,
+.customer-portal .border-white\/5,
+.customer-portal .border-zinc-600\/50,
+.customer-portal .border-zinc-600\/40,
+.customer-portal .border-zinc-500\/70,
+.customer-portal .border-zinc-500\/55,
+.customer-portal .border-zinc-500\/35 {
+  border-color: #cbd5e1 !important; /* slate-300 */
+}
+
+.customer-portal .ring-zinc-600\/50,
+.customer-portal .ring-zinc-500\/35,
+.customer-portal .ring-white\/10 {
+  --tw-ring-color: #cbd5e1 !important;
+}
+
