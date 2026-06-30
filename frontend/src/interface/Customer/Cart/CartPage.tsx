@@ -725,11 +725,10 @@ export default function CartPage() {
                   </div>
                 </motion.div>
               </div>
-            </div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
+            )
+          }
+        </AnimatePresence>
+      </div>
 
     <AnimatePresence>
       {zoomImageUrl &&
