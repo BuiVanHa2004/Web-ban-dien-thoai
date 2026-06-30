@@ -216,16 +216,16 @@ export default function ProfileInterface() {
               <ChevronRight size={12} />
               <span className="text-purple-600">Tài khoản</span>
             </nav>
-            <h1 className="text-2xl font-black tracking-tight text-white sm:text-4xl">
+            <h1 className="text-2xl font-black tracking-tight text-slate-800 sm:text-4xl">
               Thông tin <span className="text-purple-600">Cá nhân</span>
             </h1>
-            <p className="mt-2 text-slate-500 dark:text-slate-400">
+            <p className="mt-2 text-slate-500">
               Quản lý thông tin bảo mật và tùy chỉnh trải nghiệm của bạn.
             </p>
           </div>
           
           <div className="flex items-center gap-3">
-             <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
+             <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-emerald-700 ring-1 ring-emerald-200">
                 <ShieldCheck size={16} />
                 <span className="text-xs font-black uppercase">Tài khoản xác thực</span>
              </div>
@@ -236,7 +236,7 @@ export default function ProfileInterface() {
           
           {/* Sidebar Info */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="relative overflow-hidden rounded-3xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-8 shadow-xl shadow-black/20">
+            <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
               <div className="relative z-10 flex flex-col items-center">
                 <div className="relative mb-6">
                   <div className="h-28 w-28 overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 to-indigo-700 p-1 shadow-2xl transition-transform">
@@ -247,7 +247,7 @@ export default function ProfileInterface() {
                         className="h-full w-full rounded-[1.4rem] object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center rounded-[1.4rem] bg-white dark:bg-slate-900">
+                      <div className="flex h-full w-full items-center justify-center rounded-[1.4rem] bg-slate-50">
                         <span className="text-4xl font-black text-purple-600">
                           {profile?.fullName?.charAt(0).toUpperCase()}
                         </span>
@@ -256,14 +256,14 @@ export default function ProfileInterface() {
                   </div>
                 </div>
                 
-                <h2 className="text-center text-xl font-black text-slate-900 dark:text-white w-full px-2">
+                <h2 className="text-center text-xl font-black text-slate-800 w-full px-2">
                   {profile?.fullName}
                 </h2>
                 
                 <div className="mt-8 w-full space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-50 pb-3 dark:border-white/5">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Trạng thái</span>
-                    <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500">
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600">
                       <CheckCircle2 size={14} /> Hoạt động
                     </span>
                   </div>
@@ -280,10 +280,10 @@ export default function ProfileInterface() {
             {!profile?.googleId && (
               <button 
                 onClick={() => setShowPasswordForm(!showPasswordForm)}
-                className="flex w-full items-center justify-between rounded-2xl bg-slate-900 p-5 text-white transition hover:bg-slate-800 active:scale-[0.98] dark:bg-white dark:text-slate-900"
+                className="flex w-full items-center justify-between rounded-2xl bg-slate-900 p-5 text-white transition hover:bg-slate-800 active:scale-[0.98]"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 dark:bg-slate-900/10">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
                     <Lock size={20} />
                   </div>
                   <div className="text-left">
@@ -305,16 +305,16 @@ export default function ProfileInterface() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="rounded-3xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-8 shadow-xl shadow-black/20"
+                  className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"
                 >
                   <div className="mb-8 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-500/10">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
                         <Lock size={20} />
                       </div>
-                      <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase">Cài đặt mật khẩu</h3>
+                      <h3 className="text-lg font-black tracking-tight text-slate-800 uppercase">Cài đặt mật khẩu</h3>
                     </div>
-                    <button onClick={() => setShowPasswordForm(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+                    <button onClick={() => setShowPasswordForm(false)} className="text-slate-400 hover:text-slate-800 transition">
                       <X size={24} />
                     </button>
                   </div>
@@ -328,7 +328,7 @@ export default function ProfileInterface() {
                           required
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                          className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-rose-500 focus:bg-white dark:border-white/5 dark:bg-white/5 dark:focus:border-rose-500"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-rose-500 focus:bg-white"
                           placeholder="••••••••"
                         />
                       </div>
@@ -339,7 +339,7 @@ export default function ProfileInterface() {
                           required
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                          className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white dark:border-white/5 dark:bg-white/5 dark:focus:border-purple-500"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white"
                           placeholder="Tối thiểu 8 ký tự"
                         />
                       </div>
@@ -350,13 +350,13 @@ export default function ProfileInterface() {
                           required
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                          className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white dark:border-white/5 dark:bg-white/5 dark:focus:border-purple-500"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white"
                           placeholder="••••••••"
                         />
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-slate-50 dark:border-white/5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-slate-100">
                       <div className="flex items-center gap-2 text-slate-400">
                         <AlertCircle size={16} />
                         <span className="text-[10px] font-bold">Lưu ý: Bạn sẽ bị đăng xuất sau khi đổi mật khẩu thành công.</span>
@@ -364,7 +364,7 @@ export default function ProfileInterface() {
                       <button
                         type="submit"
                         disabled={updating}
-                        className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-10 py-4 text-sm font-black text-white transition hover:opacity-90 active:scale-95 disabled:opacity-50 dark:bg-white dark:text-slate-900"
+                        className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-10 py-4 text-sm font-black text-white transition hover:opacity-90 active:scale-95 disabled:opacity-50"
                       >
                         {updating ? "Đang xử lý..." : "Cập nhật mật khẩu"}
                       </button>
@@ -377,20 +377,20 @@ export default function ProfileInterface() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="rounded-3xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-8 shadow-xl shadow-black/20"
+                  className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"
                 >
                   <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/10">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
                         <User size={20} />
                       </div>
-                      <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase">Thông tin cơ bản</h3>
+                      <h3 className="text-lg font-black tracking-tight text-slate-800 uppercase">Thông tin cơ bản</h3>
                     </div>
                     
                     {!editing ? (
                       <button
                         onClick={() => setEditing(true)}
-                        className="flex items-center gap-2 rounded-xl bg-purple-50 px-5 py-2.5 text-xs font-black text-purple-600 transition hover:bg-purple-100 active:scale-95 dark:bg-purple-500/10 dark:text-purple-400"
+                        className="flex items-center gap-2 rounded-xl bg-purple-50 px-5 py-2.5 text-xs font-black text-purple-600 transition hover:bg-purple-100 active:scale-95"
                       >
                         <Edit3 size={16} /> Chỉnh sửa
                       </button>
@@ -414,7 +414,7 @@ export default function ProfileInterface() {
                               });
                             }
                           }}
-                          className="rounded-xl border border-slate-100 px-5 py-2.5 text-xs font-black text-slate-500 transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5"
+                          className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-black text-slate-550 transition hover:bg-slate-50"
                         >
                           Hủy bỏ
                         </button>
@@ -424,7 +424,7 @@ export default function ProfileInterface() {
 
                   <form onSubmit={handleUpdateProfile} className="space-y-8">
                     {/* Avatar Upload Section */}
-                    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-950/70">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-5">
                       <AvatarUploadField
                         key={`${editing ? 'editing' : 'view'}-${avatarFieldKey}`}
                         label="Ảnh đại diện"
@@ -447,7 +447,7 @@ export default function ProfileInterface() {
                           disabled={!editing}
                           value={formData.fullName}
                           onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                          className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white disabled:opacity-60 dark:border-white/5 dark:bg-white/5 dark:focus:border-purple-500"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white disabled:opacity-60"
                           placeholder="VD: Nguyễn Văn A"
                         />
                       </div>
@@ -461,7 +461,7 @@ export default function ProfileInterface() {
                           <input
                             disabled={true} // Usually username is immutable
                             value={formData.username}
-                            className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition disabled:bg-slate-100/50 dark:border-white/5 dark:bg-white/5 dark:disabled:bg-white/10 opacity-50"
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition disabled:bg-slate-100/50 opacity-50"
                           />
                         </div>
                       )}
@@ -476,7 +476,7 @@ export default function ProfileInterface() {
                           type="email"
                           value={formData.email}
                           onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white disabled:opacity-60 dark:border-white/5 dark:bg-white/5 dark:focus:border-purple-500"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white disabled:opacity-60"
                           placeholder="example@gmail.com"
                         />
                       </div>
@@ -488,7 +488,7 @@ export default function ProfileInterface() {
                           disabled={!editing}
                           value={formData.phone || ""}
                           onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                          className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white disabled:opacity-60 dark:border-white/5 dark:bg-white/5 dark:focus:border-purple-500"
+                          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white disabled:opacity-60"
                           placeholder="09xx xxx xxx"
                         />
                       </div>
@@ -501,7 +501,7 @@ export default function ProfileInterface() {
                           value={formData.address || ""}
                           onChange={(e) => setFormData({...formData, address: e.target.value})}
                           rows={3}
-                          className="w-full resize-none rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white disabled:opacity-60 dark:border-white/5 dark:bg-white/5 dark:focus:border-purple-500"
+                          className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-bold outline-none transition focus:border-purple-500 focus:bg-white disabled:opacity-60"
                           placeholder="Số nhà, tên đường, phường/xã..."
                         />
                       </div>
@@ -528,13 +528,13 @@ export default function ProfileInterface() {
             </AnimatePresence>
             
             {/* Additional info footer */}
-            <div className="mt-8 flex items-center gap-4 rounded-3xl bg-amber-50/50 p-6 border border-amber-100 dark:bg-amber-500/5 dark:border-amber-500/10">
-               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
+            <div className="mt-8 flex items-center gap-4 rounded-3xl bg-amber-50/50 p-6 border border-amber-100">
+               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
                   <AlertCircle size={24} />
                </div>
                <div>
-                  <h4 className="text-sm font-black text-amber-800 dark:text-amber-400 uppercase tracking-tight">Quyền riêng tư & Bảo mật</h4>
-                  <p className="text-xs text-amber-700/70 dark:text-amber-400/60 leading-relaxed mt-0.5">
+                  <h4 className="text-sm font-black text-amber-800 uppercase tracking-tight">Quyền riêng tư & Bảo mật</h4>
+                  <p className="text-xs text-amber-700/70 leading-relaxed mt-0.5">
                     Mọi thông tin của bạn được MyPhone Store bảo mật tuyệt đối theo tiêu chuẩn quốc tế. Chúng tôi không bao giờ chia sẻ dữ liệu của bạn cho bên thứ ba.
                   </p>
                </div>
@@ -581,22 +581,22 @@ export default function ProfileInterface() {
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-slate-900"
+                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 shadow-2xl"
               >
                 <div className="flex flex-col items-center text-center">
-                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 text-rose-500 ring-1 ring-rose-100">
                     <AlertCircle size={32} />
                   </div>
-                  <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
+                  <h3 className="text-xl font-black tracking-tight text-slate-800 uppercase">
                     {errorModal.title}
                   </h3>
-                  <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                  <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500">
                     {errorModal.message}
                   </p>
                   <button
                     type="button"
                     onClick={() => setErrorModal({ ...errorModal, open: false })}
-                    className="mt-8 w-full rounded-2xl bg-slate-900 py-4 text-sm font-black text-white shadow-xl transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900"
+                    className="mt-8 w-full rounded-2xl bg-slate-900 py-4 text-sm font-black text-white shadow-xl transition hover:bg-slate-800 active:scale-95"
                   >
                     Đã hiểu
                   </button>
@@ -624,16 +624,16 @@ export default function ProfileInterface() {
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 shadow-2xl dark:border-white/10 dark:bg-slate-900"
+                className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 shadow-2xl"
               >
                 <div className="flex flex-col items-center text-center">
-                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 ring-1 ring-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 ring-1 ring-emerald-100">
                     <CheckCircle2 size={32} />
                   </div>
-                  <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
+                  <h3 className="text-xl font-black tracking-tight text-slate-800 uppercase">
                     {successModal.title}
                   </h3>
-                  <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                  <p className="mt-3 text-sm font-medium leading-relaxed text-slate-500">
                     {successModal.message}
                   </p>
                   <button

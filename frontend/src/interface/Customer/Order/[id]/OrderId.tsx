@@ -445,8 +445,8 @@ export default function OrderId() {
       {/* Fixed back button via portal */}
       {typeof window !== "undefined" && createPortal(
         <div className="fixed left-3 top-[3.5rem] z-[190] sm:left-4 sm:top-[4.25rem]">
-          <Link href="/order" className="group flex items-center gap-2 rounded-full border border-zinc-600 bg-zinc-900/90 py-1.5 pl-2 pr-4 text-sm font-bold text-slate-400 backdrop-blur-md transition-colors hover:border-purple-600 hover:text-purple-400">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-700 transition-all group-hover:bg-purple-600 group-hover:text-white">
+          <Link href="/order" className="group flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 py-1.5 pl-2 pr-4 text-sm font-bold text-slate-600 backdrop-blur-md shadow-sm transition-colors hover:border-purple-400 hover:text-purple-600">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 transition-all group-hover:bg-purple-600 group-hover:text-white">
               <ChevronLeft className="h-3.5 w-3.5" />
             </div>
             Quay lại
@@ -458,14 +458,14 @@ export default function OrderId() {
       {/* Order code row */}
       <div className="flex items-center gap-3 pt-8 sm:pt-2">
         <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>
-        <span className="rounded-lg bg-purple-50 px-3 py-1 text-sm font-black text-purple-600 dark:bg-purple-500/10">
+        <span className="rounded-lg bg-purple-50 px-3 py-1 text-sm font-black text-purple-600">
           #{order.orderCode || order.orderId}
         </span>
       </div>
 
       {/* PROGRESS STEPPER */}
       {order?.orderStatus !== "CANCELLED" && (
-        <div className="rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/55 p-4 backdrop-blur-md sm:rounded-[2.5rem] sm:p-6 lg:p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:rounded-[2.5rem] sm:p-6 lg:p-8">
           <div className="overflow-x-auto pb-3">
             <div className="flex min-w-[440px] items-center pb-1 sm:min-w-0">
               {steps.map((step, idx) => {
@@ -477,7 +477,7 @@ export default function OrderId() {
                     <div className="flex flex-col items-center gap-2 shrink-0">
                       <div className={`
                         flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-all duration-500
-                        ${isPast ? "bg-emerald-500 text-white" : isCurrent ? "bg-purple-600 text-white" : "bg-zinc-700 text-zinc-400"}
+                        ${isPast ? "bg-emerald-500 text-white" : isCurrent ? "bg-purple-600 text-white" : "bg-slate-100 text-slate-400"}
                       `}>
                         {isPast ? <CheckCircle2 className="h-5 w-5" /> : <step.icon className="h-5 w-5" />}
                       </div>
@@ -487,7 +487,7 @@ export default function OrderId() {
                     </div>
                     {idx < steps.length - 1 && (
                       <div className="relative h-1 flex-1 min-w-[20px] -mx-0">
-                        <div className={`absolute inset-0 rounded-full transition-all duration-500 ${idx < currentStatusIdx ? "bg-zinc-600" : "bg-purple-600/40"}`} />
+                        <div className={`absolute inset-0 rounded-full transition-all duration-500 ${idx < currentStatusIdx ? "bg-slate-200" : "bg-purple-200"}`} />
                         <div
                           className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-1000 rounded-full shadow-sm shadow-emerald-500/30"
                           style={{ width: idx < currentStatusIdx ? "100%" : "0%" }}
@@ -506,9 +506,9 @@ export default function OrderId() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 flex flex-col gap-4 rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-rose-700 backdrop-blur-xl sm:mb-10 sm:flex-row sm:items-center sm:gap-6 sm:rounded-[2.5rem] sm:p-8 dark:border-rose-900/20 dark:bg-rose-500/5 dark:text-rose-400"
+          className="mb-6 flex flex-col gap-4 rounded-2xl border border-rose-100 bg-rose-50/50 p-4 text-rose-700 sm:mb-10 sm:flex-row sm:items-center sm:gap-6 sm:rounded-[2.5rem] sm:p-8"
         >
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/20">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
             <XCircle className="h-8 w-8" />
           </div>
           <div className="flex-1">
@@ -555,36 +555,36 @@ export default function OrderId() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 backdrop-blur-xl sm:mb-10 sm:rounded-[2.5rem] sm:p-6 lg:p-8 dark:border-emerald-900/20 dark:bg-emerald-500/5"
+          className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 sm:mb-10 sm:rounded-[2.5rem] sm:p-6 lg:p-8"
         >
-          <div className="mb-4 flex items-center gap-3 text-emerald-700 dark:text-emerald-400">
+          <div className="mb-4 flex items-center gap-3 text-emerald-700">
             <CheckCircle2 className="h-6 w-6" />
             <h3 className="text-lg font-black tracking-tight sm:text-xl">Thanh toán đã được xác nhận</h3>
           </div>
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Người xử lý</div>
-                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-500">Người xử lý</div>
+                <div className="text-sm font-bold text-slate-800">
                   {order.adminNoteAuthor || "Admin"}
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">Thời gian</div>
-                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-500">Thời gian</div>
+                <div className="text-sm font-bold text-slate-800">
                   {formatDate(order.adminNoteDate) || "-"}
                 </div>
               </div>
             </div>
             {order.adminNote && (
-              <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
-                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500 mb-2">Ghi chú</div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <div className="rounded-xl bg-emerald-50 p-4 border border-emerald-100">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-500 mb-2">Ghi chú</div>
+                <p className="text-sm font-medium text-slate-700">
                   {order.adminNote}
                 </p>
               </div>
             )}
-            <div className="flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-400">
+            <div className="flex items-center gap-2 text-sm font-bold text-emerald-700">
               <CheckCircle2 className="h-4 w-4" />
               Đơn hàng của bạn đang được xử lý
             </div>
@@ -597,36 +597,36 @@ export default function OrderId() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mb-6 rounded-2xl border border-amber-100 bg-amber-50/50 p-4 backdrop-blur-xl sm:mb-10 sm:rounded-[2.5rem] sm:p-6 lg:p-8 dark:border-amber-900/20 dark:bg-amber-500/5"
+          className="mb-6 rounded-2xl border border-amber-100 bg-amber-50/50 p-4 sm:mb-10 sm:rounded-[2.5rem] sm:p-6 lg:p-8"
         >
-          <div className="mb-4 flex items-center gap-3 text-amber-700 dark:text-amber-400">
+          <div className="mb-4 flex items-center gap-3 text-amber-700">
             <AlertCircle className="h-6 w-6" />
             <h3 className="text-lg font-black tracking-tight sm:text-xl">Minh chứng thanh toán bị từ chối</h3>
           </div>
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Người xử lý</div>
-                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                <div className="text-[10px] font-black uppercase tracking-wider text-amber-500">Người xử lý</div>
+                <div className="text-sm font-bold text-slate-800">
                   {order.adminNoteAuthor || "Admin"}
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500">Thời gian</div>
-                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                <div className="text-[10px] font-black uppercase tracking-wider text-amber-500">Thời gian</div>
+                <div className="text-sm font-bold text-slate-800">
                   {formatDate(order.adminNoteDate) || "-"}
                 </div>
               </div>
             </div>
             {order.adminNote && (
-              <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
-                <div className="text-[10px] font-black uppercase tracking-wider text-amber-400 dark:text-amber-500 mb-2">Lý do từ chối</div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <div className="rounded-xl bg-amber-50 p-4 border border-amber-100">
+                <div className="text-[10px] font-black uppercase tracking-wider text-amber-500 mb-2">Lý do từ chối</div>
+                <p className="text-sm font-medium text-slate-700">
                   {order.adminNote}
                 </p>
               </div>
             )}
-            <div className="flex items-center gap-2 text-sm font-bold text-amber-700 dark:text-amber-400">
+            <div className="flex items-center gap-2 text-sm font-bold text-amber-700">
               <AlertCircle className="h-4 w-4" />
               Vui lòng thanh toán lại để tiếp tục đơn hàng
             </div>
@@ -640,26 +640,26 @@ export default function OrderId() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="group overflow-hidden rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/55 p-4 ring-1 ring-zinc-500/35 shadow-2xl shadow-black/20 backdrop-blur-md sm:rounded-[2.5rem] sm:p-6 lg:p-8"
+          className="group overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-[2.5rem] sm:p-6 lg:p-8"
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 transition-all group-hover:bg-purple-600 group-hover:text-white sm:h-14 sm:w-14 dark:bg-purple-500/10">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 transition-all group-hover:bg-purple-600 group-hover:text-white sm:h-14 sm:w-14">
               <User className="h-6 w-6 sm:h-7 sm:w-7" />
             </div>
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Khách hàng</h4>
-              <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">{order.customerName || "N/A"}</p>
+              <p className="mt-1 text-xl font-black text-slate-800">{order.customerName || "N/A"}</p>
             </div>
           </div>
-          <div className="mt-8 space-y-4 border-t border-slate-50 pt-8 dark:border-slate-800">
-            <div className="flex items-center gap-4 text-sm font-bold text-slate-600 dark:text-slate-400">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-white/5">
+          <div className="mt-8 space-y-4 border-t border-slate-100 pt-8">
+            <div className="flex items-center gap-4 text-sm font-bold text-slate-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50">
                 <Phone className="h-4 w-4" />
               </div>
               {order.receiverPhone || "N/A"}
             </div>
-            <div className="flex items-center gap-4 text-sm font-bold text-slate-600 dark:text-slate-400">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 dark:bg-white/5">
+            <div className="flex items-center gap-4 text-sm font-bold text-slate-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50">
                 <Mail className="h-4 w-4" />
               </div>
               <span className="truncate">{order.email || "N/A"}</span>
@@ -672,23 +672,23 @@ export default function OrderId() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={`group overflow-hidden rounded-2xl p-4 customer-card-surface sm:rounded-[2.5rem] sm:p-6 lg:p-8 border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 shadow-2xl shadow-black/20 backdrop-blur-md`}
+          className={`group overflow-hidden rounded-2xl p-4 sm:rounded-[2.5rem] sm:p-6 lg:p-8 border border-slate-200 bg-white shadow-sm`}
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 transition-all group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-500/10">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 transition-all group-hover:bg-indigo-600 group-hover:text-white">
               <MapPin className="h-7 w-7" />
             </div>
             <div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Giao hàng đến</h4>
-              <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">Địa chỉ nhận</p>
+              <p className="mt-1 text-xl font-black text-slate-800">Địa chỉ nhận</p>
             </div>
           </div>
-          <div className="mt-8 border-t border-slate-50 pt-8 dark:border-slate-800">
-            <p className="text-sm font-bold leading-relaxed text-slate-700 dark:text-slate-300">
+          <div className="mt-8 border-t border-slate-100 pt-8">
+            <p className="text-sm font-bold leading-relaxed text-slate-700">
               {order.shippingAddress || "Chưa cung cấp địa chỉ"}
             </p>
             <div className="mt-6 flex items-center gap-2">
-              <div className="flex h-7 items-center gap-2 rounded-full bg-emerald-50 px-3 text-[10px] font-black uppercase text-emerald-600 dark:bg-emerald-500/10">
+              <div className="flex h-7 items-center gap-2 rounded-full bg-emerald-50 px-3 text-[10px] font-black uppercase text-emerald-600">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Địa chỉ đã xác thực
               </div>
@@ -701,7 +701,7 @@ export default function OrderId() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className={`relative overflow-hidden rounded-2xl p-4 customer-card-surface sm:rounded-[2.5rem] sm:p-6 lg:p-8 border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 shadow-2xl shadow-black/20 backdrop-blur-md`}
+          className={`relative overflow-hidden rounded-2xl p-4 sm:rounded-[2.5rem] sm:p-6 lg:p-8 border border-slate-200 bg-white shadow-sm`}
         >
           <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-purple-500/5 blur-3xl" />
           <div className="relative">
@@ -718,7 +718,7 @@ export default function OrderId() {
                 <p className="mt-1 text-2xl font-black tracking-tight text-purple-600 sm:text-3xl lg:text-4xl">{formatVnd(total)}</p>
               </div>
 
-              <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
+              <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 text-slate-400" />
                   <div>
@@ -759,39 +759,39 @@ export default function OrderId() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-6 backdrop-blur-xl dark:border-emerald-900/20 dark:bg-emerald-500/5"
+          className="mb-12 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-6"
         >
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
               <CheckCircle2 className="h-6 w-6" />
             </div>
             <div className="flex-1 space-y-3">
-              <h3 className="text-lg font-black text-emerald-700 dark:text-emerald-400">
+              <h3 className="text-lg font-black text-emerald-700">
                 Thanh toán đã được xác nhận
               </h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-emerald-500">
                     Xác nhận bởi
                   </div>
-                  <div className="text-sm font-bold text-slate-900 dark:text-white">
+                  <div className="text-sm font-bold text-slate-800">
                     {order.adminNoteAuthor || "Admin"}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-emerald-500">
                     Thời gian
                   </div>
-                  <div className="text-sm font-bold text-slate-900 dark:text-white">
+                  <div className="text-sm font-bold text-slate-800">
                     {formatDate(order.adminNoteDate) || "-"}
                   </div>
                 </div>
               </div>
-              <div className="rounded-xl bg-white/50 p-4 dark:bg-black/20">
-                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-400 dark:text-emerald-500 mb-2">
+              <div className="rounded-xl bg-emerald-50 p-4 border border-emerald-100">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-500 mb-2">
                   Ghi chú
                 </div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <p className="text-sm font-medium text-slate-700">
                   {order.adminNote || "(Không có ghi chú)"}
                 </p>
               </div>
@@ -803,12 +803,12 @@ export default function OrderId() {
       {/* ELITE PRODUCTS LIST */}
       <div className="space-y-12">
         <div className="flex items-center justify-between px-6">
-          <h3 className="flex flex-wrap items-center gap-3 text-xl font-black tracking-tight text-slate-900 sm:gap-5 sm:text-2xl lg:text-4xl dark:text-white">
+          <h3 className="flex flex-wrap items-center gap-3 text-xl font-black tracking-tight text-slate-800 sm:gap-5 sm:text-2xl lg:text-4xl">
             <Box className="h-12 w-12 text-purple-600" />
             Sản phẩm đã đặt
           </h3>
           <div className="hidden sm:block">
-            <span className="rounded-full bg-slate-100 px-6 py-2 text-xs font-black uppercase tracking-widest text-slate-500 dark:bg-white/5">
+            <span className="rounded-full bg-slate-100 px-6 py-2 text-xs font-black uppercase tracking-widest text-slate-500">
               Tổng cộng {order.items?.length || 0} sản phẩm
             </span>
           </div>
@@ -838,11 +838,11 @@ export default function OrderId() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.05 }}
-                className="group relative overflow-hidden rounded-[1.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 shadow-xl shadow-black/20"
+                className="group relative overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm"
               >
                 <div className="flex flex-col p-4 md:flex-row md:gap-6">
                   {/* Ultra-Compact Image Section */}
-                  <div className="relative aspect-[9/16] w-full shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 md:w-32 dark:border-slate-800 dark:bg-slate-950">
+                  <div className="relative aspect-[9/16] w-full shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 md:w-32">
                     {(() => {
                       const orderColorName = normalizeText(it.colorName);
                       let matchedImage: string | null = null;
@@ -867,14 +867,14 @@ export default function OrderId() {
                       <div className="space-y-3">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <h4 className="text-lg font-black text-slate-900 transition-colors group-hover:text-purple-600 dark:text-white leading-tight">
+                            <h4 className="text-lg font-black text-slate-800 transition-colors group-hover:text-purple-600 leading-tight">
                               {it.productName}
                             </h4>
                             <div className="mt-1 flex flex-wrap gap-1.5">
                               {specs.map((s, i) => (
-                                <span key={i} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2 py-1 text-[9px] font-bold text-slate-500 dark:bg-white/5">
+                                <span key={i} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2 py-1 text-[9px] font-bold text-slate-500">
                                   <span className="uppercase text-slate-400">{s.label}:</span>
-                                  <span className="text-slate-900 dark:text-white">{s.value}</span>
+                                  <span className="text-slate-800">{s.value}</span>
                                 </span>
                               ))}
                             </div>
@@ -887,7 +887,7 @@ export default function OrderId() {
 
                         {/* Ultra-Compact Feedback System */}
                         {canReview && (
-                          <div className="rounded-xl border border-purple-50/50 bg-purple-50/10 p-3 dark:border-purple-900/10 dark:bg-purple-900/5">
+                          <div className="rounded-xl border border-purple-50 bg-purple-50/30 p-3">
                             {!isEditing && review ? (
                               <div className="space-y-3">
                                 <div className="flex items-center justify-between">
@@ -901,7 +901,7 @@ export default function OrderId() {
                                     <button onClick={() => deleteReview(orderItemId)} className="p-1 text-slate-400 hover:text-rose-600 transition-colors"><Trash2 className="h-5 w-5" /></button>
                                   </div>
                                 </div>
-                                <p className="text-sm font-medium text-slate-600 dark:text-slate-300 italic">"{review?.content || "N/A"}"</p>
+                                <p className="text-sm font-medium text-slate-600 italic">"{review?.content || "N/A"}"</p>
 
                                 {/* Ảnh đính kèm đánh giá */}
                                 {review.images && review.images.length > 0 && (
@@ -919,12 +919,12 @@ export default function OrderId() {
                                 )}
 
                                 {review.adminReply && (
-                                  <div className="mt-2 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-3 dark:border-emerald-400/30 dark:bg-emerald-500/15">
+                                  <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
                                     <div className="flex items-center gap-2 mb-1">
                                       <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-600 text-[9px] font-black text-white shadow-sm">S</span>
-                                      <span className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">Phản hồi từ Shop</span>
+                                      <span className="text-[11px] font-black text-emerald-700">Phản hồi từ Shop</span>
                                     </div>
-                                    <p className="text-sm font-medium text-slate-700 leading-relaxed dark:text-slate-200">{review.adminReply}</p>
+                                    <p className="text-sm font-medium text-slate-700 leading-relaxed">{review.adminReply}</p>
                                   </div>
                                 )}
                               </div>
@@ -955,7 +955,7 @@ export default function OrderId() {
                                   </label>
                                 </div>
                                 <textarea
-                                  className="w-full rounded-lg border-none bg-white p-3 text-sm placeholder:text-slate-300 focus:ring-2 focus:ring-purple-500/10 dark:bg-slate-800 shadow-inner"
+                                  className="w-full rounded-lg border border-slate-200 bg-white p-3 text-sm placeholder:text-slate-300 focus:ring-2 focus:ring-purple-500/10 shadow-inner"
                                   placeholder="Đánh giá sản phẩm..."
                                   value={draft?.content || ""}
                                   onChange={e => setDraft(orderItemId, { content: (e.target as HTMLTextAreaElement).value })}

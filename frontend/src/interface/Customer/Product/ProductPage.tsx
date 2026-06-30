@@ -334,13 +334,13 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="min-h-screen overflow-hidden rounded-2xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/40 p-3 shadow-xl shadow-black/20 transition-colors duration-500 sm:rounded-[2.5rem] sm:p-6 lg:p-8" onClick={closeDropdowns}>
+    <div className="min-h-screen overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-100 transition-colors duration-500 sm:rounded-[2.5rem] sm:p-6 lg:p-8" onClick={closeDropdowns}>
       <div className="space-y-8 sm:space-y-12">
         <PromotionBanner />
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">Sản phẩm</h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <h1 className="text-xl font-bold tracking-tight text-slate-800 sm:text-2xl">Sản phẩm</h1>
+            <p className="mt-1 text-sm text-slate-500">
               Hiển thị {products.filter((p) => {
                 if (filters.brandId != null && Number(p.brandId) !== Number(filters.brandId)) return false;
                 if (filters.categoryId != null && Number(p.categoryId) !== Number(filters.categoryId)) return false;
@@ -353,7 +353,7 @@ export default function ProductPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {/* Search với suggestions */}
             <div className="sm:col-span-2 relative" ref={searchRef} onClick={(e) => e.stopPropagation()}>
-              <div className="group flex overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 shadow-md shadow-black/20 backdrop-blur-md transition hover:shadow-lg sm:rounded-3xl">
+              <div className="group flex overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:shadow-md sm:rounded-3xl">
                 <input
                   value={draftQ}
                   onChange={(e) => { setDraftQ(e.target.value); }}
@@ -363,12 +363,12 @@ export default function ProductPage() {
                   }}
                   onFocus={() => { if (searchSuggestions.length > 0) setShowSuggestions(true); }}
                   placeholder="Tìm theo tên sản phẩm..."
-                  className="h-11 w-full min-w-0 bg-transparent pl-4 pr-2 text-sm text-white outline-none placeholder:text-slate-500"
+                  className="h-11 w-full min-w-0 bg-transparent pl-4 pr-2 text-sm text-slate-800 outline-none placeholder:text-slate-450"
                 />
                 <button
                   type="button"
                   onClick={() => { setParam({ q: draftQ }); setShowSuggestions(false); }}
-                  className="grid h-11 w-12 place-items-center text-cyan-300 transition hover:bg-white/10 cursor-pointer"
+                  className="grid h-11 w-12 place-items-center text-indigo-600 transition hover:bg-slate-100 cursor-pointer"
                   aria-label="Tìm kiếm"
                 >
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -378,7 +378,7 @@ export default function ProductPage() {
               </div>
               {/* Suggestions dropdown */}
               {showSuggestions && searchSuggestions.length > 0 && (
-                <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl shadow-black/40">
+                <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
                   {searchSuggestions.map((p) => {
                     const img = resolveImageUrl(p.productMainImage || p.productImages?.[0]?.imageUrl || p.productColors?.[0]?.images?.[0]);
 
@@ -407,31 +407,31 @@ export default function ProductPage() {
                         key={p.productId}
                         href={`/product/${p.productId}`}
                         onClick={() => setShowSuggestions(false)}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-white/10 cursor-pointer border-b border-white/5 last:border-0"
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-slate-55 cursor-pointer border-b border-slate-100 last:border-0"
                       >
                         {img ? (
-                          <img src={img} alt="" className="h-12 w-9 rounded-xl object-cover shrink-0 ring-1 ring-white/10" />
+                          <img src={img} alt="" className="h-12 w-9 rounded-xl object-cover shrink-0 ring-1 ring-slate-100" />
                         ) : (
-                          <div className="h-12 w-9 rounded-xl bg-white/10 shrink-0" />
+                          <div className="h-12 w-9 rounded-xl bg-slate-100 shrink-0" />
                         )}
                         <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-semibold text-white">{p.productName}</div>
+                          <div className="truncate text-sm font-semibold text-slate-800">{p.productName}</div>
                           <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                             {p.brandName && (
-                              <span className="text-[10px] text-indigo-300 font-medium">{p.brandName}</span>
+                              <span className="text-[10px] text-indigo-600 font-semibold">{p.brandName}</span>
                             )}
                             {p.categoryName && (
-                              <span className="text-[10px] text-slate-400">{p.categoryName}</span>
+                              <span className="text-[10px] text-slate-500">{p.categoryName}</span>
                             )}
                             {colorNames.length > 0 && (
-                              <span className="text-[10px] text-pink-300">
+                              <span className="text-[10px] text-pink-600 font-medium">
                                 {colorNames.join(" · ")}
                               </span>
                             )}
-                            <span className="text-[10px] text-slate-500">Còn lại: {totalQty}</span>
+                            <span className="text-[10px] text-slate-400">Còn lại: {totalQty}</span>
                           </div>
                           {minPrice > 0 && (
-                            <div className="mt-0.5 text-[11px] font-bold text-emerald-400">
+                            <div className="mt-0.5 text-[11px] font-bold text-emerald-600">
                               {minPrice === maxPrice
                                 ? fmt(minPrice)
                                 : `${fmt(minPrice)} - ${fmt(maxPrice)}`}
@@ -450,19 +450,19 @@ export default function ProductPage() {
               <button
                 type="button"
                 onClick={() => setOpenDropdown((v) => (v === "category" ? null : "category"))}
-                className="flex h-11 w-full items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 text-sm font-medium text-white shadow-md backdrop-blur-md transition hover:bg-white/10 cursor-pointer"
+                className="flex h-11 w-full items-center justify-between rounded-full border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 cursor-pointer"
               >
                 <span className="truncate">{categories.find((c) => c.id === filters.categoryId)?.name || "Tất cả danh mục"}</span>
-                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-450" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
               {openDropdown === "category" && (
-                <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-xl">
+                <div className="absolute right-0 z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
                   <button
                     type="button"
                     onClick={() => { setParam({ categoryId: null }); closeDropdowns(); }}
-                    className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.categoryId == null ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
+                    className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-slate-50 cursor-pointer ${filters.categoryId == null ? "text-indigo-600 font-semibold" : "text-slate-700"}`}
                   >
                     Tất cả danh mục
                   </button>
@@ -472,7 +472,7 @@ export default function ProductPage() {
                         key={c.id}
                         type="button"
                         onClick={() => { setParam({ categoryId: c.id }); closeDropdowns(); }}
-                        className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.categoryId === c.id ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
+                        className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-slate-50 cursor-pointer ${filters.categoryId === c.id ? "text-indigo-600 font-semibold" : "text-slate-700"}`}
                       >
                         {c.name}
                       </button>
@@ -503,7 +503,7 @@ export default function ProductPage() {
                     }
                   }
                 }}
-                className="flex h-11 w-full items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 text-sm font-medium text-white shadow-md backdrop-blur-md transition hover:bg-white/10 cursor-pointer"
+                className="flex h-11 w-full items-center justify-between rounded-full border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 cursor-pointer"
               >
                 <div className="flex min-w-0 items-center gap-2">
                   {filters.brandId && brands.find((b) => b.id === filters.brandId)?.imageUrl && (
@@ -515,7 +515,7 @@ export default function ProductPage() {
                   )}
                   <span className="truncate">{brands.find((b) => b.id === filters.brandId)?.name || "Tất cả thương hiệu"}</span>
                 </div>
-                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-450" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
@@ -531,11 +531,11 @@ export default function ProductPage() {
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-xl">
+                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
                     <button
                       type="button"
                       onClick={() => { setParam({ brandId: null }); closeDropdowns(); setBrandDropdownPos(null); }}
-                      className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.brandId == null ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
+                      className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-slate-50 cursor-pointer ${filters.brandId == null ? "text-indigo-600 font-semibold" : "text-slate-700"}`}
                     >
                       Tất cả thương hiệu
                     </button>
@@ -545,12 +545,12 @@ export default function ProductPage() {
                           key={b.id}
                           type="button"
                           onClick={() => { setParam({ brandId: b.id }); closeDropdowns(); setBrandDropdownPos(null); }}
-                          className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-white/10 cursor-pointer ${filters.brandId === b.id ? "text-cyan-400 font-semibold" : "text-slate-200"}`}
+                          className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-slate-50 cursor-pointer ${filters.brandId === b.id ? "text-indigo-600 font-semibold" : "text-slate-700"}`}
                         >
                           {b.imageUrl ? (
                             <img src={resolveImageUrl(b.imageUrl) || ""} alt="" className="h-6 w-6 rounded-full object-cover shrink-0" />
                           ) : (
-                            <div className="h-6 w-6 rounded-full bg-white/10 shrink-0" />
+                            <div className="h-6 w-6 rounded-full bg-slate-100 shrink-0" />
                           )}
                           {b.name}
                         </button>
@@ -566,14 +566,14 @@ export default function ProductPage() {
 
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-slate-900 dark:text-slate-300">
+          <div className="text-sm text-slate-800">
             Sắp xếp:
             <button
               type="button"
               onClick={() => setParam({ sort: "category" })}
               className={`ml-2 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer ${filters.sort === "category"
-                ? "bg-cyan-600 text-white"
-                : "bg-white/70 text-slate-800 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                ? "bg-indigo-600 text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
             >
               Theo loại danh mục
@@ -582,8 +582,8 @@ export default function ProductPage() {
               type="button"
               onClick={() => setParam({ sort: "name" })}
               className={`ml-2 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer ${filters.sort === "name"
-                ? "bg-cyan-600 text-white"
-                : "bg-white/70 text-slate-800 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+                ? "bg-indigo-600 text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
             >
               Theo tên
@@ -597,7 +597,7 @@ export default function ProductPage() {
                 setDraftQ("");
                 setParam({ q: "", categoryId: null, sort: "category" });
               }}
-              className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-slate-900/20 transition hover:-translate-y-0.5 hover:bg-slate-800 active:translate-y-0 dark:bg-white/10 dark:text-white dark:ring-white/10 dark:hover:bg-white/15 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-full bg-slate-850 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-slate-800 transition hover:-translate-y-0.5 hover:bg-slate-800 active:translate-y-0 cursor-pointer"
             >
               Xóa bộ lọc
             </button>
@@ -611,8 +611,8 @@ export default function ProductPage() {
         )}
 
         {!loading && !error && products.length === 0 && (
-          <div className="rounded-3xl bg-slate-50 p-12 text-center dark:bg-slate-900/30 border border-black/5 dark:border-white/10">
-            <p className="text-lg text-slate-900 dark:text-slate-300">Không tìm thấy sản phẩm phù hợp.</p>
+          <div className="rounded-3xl bg-slate-50 p-12 text-center border border-slate-200">
+            <p className="text-lg text-slate-800">Không tìm thấy sản phẩm phù hợp.</p>
           </div>
         )}
 
@@ -621,13 +621,13 @@ export default function ProductPage() {
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="mx-auto w-full max-w-[220px] rounded-3xl border border-black/5 bg-white/60 dark:border-white/10 dark:bg-white/5 overflow-hidden shadow-sm animate-pulse"
+                className="mx-auto w-full max-w-[220px] rounded-3xl border border-slate-200 bg-slate-50 overflow-hidden shadow-sm animate-pulse"
               >
-                <div className="w-full aspect-9/16 bg-slate-200 dark:bg-slate-800" />
+                <div className="w-full aspect-9/16 bg-slate-200" />
                 <div className="p-3 space-y-2">
-                  <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-4/5" />
-                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/5" />
-                  <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-2/5" />
+                  <div className="h-5 bg-slate-200 rounded w-4/5" />
+                  <div className="h-4 bg-slate-200 rounded w-3/5" />
+                  <div className="h-6 bg-slate-200 rounded w-2/5" />
                 </div>
               </div>
             ))}
@@ -636,7 +636,7 @@ export default function ProductPage() {
           <div ref={productsRef} className="space-y-12 scroll-mt-4">
             {productSections.map((section) => (
               <section key={section.key} className="pt-8 first:pt-0">
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white border-t border-black/10 dark:border-white/10 pt-8 mb-8 first:border-none first:pt-0">
+                <h2 className="text-xl font-bold tracking-tight text-slate-800 border-t border-slate-200 pt-8 mb-8 first:border-none first:pt-0">
                   {section.title}
                 </h2>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -695,7 +695,7 @@ export default function ProductPage() {
           <div
             onClick={() => setShowSuccessModal(false)}
             style={{ 
-              backgroundColor: "rgba(15, 23, 42, 0.7)", 
+              backgroundColor: "rgba(15, 23, 42, 0.3)", 
               backdropFilter: "blur(6px)", 
               WebkitBackdropFilter: "blur(6px)" 
             }}
@@ -705,38 +705,30 @@ export default function ProductPage() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md overflow-hidden rounded-[2.5rem]"
-            style={{ 
-              background: "rgba(255,255,255,0.08)", 
-              backdropFilter: "blur(20px)", 
-              WebkitBackdropFilter: "blur(20px)", 
-              border: "1px solid rgba(255,255,255,0.15)", 
-              boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
-              animation: "avatarModalScaleIn 180ms ease-out"
-            }}
+            className="relative w-full max-w-md overflow-hidden rounded-[2.5rem] bg-white border border-slate-200 shadow-2xl p-8"
           >
-            <div className="p-8">
+            <div>
               <div className="flex flex-col items-center text-center">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-                  className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20 ring-2 ring-emerald-400/50"
+                  className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 ring-2 ring-emerald-200"
                 >
-                  <svg className="h-10 w-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-10 w-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                   </svg>
                 </motion.div>
-                <h3 className="text-2xl font-black tracking-tight text-white/95">
+                <h3 className="text-2xl font-black tracking-tight text-slate-800">
                   Thêm vào giỏ hàng thành công!
                 </h3>
-                <p className="mt-3 text-sm text-white/70">
+                <p className="mt-3 text-sm text-slate-500">
                   Sản phẩm đã được thêm vào giỏ hàng của bạn.
                 </p>
                 <button
                   type="button"
                   onClick={() => setShowSuccessModal(false)}
-                  className="mt-8 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/30 transition hover:shadow-2xl hover:shadow-emerald-500/40 active:scale-[0.98]"
+                  className="mt-8 w-full rounded-2xl bg-indigo-600 px-6 py-4 text-sm font-black text-white shadow-lg transition hover:bg-indigo-700 active:scale-[0.98]"
                 >
                   Đóng
                 </button>

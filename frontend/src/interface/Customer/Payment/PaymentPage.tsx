@@ -413,14 +413,14 @@ export default function PaymentPage() {
   if (success === "BANK_TRANSFER" && createdOrder && qrInfo) {
     return (
       <div className="mx-auto w-full max-w-4xl space-y-4 px-1 py-4 sm:space-y-6 sm:px-0 sm:py-8">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm sm:rounded-3xl sm:p-8 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm sm:rounded-3xl sm:p-8">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 sm:h-16 sm:w-16">
             <CheckCircle2 className="h-7 w-7 sm:h-8 sm:w-8" />
           </div>
-          <h1 className="mt-4 text-lg font-black text-slate-900 sm:text-2xl dark:text-white">
+          <h1 className="mt-4 text-lg font-black text-slate-850 sm:text-2xl">
             Đơn hàng #{createdOrder.orderCode} đã được tạo!
           </h1>
-          <p className="mt-2 text-sm font-medium text-slate-500">
+          <p className="mt-2 text-sm font-medium text-slate-550">
             Vui lòng chuyển khoản và tải ảnh hóa đơn để chúng tôi xác nhận đơn hàng của bạn.
           </p>
         </div>
@@ -466,23 +466,23 @@ export default function PaymentPage() {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-2xl"
         >
-          <div className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-2xl shadow-emerald-500/10 sm:rounded-[3rem] sm:p-12 dark:border-emerald-500/20 dark:bg-slate-900/50">
+          <div className="rounded-2xl border border-emerald-100 bg-white p-6 shadow-2xl shadow-emerald-500/10 sm:rounded-[3rem] sm:p-12">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 sm:h-24 sm:w-24">
               <CheckCircle2 className="h-10 w-10 sm:h-12 sm:w-12" />
             </div>
-            <h1 className="mt-6 text-2xl font-black text-slate-900 sm:mt-8 sm:text-3xl dark:text-white">
+            <h1 className="mt-6 text-2xl font-black text-slate-850 sm:mt-8 sm:text-3xl">
               Đặt hàng thành công!
             </h1>
-            <p className="mt-3 text-base font-medium text-slate-500 sm:text-lg dark:text-slate-400">
+            <p className="mt-3 text-base font-medium text-slate-550 sm:text-lg">
               Cảm ơn bạn đã tin tưởng. Đơn hàng của bạn đang được xử lý và sẽ sớm được giao tới địa chỉ của bạn.
             </p>
 
-            <div className="mt-6 rounded-2xl bg-slate-50 p-4 sm:mt-8 sm:p-6 dark:bg-slate-800">
+            <div className="mt-6 rounded-2xl bg-slate-50 p-4 sm:mt-8 sm:p-6">
               <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</div>
               <div className="mt-1 break-all text-xl font-black text-purple-600 sm:text-2xl">
                 #{String(createdOrder?.orderCode || createdOrder?.orderId)}
               </div>
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-center text-sm font-bold text-slate-600 dark:text-slate-300">
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-center text-sm font-bold text-slate-650">
                 <Truck className="h-4 w-4 shrink-0" />
                 <span>Phương thức:</span>
                 <span className="text-emerald-600">Thanh toán khi nhận hàng (COD)</span>
@@ -492,7 +492,7 @@ export default function PaymentPage() {
             <div className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4">
               <Link
                 href="/order"
-                className="flex-1 rounded-2xl bg-slate-900 px-6 py-3.5 text-center text-sm font-black text-white transition hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900"
+                className="flex-1 rounded-2xl bg-slate-900 px-6 py-3.5 text-center text-sm font-black text-white transition hover:bg-slate-800 active:scale-95"
               >
                 Xem đơn hàng
               </Link>
@@ -516,31 +516,31 @@ export default function PaymentPage() {
           href="/cart"
           className="group flex items-center gap-2 text-sm font-bold text-slate-500 transition-colors hover:text-purple-600"
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 transition-all group-hover:bg-purple-600 group-hover:text-white group-hover:ring-purple-600 dark:bg-slate-900 dark:ring-slate-700">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200 transition-all group-hover:bg-purple-600 group-hover:text-white group-hover:ring-purple-600">
             <ChevronLeft className="h-4 w-4" />
           </div>
           <span className="truncate">Quay lại giỏ hàng</span>
         </Link>
-        <div className="flex w-fit items-center gap-2 rounded-full bg-purple-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-purple-600 dark:bg-purple-500/10">
+        <div className="flex w-fit items-center gap-2 rounded-full bg-purple-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-purple-600">
           <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
           Thanh toán an toàn
         </div>
       </div>
 
       {/* Mobile order summary — shown first on small screens */}
-      <div className="rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/55 p-4 ring-1 ring-zinc-500/35 lg:hidden">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 lg:hidden">
         <div className="flex items-center justify-between gap-3">
           <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Tổng thanh toán</span>
-          <span className="text-xl font-black text-purple-400">{formatVnd(total)}</span>
+          <span className="text-xl font-black text-purple-600">{formatVnd(total)}</span>
         </div>
         <p className="mt-1 text-[11px] text-slate-500">{(draft?.items || []).length} sản phẩm · Miễn phí vận chuyển</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3 lg:gap-10">
         <div className="min-w-0 space-y-6 lg:col-span-2 lg:space-y-8">
-          <div className="rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/55 p-4 ring-1 ring-zinc-500/35 shadow-lg shadow-black/15 sm:rounded-[2.5rem] sm:p-6 lg:p-8">
-            <h3 className="mb-4 flex items-center gap-2 text-base font-black text-white sm:mb-6 sm:text-lg">
-              <Truck className="h-5 w-5 shrink-0 text-purple-400" />
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-[2.5rem] sm:p-6 lg:p-8">
+            <h3 className="mb-4 flex items-center gap-2 text-base font-black text-slate-800 sm:mb-6 sm:text-lg">
+              <Truck className="h-5 w-5 shrink-0 text-purple-600" />
               Thông tin nhận hàng
             </h3>
             <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
@@ -551,7 +551,7 @@ export default function PaymentPage() {
                   value={receiverName}
                   onChange={(e) => setReceiverName(e.target.value)}
                   placeholder="Nguyễn Văn A"
-                  className="w-full rounded-xl border-slate-600/50 bg-slate-900/50 px-4 py-3 text-sm font-medium text-white placeholder:text-slate-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 sm:rounded-2xl sm:px-5 sm:py-4"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-450 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 sm:rounded-2xl sm:px-5 sm:py-4"
                 />
               </div>
               <div className="space-y-2 sm:col-span-1">
@@ -561,7 +561,7 @@ export default function PaymentPage() {
                   value={receiverPhone}
                   onChange={(e) => setReceiverPhone(e.target.value)}
                   placeholder="0987654321"
-                  className="w-full rounded-xl border-slate-600/50 bg-slate-900/50 px-4 py-3 text-sm font-medium text-white placeholder:text-slate-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 sm:rounded-2xl sm:px-5 sm:py-4"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-450 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 sm:rounded-2xl sm:px-5 sm:py-4"
                 />
               </div>
               <div className="space-y-2 sm:col-span-2">
@@ -571,17 +571,17 @@ export default function PaymentPage() {
                   onChange={(e) => setShippingAddress(e.target.value)}
                   placeholder="Số 1, Đường ABC, Quận XYZ, TP. HCM"
                   rows={3}
-                  className="w-full resize-none rounded-xl border-slate-600/50 bg-slate-900/50 px-4 py-3 text-sm font-medium text-white placeholder:text-slate-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 sm:rounded-2xl sm:px-5 sm:py-4"
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-450 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 sm:rounded-2xl sm:px-5 sm:py-4"
                 />
               </div>
             </div>
           </div>
 
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl lg:text-4xl">
+            <h1 className="text-2xl font-black tracking-tight text-slate-800 sm:text-3xl lg:text-4xl">
               Phương thức thanh toán
             </h1>
-            <p className="mt-1 text-sm font-medium text-slate-400 sm:mt-2 sm:text-base lg:text-lg">
+            <p className="mt-1 text-sm font-medium text-slate-550 sm:mt-2 sm:text-base lg:text-lg">
               Vui lòng chọn hình thức thanh toán phù hợp nhất với bạn.
             </p>
           </div>
@@ -600,15 +600,15 @@ export default function PaymentPage() {
               disabled={paying != null}
               className={`group relative flex w-full flex-col items-start rounded-2xl border-2 p-5 text-left transition-all sm:rounded-[2.5rem] sm:p-6 ${
                 paying === "BANK_TRANSFER"
-                  ? "border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/20"
-                  : "border-zinc-600/50 bg-zinc-800/40 hover:border-purple-400/50"
+                  ? "border-purple-500 bg-purple-50 ring-2 ring-purple-500/20"
+                  : "border-slate-200 bg-white hover:border-purple-400/50"
               }`}
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg sm:mb-6 sm:h-14 sm:w-14 sm:rounded-2xl">
                 <Wallet className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <h3 className="text-lg font-black text-white sm:text-xl">Chuyển khoản ngân hàng</h3>
-              <p className="mt-1 text-xs font-medium text-slate-400 sm:mt-2 sm:text-sm">
+              <h3 className="text-lg font-black text-slate-800 sm:text-xl">Chuyển khoản ngân hàng</h3>
+              <p className="mt-1 text-xs font-medium text-slate-500 sm:mt-2 sm:text-sm">
                 Thanh toán VietQR thủ công, hệ thống sẽ đối soát và xác nhận.
               </p>
               <div className="mt-5 flex w-full items-center justify-between sm:mt-8">
@@ -629,15 +629,15 @@ export default function PaymentPage() {
               disabled={paying != null}
               className={`group relative flex w-full flex-col items-start rounded-2xl border-2 p-5 text-left transition-all sm:rounded-[2.5rem] sm:p-6 ${
                 paying === "COD"
-                  ? "border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/20"
-                  : "border-zinc-600/50 bg-zinc-800/40 hover:border-purple-400/50"
+                  ? "border-purple-500 bg-purple-50 ring-2 ring-purple-500/20"
+                  : "border-slate-200 bg-white hover:border-purple-400/50"
               }`}
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg sm:mb-6 sm:h-14 sm:w-14 sm:rounded-2xl">
                 <Package className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <h3 className="text-lg font-black text-white sm:text-xl">Khi nhận hàng</h3>
-              <p className="mt-1 text-xs font-medium text-slate-400 sm:mt-2 sm:text-sm">
+              <h3 className="text-lg font-black text-slate-800 sm:text-xl">Khi nhận hàng</h3>
+              <p className="mt-1 text-xs font-medium text-slate-500 sm:mt-2 sm:text-sm">
                 Thanh toán bằng tiền mặt khi nhân viên giao hàng (COD).
               </p>
               <div className="mt-5 flex w-full items-center justify-between sm:mt-8">
@@ -653,19 +653,19 @@ export default function PaymentPage() {
             </button>
           </div>
 
-          <div className="rounded-2xl customer-card-surface border border-zinc-500/70 bg-zinc-800/55 p-4 ring-1 ring-zinc-500/35 sm:rounded-[2.5rem] sm:p-6 lg:p-8">
-            <h3 className="mb-4 flex items-center gap-2 text-base font-black text-white sm:mb-6 sm:text-lg">
-              <ShoppingBag className="h-5 w-5 shrink-0 text-purple-400" />
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-[2.5rem] sm:p-6 lg:p-8">
+            <h3 className="mb-4 flex items-center gap-2 text-base font-black text-slate-800 sm:mb-6 sm:text-lg">
+              <ShoppingBag className="h-5 w-5 shrink-0 text-purple-600" />
               Sản phẩm thanh toán
             </h3>
-            <div className="divide-y divide-zinc-700/50">
+            <div className="divide-y divide-slate-100">
               {(draft?.items || []).map((it, idx) => {
                 const lineTotal = toNumberSafe(it.price) * toNumberSafe(it.quantity);
                 const original = getDraftItemOriginalPrice(it, productMap[Number(it.productId)]);
                 return (
                   <div key={idx} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:gap-4">
                     <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border border-zinc-600/50 bg-zinc-900/50 sm:aspect-[9/16] sm:h-auto sm:w-16">
+                      <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white sm:aspect-[9/16] sm:h-auto sm:w-16">
                         <img
                           src={resolveImageUrl(it.imageUrl || productMap[Number(it.productId)]?.productMainImage)}
                           className="h-full w-full object-contain"
@@ -673,54 +673,54 @@ export default function PaymentPage() {
                         />
                       </div>
                       <div className="min-w-0 flex-1 sm:hidden">
-                        <h4 className="line-clamp-2 text-sm font-black text-white">{it.productName}</h4>
-                        <p className="mt-1 text-sm font-black text-purple-400">{formatVnd(lineTotal)}</p>
+                        <h4 className="line-clamp-2 text-sm font-black text-slate-800">{it.productName}</h4>
+                        <p className="mt-1 text-sm font-black text-purple-600">{formatVnd(lineTotal)}</p>
                       </div>
                     </div>
                     <div className="min-w-0 flex-1 hidden sm:block">
-                      <h4 className="truncate text-sm font-black text-white">{it.productName}</h4>
+                      <h4 className="truncate text-sm font-black text-slate-800">{it.productName}</h4>
                       <div className="mt-2 flex flex-wrap gap-1.5">
-                        <span className="rounded-lg bg-purple-500/15 px-2 py-0.5 text-[10px] font-bold text-purple-300">
+                        <span className="rounded-lg bg-purple-55 px-2 py-0.5 text-[10px] font-bold text-purple-600">
                           {it.productColor || "N/A"}
                         </span>
                         {it.ramGb != null && (
-                          <span className="rounded-lg bg-zinc-700/50 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                          <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                             RAM {it.ramGb}GB
                           </span>
                         )}
                         {it.storageGb != null && (
-                          <span className="rounded-lg bg-zinc-700/50 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                          <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                             {it.storageGb}GB
                           </span>
                         )}
-                        <span className="rounded-lg bg-zinc-700/50 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                        <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                           x{it.quantity}
                         </span>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5 sm:hidden">
-                      <span className="rounded-lg bg-purple-500/15 px-2 py-0.5 text-[10px] font-bold text-purple-300">
+                      <span className="rounded-lg bg-purple-55 px-2 py-0.5 text-[10px] font-bold text-purple-600">
                         {it.productColor || "N/A"}
                       </span>
                       {it.ramGb != null && (
-                        <span className="rounded-lg bg-zinc-700/50 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                        <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                           RAM {it.ramGb}GB
                         </span>
                       )}
                       {it.storageGb != null && (
-                        <span className="rounded-lg bg-zinc-700/50 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                        <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                           {it.storageGb}GB
                         </span>
                       )}
-                      <span className="rounded-lg bg-zinc-700/50 px-2 py-0.5 text-[10px] font-bold text-slate-300">
+                      <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                         SL: {it.quantity}
                       </span>
                     </div>
                     <div className="hidden shrink-0 text-right sm:block">
-                      <div className="text-sm font-black text-purple-400">{formatVnd(lineTotal)}</div>
+                      <div className="text-sm font-black text-purple-600">{formatVnd(lineTotal)}</div>
                       <div className="text-[10px] font-bold text-slate-500">{formatVnd(toNumberSafe(it.price))} / SP</div>
                       {original != null && original > toNumberSafe(it.price) && (
-                        <div className="text-[10px] text-slate-600 line-through">{formatVnd(original)}</div>
+                        <div className="text-[10px] text-slate-455 line-through">{formatVnd(original)}</div>
                       )}
                     </div>
                   </div>
@@ -732,29 +732,29 @@ export default function PaymentPage() {
 
         <div className="hidden lg:col-span-1 lg:block">
           <div className="sticky top-24 space-y-6">
-            <div className="overflow-hidden rounded-[2.5rem] customer-card-surface border border-zinc-500/70 bg-zinc-800/55 shadow-2xl shadow-black/20 ring-1 ring-zinc-500/35">
+            <div className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm">
               <div className="bg-gradient-to-r from-indigo-700 to-purple-700 p-6 text-center text-white">
                 <h3 className="text-lg font-black tracking-tight">Chi tiết đơn hàng</h3>
               </div>
               <div className="space-y-6 p-6 lg:p-8">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-bold text-slate-400">Giá gốc</span>
-                    <span className="font-bold text-white">{formatVnd(totalOriginalPrice)}</span>
+                    <span className="font-bold text-slate-500">Giá gốc</span>
+                    <span className="font-bold text-slate-800">{formatVnd(totalOriginalPrice)}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-bold text-slate-400">Phí vận chuyển</span>
-                    <span className="font-bold text-emerald-400">Miễn phí</span>
+                    <span className="font-bold text-slate-500">Phí vận chuyển</span>
+                    <span className="font-bold text-emerald-600">Miễn phí</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-bold text-slate-400">Giảm giá</span>
-                    <span className="font-bold text-rose-400">- {formatVnd(totalDiscount)}</span>
+                    <span className="font-bold text-slate-500">Giảm giá</span>
+                    <span className="font-bold text-rose-600">- {formatVnd(totalDiscount)}</span>
                   </div>
                 </div>
-                <div className="h-px bg-zinc-700/50" />
+                <div className="h-px bg-slate-100" />
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Tổng cộng</div>
-                  <div className="text-2xl font-black text-purple-400 lg:text-3xl">{formatVnd(total)}</div>
+                  <div className="text-2xl font-black text-purple-600 lg:text-3xl">{formatVnd(total)}</div>
                 </div>
                 <div className="rounded-2xl bg-indigo-500/10 p-4">
                   <div className="flex gap-3 text-[10px] leading-relaxed text-indigo-200">

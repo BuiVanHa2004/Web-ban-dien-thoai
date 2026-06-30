@@ -505,24 +505,24 @@ export default function MainPage() {
       {/* Body 1: Chào mừng / Hero */}
       <ScrollRevealBody
         variant="hero"
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-800/80 via-[#1a1a1a] to-neutral-900/90 p-4 shadow-inner ring-1 ring-zinc-700/40 sm:rounded-3xl sm:p-6 lg:p-8"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-white to-slate-100/80 p-4 shadow-sm border border-slate-200/80 sm:rounded-3xl sm:p-6 lg:p-8"
       >
         <div className="mx-auto max-w-7xl py-4 sm:py-8">
           <div className="grid items-stretch gap-6 lg:grid-cols-12 lg:gap-8">
             <div className="lg:col-span-7">
-              <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-50 sm:mt-4 sm:text-3xl lg:text-4xl">
+              <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-800 sm:mt-4 sm:text-3xl lg:text-4xl">
                 {mounted && user ? (
                   <>
-                    MyPhone <span className="text-cyan-400">Store</span> - Xin chào,
+                    MyPhone <span className="text-cyan-600">Store</span> - Xin chào,
                     <br />
-                    <span className="text-zinc-300">{user.name}</span>
+                    <span className="text-slate-700">{user.name}</span>
                   </>
                 ) : (
-                  <>MyPhone <span className="text-cyan-400">Store</span> - Chào mừng bạn</>
+                  <>MyPhone <span className="text-cyan-600">Store</span> - Chào mừng bạn</>
                 )}
               </h1>
 
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-500 sm:text-base">
                 {mounted && user
                   ? "Chúc bạn mua sắm vui vẻ hôm nay."
                   : "Đăng nhập để nhận gợi ý cá nhân hóa, ưu đãi và theo dõi đơn hàng."}
@@ -534,7 +534,7 @@ export default function MainPage() {
                   onClick={() => {
                     scrollToProducts();
                   }}
-                  className="inline-flex items-center justify-center rounded-2xl bg-zinc-100 px-5 py-2.5 text-sm font-semibold text-zinc-900 shadow-lg shadow-black/20 transition-all hover:bg-white active:scale-95"
+                  className="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-indigo-700 active:scale-95"
                 >
                   Xem sản phẩm
                 </button>
@@ -543,13 +543,13 @@ export default function MainPage() {
                   <>
                     <Link
                       href={`/login?returnUrl=${encodeURIComponent(returnUrl)}`}
-                      className="inline-flex items-center justify-center rounded-2xl bg-zinc-100 px-5 py-2.5 text-sm font-semibold text-zinc-900 shadow-lg shadow-black/20"
+                      className="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-700"
                     >
                       Đăng nhập
                     </Link>
                     <Link
                       href={`/register?returnUrl=${encodeURIComponent(returnUrl)}`}
-                      className="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white/70 px-5 py-2.5 text-sm font-semibold text-slate-900 backdrop-blur-sm hover:bg-white dark:border-white/25 dark:bg-slate-900/40 dark:text-white"
+                      className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
                     >
                       Tạo tài khoản
                     </Link>
@@ -558,40 +558,40 @@ export default function MainPage() {
               </div>
 
               <div className="mt-8 flex flex-wrap gap-2">
-                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-slate-200 backdrop-blur-sm">
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
                   Hàng chính hãng
                 </span>
-                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-slate-200 backdrop-blur-sm">
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
                   Giao nhanh
                 </span>
-                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-slate-200 backdrop-blur-sm">
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
                   Hỗ trợ 24/7
                 </span>
               </div>
             </div>
 
             <div className="hidden lg:block lg:col-span-5">
-              <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 p-3 shadow-xl shadow-black/30 backdrop-blur-sm sm:rounded-3xl sm:p-4">
+              <div className="relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-100 sm:rounded-3xl sm:p-4">
 
                 <div className="relative">
-                  <div className="text-sm font-semibold text-white">Gợi ý nhanh</div>
+                  <div className="text-sm font-semibold text-slate-800">Gợi ý nhanh</div>
                   <div className="mt-3 grid gap-2">
                     <Link
                       href={`/product?returnUrl=${encodeURIComponent(returnUrl)}`}
-                      className="group rounded-2xl border border-black/5 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-white dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
+                      className="group rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <span>Xem tất cả sản phẩm</span>
-                        <span className="text-slate-400 transition-transform group-hover:translate-x-0.5 dark:text-slate-500">→</span>
+                        <span className="text-slate-400 transition-transform group-hover:translate-x-0.5">→</span>
                       </div>
                     </Link>
                     <Link
                       href={`/product?returnUrl=${encodeURIComponent(returnUrl)}`}
-                      className="group rounded-2xl border border-black/15 bg-white/70 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-white dark:border-white/25 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10"
+                      className="group rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-100"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <span>Tìm kiếm sản phẩm</span>
-                        <span className="text-slate-400 transition-transform group-hover:translate-x-0.5 dark:text-slate-500">→</span>
+                        <span className="text-slate-400 transition-transform group-hover:translate-x-0.5">→</span>
                       </div>
                     </Link>
                     <Link
@@ -604,22 +604,22 @@ export default function MainPage() {
                           window.dispatchEvent(new Event("show-auth-popup"));
                         }
                       }}
-                      className="group rounded-2xl border border-zinc-600/50 bg-zinc-700 px-3 py-2 text-sm font-semibold text-zinc-100 shadow-lg shadow-black/20 transition hover:bg-zinc-600"
+                      className="group rounded-2xl border border-slate-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <span>Liên hệ hỗ trợ</span>
-                        <span className="text-white/80 transition-transform group-hover:translate-x-0.5">→</span>
+                        <span className="text-indigo-600 transition-transform group-hover:translate-x-0.5">→</span>
                       </div>
                     </Link>
                   </div>
 
                   {mounted && user && (
-                    <div className="mt-4 rounded-2xl border border-zinc-600/40 bg-zinc-800/50 px-3 py-2 text-xs text-zinc-300 backdrop-blur-sm">
+                    <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
                       Mẹo: dùng bộ lọc thương hiệu / danh mục để tìm nhanh sản phẩm phù hợp.
                     </div>
                   )}
 
-                  <div className="mt-4 rounded-2xl border border-black/10 bg-white/70 p-3 dark:border-white/10 dark:bg-white/5">
+                  <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3">
                     <SocialQrContact title="Liên hệ nhanh qua mạng xã hội" />
                   </div>
                 </div>
@@ -639,8 +639,8 @@ export default function MainPage() {
       {/* Body 3: Thương hiệu */}
       <ScrollRevealBody variant="brands">
          <div className="mb-4 sm:mb-8">
-           <h2 className="text-xl font-bold tracking-tight text-white sm:text-3xl">Các thương hiệu nổi bật</h2>
-          <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">Khám phá những thương hiệu được yêu thích</p>
+           <h2 className="text-xl font-bold tracking-tight text-slate-800 sm:text-3xl">Tin tức công nghệ mới nhất</h2>
+          <p className="mt-1 text-sm text-slate-500 sm:mt-2 sm:text-base">Cập nhật {sortedNews.length} bài viết</p>
         </div>
 
         {/* Mobile: cuộn ngang, logo đều nhau — không dùng hiệu ứng fisheye */}
@@ -664,7 +664,7 @@ export default function MainPage() {
                     draggable={false}
                   />
                 ) : (
-                  <span className="flex h-full w-full items-center justify-center text-lg font-bold text-zinc-600">
+                  <span className="flex h-full w-full items-center justify-center text-lg font-bold text-slate-600">
                     {(b.brandName || "").slice(0, 1)}
                   </span>
                 )}
@@ -707,7 +707,7 @@ export default function MainPage() {
                     draggable={false}
                   />
                 ) : (
-                  <div className="grid h-full w-full place-items-center text-lg font-bold text-zinc-600">
+                  <div className="grid h-full w-full place-items-center text-lg font-bold text-slate-600">
                     {(b.brandName || "").slice(0, 1)}
                   </div>
                 )}
@@ -727,8 +727,8 @@ export default function MainPage() {
       {/* Body 4: Danh mục */}
       <ScrollRevealBody variant="categories">
          <div className="mb-4 sm:mb-8">
-           <h2 className="text-xl font-bold tracking-tight text-white sm:text-3xl">Các danh mục</h2>
-          <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">Chọn danh mục để lọc sản phẩm nhanh hơn</p>
+           <h2 className="text-xl font-bold tracking-tight text-slate-800 sm:text-3xl">Các danh mục</h2>
+          <p className="mt-1 text-sm text-slate-500 sm:mt-2 sm:text-base">Chọn danh mục để lọc sản phẩm nhanh hơn</p>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
@@ -741,9 +741,9 @@ export default function MainPage() {
               <Link
                 key={c.categoryId}
                 href={href}
-                className="group mx-auto w-full overflow-hidden rounded-2xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/25 sm:max-w-[260px] sm:rounded-3xl"
+                className="group mx-auto w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:max-w-[260px] sm:rounded-3xl"
               >
-                <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-slate-800">
+                <div className="relative aspect-square overflow-hidden bg-slate-100">
                   {c.categoryImages && c.categoryImages.length > 0 ? (
                     <Image
                       src={resolveImageUrl(c.categoryImages[0])!}
@@ -753,16 +753,16 @@ export default function MainPage() {
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
-                    <div className="grid h-full place-items-center text-slate-400 dark:text-slate-600">No image</div>
+                    <div className="grid h-full place-items-center text-slate-400">No image</div>
                   )}
-                  <div className="absolute inset-0 bg-black/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 </div>
 
                 <div className="p-4">
-                  <div className="truncate text-sm font-semibold text-zinc-100 group-hover:text-zinc-300 transition-colors">
+                  <div className="truncate text-sm font-semibold text-slate-800 group-hover:text-slate-900 transition-colors">
                     {c.categoryName}
                   </div>
-                  <div className="mt-1 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">
+                  <div className="mt-1 line-clamp-2 text-xs text-slate-500">
                     {c.categoryDescription || ""}
                   </div>
                 </div>
@@ -784,7 +784,7 @@ export default function MainPage() {
         <div className="mb-4 flex flex-col justify-between gap-4 sm:mb-8 sm:flex-row sm:items-end">
           <div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <h2 className="text-xl font-bold tracking-tight text-white sm:text-3xl">Sản phẩm</h2>
+              <h2 className="text-xl font-bold tracking-tight text-slate-800 sm:text-3xl">Sản phẩm</h2>
               {(filters.q || filters.brandId || filters.categoryId) && (
                 <button
                   type="button"
@@ -803,7 +803,7 @@ export default function MainPage() {
                 </button>
               )}
             </div>
-            <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">
+            <p className="mt-1 text-sm text-slate-500 sm:mt-2 sm:text-base">
               Hiển thị {filteredProducts.length} / {products.length} sản phẩm
             </p>
           </div>
@@ -812,14 +812,14 @@ export default function MainPage() {
 
         {(filters.q || filters.brandId || filters.categoryId) && (
           <div className="mb-6 flex flex-wrap gap-2">
-            {filters.q && <span className="rounded-full bg-zinc-800 px-4 py-1.5 text-sm text-zinc-200 ring-1 ring-zinc-600/50">Từ khóa: {filters.q}</span>}
+            {filters.q && <span className="rounded-full bg-slate-100 px-4 py-1.5 text-sm text-slate-700 ring-1 ring-slate-200">Từ khóa: {filters.q}</span>}
             {filters.brandId && (
-              <span className="rounded-full bg-zinc-800 px-4 py-1.5 text-sm text-zinc-200 ring-1 ring-zinc-600/50">
+              <span className="rounded-full bg-slate-100 px-4 py-1.5 text-sm text-slate-700 ring-1 ring-slate-200">
                 Thương hiệu: {selectedBrandName || filters.brandId}
               </span>
             )}
             {filters.categoryId && (
-              <span className="rounded-full bg-zinc-800 px-4 py-1.5 text-sm text-zinc-200 ring-1 ring-zinc-600/50">
+              <span className="rounded-full bg-slate-100 px-4 py-1.5 text-sm text-slate-700 ring-1 ring-slate-200">
                 Danh mục: {selectedCategoryName || filters.categoryId}
               </span>
             )}
@@ -901,8 +901,8 @@ export default function MainPage() {
       {/* Body 6: Tin tức */}
       <ScrollRevealBody variant="news">
         <div className="mb-4 sm:mb-8">
-          <h2 className="text-xl font-bold tracking-tight text-white sm:text-3xl">Tin tức công nghệ mới nhất</h2>
-          <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">Cập nhật {sortedNews.length} bài viết</p>
+          <h2 className="text-xl font-bold tracking-tight text-slate-800 sm:text-3xl">Tin tức công nghệ mới nhất</h2>
+          <p className="mt-1 text-sm text-slate-500 sm:mt-2 sm:text-base">Cập nhật {sortedNews.length} bài viết</p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
@@ -910,9 +910,9 @@ export default function MainPage() {
             <Link
               key={n.newsId}
               href={`/new/${n.newsId}?returnUrl=${encodeURIComponent(returnUrl)}`}
-              className="group mx-auto w-full overflow-hidden rounded-2xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/25 sm:max-w-[320px] sm:rounded-3xl"
+              className="group mx-auto w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-lg sm:max-w-[320px] sm:rounded-3xl"
             >
-              <div className="relative aspect-square overflow-hidden">
+              <div className="relative aspect-square overflow-hidden bg-slate-50">
                 {n.newsImages?.[0] ? (
                   <img
                     src={resolveImageUrl(n.newsImages[0])}
@@ -920,25 +920,25 @@ export default function MainPage() {
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="grid h-full place-items-center bg-slate-100 dark:bg-slate-800 text-slate-400">News</div>
+                  <div className="grid h-full place-items-center text-slate-400">News</div>
                 )}
-                <div className="absolute inset-0 bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-100 scale-95">
-                  <span className="inline-flex items-center justify-center rounded-3xl bg-zinc-100/95 px-5 py-2 text-xs font-semibold text-zinc-900 shadow-lg shadow-black/25">
+                  <span className="inline-flex items-center justify-center rounded-3xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-md">
                     Xem ngay
                   </span>
                 </div>
               </div>
 
               <div className="p-4">
-                <h3 className="line-clamp-2 text-base font-semibold text-zinc-100 group-hover:text-zinc-300 transition-colors">
+                <h3 className="line-clamp-2 text-base font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">
                   {n.newsTitle}
                 </h3>
-                <p className="mt-2 line-clamp-3 text-xs text-slate-600 dark:text-slate-300">
+                <p className="mt-2 line-clamp-3 text-xs text-slate-500">
                   {n.newsDescribe || "Đọc thêm để cập nhật thông tin công nghệ mới nhất..."}
                 </p>
-                <div className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
+                <div className="mt-3 text-[11px] text-slate-400">
                   {n.createdAt ? new Date(n.createdAt).toLocaleDateString("vi-VN", { dateStyle: "medium" }) : ""}
                 </div>
               </div>
@@ -963,38 +963,30 @@ export default function MainPage() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md overflow-hidden rounded-[2.5rem]"
-            style={{ 
-              background: "rgba(255,255,255,0.08)", 
-              backdropFilter: "blur(20px)", 
-              WebkitBackdropFilter: "blur(20px)", 
-              border: "1px solid rgba(255,255,255,0.15)", 
-              boxShadow: "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)",
-              animation: "avatarModalScaleIn 180ms ease-out"
-            }}
+            className="relative w-full max-w-md overflow-hidden rounded-[2.5rem] bg-white border border-slate-200 shadow-2xl p-8"
           >
-            <div className="p-8">
+            <div>
               <div className="flex flex-col items-center text-center">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-                  className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20 ring-2 ring-emerald-400/50"
+                  className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 ring-2 ring-emerald-200"
                 >
-                  <svg className="h-10 w-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-10 w-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                   </svg>
                 </motion.div>
-                <h3 className="text-2xl font-black tracking-tight text-white/95">
+                <h3 className="text-2xl font-black tracking-tight text-slate-800">
                   Thêm vào giỏ hàng thành công!
                 </h3>
-                <p className="mt-3 text-sm text-white/70">
+                <p className="mt-3 text-sm text-slate-500">
                   Sản phẩm đã được thêm vào giỏ hàng của bạn.
                 </p>
                 <button
                   type="button"
                   onClick={() => setShowSuccessModal(false)}
-                  className="mt-8 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-4 text-sm font-black text-white shadow-xl shadow-emerald-500/30 transition hover:shadow-2xl hover:shadow-emerald-500/40 active:scale-[0.98]"
+                  className="mt-8 w-full rounded-2xl bg-indigo-600 px-6 py-4 text-sm font-black text-white shadow-lg transition hover:bg-indigo-700 active:scale-[0.98]"
                 >
                   Đóng
                 </button>

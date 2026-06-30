@@ -377,18 +377,18 @@ export default function CartPage() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
         >
-          <div className="flex items-center gap-3 text-sm font-bold text-purple-600 dark:text-purple-400 mb-2 uppercase tracking-widest">
+          <div className="flex items-center gap-3 text-sm font-bold text-purple-600 mb-2 uppercase tracking-widest">
             <ShoppingBasket className="h-4 w-4" />
             <span>Giỏ hàng của bạn</span>
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
+          <h1 className="text-2xl font-black tracking-tight text-slate-800 sm:text-4xl lg:text-5xl">
             Túi <span className="text-purple-600">Mua Sắm</span>
           </h1>
-          <p className="mt-2 text-slate-500 dark:text-slate-400 font-medium">
+          <p className="mt-2 text-slate-550 font-medium">
             {loading ? (
-              <span className="inline-block h-6 w-32 rounded animate-pulse bg-slate-700" />
+              <span className="inline-block h-6 w-32 rounded animate-pulse bg-slate-200" />
             ) : (
-              <>Bạn đang có <span className="text-slate-900 dark:text-white font-bold">{items.length} sản phẩm</span> trong giỏ hàng</>
+              <>Bạn đang có <span className="text-slate-800 font-bold">{items.length} sản phẩm</span> trong giỏ hàng</>
             )}
           </p>
         </motion.div>
@@ -400,7 +400,7 @@ export default function CartPage() {
         >
           <Link
             href="/product"
-            className="group inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-100 px-6 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+            className="group inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
           >
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
             Tiếp tục mua sắm
@@ -409,7 +409,7 @@ export default function CartPage() {
             <button
               type="button"
               onClick={clearCart}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-rose-50 px-6 text-sm font-bold text-rose-600 transition hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50/50 px-6 text-sm font-bold text-rose-600 transition hover:bg-rose-100"
             >
               <Trash2 className="h-4 w-4" />
               Làm trống giỏ
@@ -428,13 +428,13 @@ export default function CartPage() {
             className="space-y-4"
           >
             {[1, 2, 3].map((i) => (
-              <div key={i} className="overflow-hidden rounded-[2rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-6 shadow-xl shadow-black/10">
+              <div key={i} className="overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-50 p-6 shadow-sm">
                 <div className="flex gap-4">
-                  <div className="h-28 w-20 rounded-xl bg-slate-700 animate-pulse" />
+                  <div className="h-28 w-20 rounded-xl bg-slate-200 animate-pulse" />
                   <div className="flex-1 space-y-3">
-                    <div className="h-5 w-3/4 rounded bg-slate-700 animate-pulse" />
-                    <div className="h-4 w-1/2 rounded bg-slate-700 animate-pulse" />
-                    <div className="h-6 w-1/4 rounded bg-slate-700 animate-pulse" />
+                    <div className="h-5 w-3/4 rounded bg-slate-200 animate-pulse" />
+                    <div className="h-4 w-1/2 rounded bg-slate-200 animate-pulse" />
+                    <div className="h-6 w-1/4 rounded bg-slate-200 animate-pulse" />
                   </div>
                 </div>
               </div>
@@ -446,16 +446,16 @@ export default function CartPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="relative overflow-hidden rounded-[3rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-16 text-center shadow-2xl shadow-black/20"
+            className="relative overflow-hidden rounded-[3rem] border border-slate-200 bg-white p-16 text-center shadow-lg shadow-slate-100"
           >
             <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-purple-500/5 blur-3xl" />
             <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-cyan-500/5 blur-3xl" />
             
-            <div className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-purple-50 text-purple-600 dark:bg-purple-500/10">
+            <div className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-purple-50 text-purple-600">
               <ShoppingBag className="h-12 w-12" />
             </div>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white">Giỏ hàng của bạn đang trống</h3>
-            <p className="mx-auto mt-3 max-w-sm text-slate-500 dark:text-slate-400">
+            <h3 className="text-2xl font-black text-slate-800">Giỏ hàng của bạn đang trống</h3>
+            <p className="mx-auto mt-3 max-w-sm text-slate-500">
               Có vẻ như bạn chưa chọn được sản phẩm nào. Khám phá hàng ngàn sản phẩm công nghệ tuyệt vời ngay!
             </p>
             <Link
@@ -489,7 +489,7 @@ export default function CartPage() {
                       key={itemKey}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0, transition: { delay: index * 0.05 } }}
-                      className="group relative flex flex-col gap-3 rounded-2xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/60 p-3 shadow-xl shadow-black/20 transition-all hover:border-zinc-500/40 sm:flex-row sm:gap-4 sm:rounded-[2rem] sm:p-5"
+                      className="group relative flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-md transition-all hover:border-slate-350 sm:flex-row sm:gap-4 sm:rounded-[2rem] sm:p-5"
                     >
                       <div className="flex flex-col items-center pt-2">
                         <label className="relative flex cursor-pointer items-center justify-center">
@@ -504,12 +504,12 @@ export default function CartPage() {
                             }}
                             className="peer sr-only"
                           />
-                          <div className="h-6 w-6 rounded-lg border-2 border-slate-200 bg-white transition-all peer-checked:border-purple-600 peer-checked:bg-purple-600 dark:border-slate-700 dark:bg-slate-800" />
+                          <div className="h-6 w-6 rounded-lg border-2 border-slate-200 bg-white transition-all peer-checked:border-purple-600 peer-checked:bg-purple-600" />
                           <Check className="absolute h-4 w-4 scale-0 text-white transition-transform peer-checked:scale-100" />
                         </label>
                       </div>
 
-                      <div className="w-24 aspect-[9/16] shrink-0 overflow-hidden rounded-2xl bg-slate-50 dark:bg-slate-800">
+                      <div className="w-24 aspect-[9/16] shrink-0 overflow-hidden rounded-2xl bg-slate-50">
                         {it.imageUrl ? (
                           <button
                             type="button"
@@ -523,7 +523,7 @@ export default function CartPage() {
                             />
                           </button>
                         ) : (
-                          <div className="grid h-full place-items-center bg-slate-100 dark:bg-slate-800">
+                          <div className="grid h-full place-items-center bg-slate-50">
                             <ShoppingBag className="h-8 w-8 text-slate-300" />
                           </div>
                         )}
@@ -532,18 +532,18 @@ export default function CartPage() {
                       <div className="flex flex-1 flex-col">
                         <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0 flex-1">
-                            <h3 className="truncate text-lg font-black text-slate-900 dark:text-white group-hover:text-purple-600 transition">
+                            <h3 className="truncate text-lg font-black text-slate-800 group-hover:text-purple-600 transition">
                               {it.productName}
                             </h3>
                             
                             <div className="mt-1 flex flex-wrap gap-2">
                               {it.colorName && (
-                                <span className="inline-flex items-center rounded-lg bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase text-slate-500 dark:bg-white/5">
+                                <span className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold uppercase text-slate-500">
                                   {it.colorName}
                                 </span>
                               )}
                               {(it.ramGb != null || it.storageGb != null) && (
-                                <span className="inline-flex items-center rounded-lg bg-purple-50 px-2 py-1 text-[10px] font-bold uppercase text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
+                                <span className="inline-flex items-center rounded-lg bg-purple-50 px-2 py-1 text-[10px] font-bold uppercase text-purple-600">
                                   {it.ramGb}GB / {it.storageGb}GB
                                 </span>
                               )}
@@ -553,28 +553,28 @@ export default function CartPage() {
                           <button
                             type="button"
                             onClick={() => removeItem(key)}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:bg-white/5"
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 transition hover:bg-rose-50 hover:text-rose-600"
                           >
                             <Trash2 className="h-5 w-5" />
                           </button>
                         </div>
 
                         <div className="mt-auto flex flex-wrap items-end justify-between gap-4">
-                          <div className="flex items-center rounded-2xl bg-slate-100 p-1 dark:bg-white/5">
+                          <div className="flex items-center rounded-2xl bg-slate-100 p-1">
                             <button
                               type="button"
                               onClick={() => setQuantity(key, it.quantity - 1)}
-                              className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-slate-600 shadow-sm transition hover:text-purple-600 dark:bg-slate-800 dark:text-slate-300"
+                              className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-slate-600 shadow-sm transition hover:text-purple-600"
                             >
                               <Minus className="h-4 w-4" />
                             </button>
-                            <span className="w-10 text-center text-sm font-black text-slate-900 dark:text-white">
+                            <span className="w-10 text-center text-sm font-black text-slate-800">
                               {it.quantity}
                             </span>
                             <button
                               type="button"
                               onClick={() => setQuantity(key, it.quantity + 1)}
-                              className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-slate-600 shadow-sm transition hover:text-purple-600 dark:bg-slate-800 dark:text-slate-300"
+                              className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-slate-600 shadow-sm transition hover:text-purple-600"
                             >
                               <Plus className="h-4 w-4" />
                             </button>
@@ -582,7 +582,7 @@ export default function CartPage() {
 
                           <div className="text-right">
                             <div className="text-[10px] font-black uppercase text-slate-400">Thành tiền</div>
-                            <div className="text-lg font-black text-slate-900 dark:text-white">
+                            <div className="text-lg font-black text-slate-800">
                               {formatVnd(Number(it.price || 0) * Number(it.quantity || 0))}
                             </div>
                           </div>
@@ -595,43 +595,41 @@ export default function CartPage() {
             </div>
 
             {/* Sidebar Summary */}
-            <div className="lg:col-span-4">
-              <div className="lg:sticky lg:top-28">
-                <motion.div 
+                            <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="overflow-hidden rounded-[2.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-8 shadow-2xl shadow-black/20"
+                  className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50"
                 >
                   <div className="mb-8">
                     <div className="flex items-center justify-between mb-2">
-                       <h2 className="text-xl font-black text-slate-900 dark:text-white">Tổng đơn hàng</h2>
-                       <div className="rounded-full bg-purple-50 px-3 py-1 text-[10px] font-black uppercase text-purple-600 dark:bg-purple-500/10">
-                         {selectedCount} sản phẩm
+                       <h2 className="text-xl font-black text-slate-850">Tổng đơn hàng</h2>
+                       <div className="rounded-full bg-purple-50 px-3 py-1 text-[10px] font-black uppercase text-purple-600">
+                          {selectedCount} sản phẩm
                        </div>
                     </div>
                     <p className="text-xs text-slate-500">Giá trị đơn hàng sẽ được tính dựa trên các sản phẩm bạn đã chọn bên dưới.</p>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-white/5">
+                    <div className="flex items-center justify-between py-2 border-b border-slate-50">
                       <span className="text-sm font-bold text-slate-500">Giá gốc</span>
-                      <span className="text-sm font-black text-slate-900 dark:text-white">{formatVnd(selectedOriginalPrice)}</span>
+                      <span className="text-sm font-black text-slate-800">{formatVnd(selectedOriginalPrice)}</span>
                     </div>
-                    <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-white/5">
+                    <div className="flex items-center justify-between py-2 border-b border-slate-50">
                       <span className="text-sm font-bold text-slate-500">Giảm giá</span>
-                      <span className="text-sm font-black text-rose-400">- {formatVnd(selectedDiscount)}</span>
+                      <span className="text-sm font-black text-rose-600">- {formatVnd(selectedDiscount)}</span>
                     </div>
-                    <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-white/5">
+                    <div className="flex items-center justify-between py-2 border-b border-slate-50">
                       <div className="flex items-center gap-1">
                         <span className="text-sm font-bold text-slate-500">Giao hàng</span>
                         <Truck className="h-3 w-3 text-slate-400" />
                       </div>
-                      <span className="text-sm font-black text-slate-900 dark:text-white">Miễn phí</span>
+                      <span className="text-sm font-black text-slate-800">Miễn phí</span>
                     </div>
                     
                     <div className="pt-4">
                       <div className="flex items-center justify-between">
-                         <span className="text-lg font-black text-slate-900 dark:text-white">Tổng cộng</span>
+                         <span className="text-lg font-black text-slate-850">Tổng cộng</span>
                          <span className="text-2xl font-black text-purple-600">{formatVnd(selectedTotal)}</span>
                       </div>
                     </div>
@@ -641,7 +639,7 @@ export default function CartPage() {
                     <motion.div 
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="mt-6 rounded-2xl bg-rose-50 p-4 text-xs font-bold text-rose-600 dark:bg-rose-500/10"
+                      className="mt-6 rounded-2xl bg-rose-50 p-4 text-xs font-bold text-rose-600"
                     >
                       {checkoutError}
                     </motion.div>
@@ -689,7 +687,7 @@ export default function CartPage() {
                           setCheckingOut(false);
                         }
                       }}
-                      className="group relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-slate-900 text-sm font-black text-white transition hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-purple-600 dark:hover:bg-purple-700"
+                      className="group relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-indigo-650 text-sm font-black text-white transition hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="relative z-10 flex items-center gap-2">
                         {checkingOut ? "Đang xử lý..." : "Tiến hành thanh toán"}
@@ -697,7 +695,7 @@ export default function CartPage() {
                       </span>
                     </button>
 
-                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-100 py-3 transition hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5">
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-250 py-3 transition hover:bg-slate-50">
                       <div className="relative flex h-5 w-5 items-center justify-center">
                         <input
                           type="checkbox"
@@ -708,7 +706,7 @@ export default function CartPage() {
                           }}
                           className="peer sr-only"
                         />
-                        <div className="h-5 w-5 rounded-md border-2 border-slate-200 bg-white transition-all peer-checked:border-purple-600 peer-checked:bg-purple-600 dark:border-slate-700 dark:bg-slate-800" />
+                        <div className="h-5 w-5 rounded-md border-2 border-slate-200 bg-white transition-all peer-checked:border-purple-600 peer-checked:bg-purple-600" />
                         <Check className="absolute h-3.5 w-3.5 scale-0 text-white transition-transform peer-checked:scale-100" />
                       </div>
                       <span className="text-xs font-bold text-slate-500">Chọn tất cả sản phẩm</span>
@@ -716,11 +714,11 @@ export default function CartPage() {
                   </div>
 
                   <div className="mt-8 grid grid-cols-2 gap-4">
-                     <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-slate-50 dark:bg-white/5">
+                     <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-slate-50 border border-slate-100">
                         <ShieldCheck className="h-5 w-5 text-emerald-500" />
                         <span className="text-[8px] font-black uppercase text-slate-400">An toàn 100%</span>
                      </div>
-                     <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-slate-50 dark:bg-white/5">
+                     <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-slate-50 border border-slate-100">
                         <Truck className="h-5 w-5 text-purple-500" />
                         <span className="text-[8px] font-black uppercase text-slate-400">Giao nhanh 2h</span>
                      </div>
@@ -740,7 +738,7 @@ export default function CartPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-xl"
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-md"
             onClick={() => setZoomImageUrl(null)}
           >
             <motion.img
@@ -753,7 +751,7 @@ export default function CartPage() {
               onClick={(e) => e.stopPropagation()}
             />
             <button 
-              className="absolute top-8 right-8 h-12 w-12 flex items-center justify-center rounded-2xl bg-white/10 text-white hover:bg-white/20 transition"
+              className="absolute top-8 right-8 h-12 w-12 flex items-center justify-center rounded-2xl bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200 transition"
               onClick={() => setZoomImageUrl(null)}
             >
               <Minus className="h-6 w-6 rotate-45" />

@@ -247,7 +247,7 @@ export default function OrderPage() {
                 group relative flex h-10 items-center gap-2.5 whitespace-nowrap rounded-2xl border px-5 text-sm font-bold transition-all
                 ${isActive
                   ? "border-purple-600 bg-purple-600 text-white"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-purple-300 hover:bg-purple-50 dark:border-slate-800 dark:bg-slate-900/50"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-purple-300 hover:bg-purple-50"
                 }
               `}
             >
@@ -255,7 +255,7 @@ export default function OrderPage() {
               <span>{status === "ALL" ? "Tất cả" : config?.label}</span>
               <span className={`
                 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px]
-                ${isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 dark:bg-slate-800"}
+                ${isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"}
               `}>
                 {count}
               </span>
@@ -268,19 +268,19 @@ export default function OrderPage() {
         {loading ? (
           <div className="grid gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-48 animate-pulse rounded-[2rem] bg-slate-100 dark:bg-slate-800/50" />
+              <div key={i} className="h-48 animate-pulse rounded-[2rem] bg-slate-100" />
             ))}
           </div>
         ) : filteredOrders.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center rounded-[3rem] border-2 border-dashed border-purple-100 bg-purple-50/30 py-24 text-center dark:border-purple-900/20 dark:bg-purple-900/10"
+            className="flex flex-col items-center justify-center rounded-[3rem] border-2 border-dashed border-purple-100 bg-purple-50/30 py-24 text-center"
           >
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white text-4xl shadow-xl dark:bg-slate-800">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white text-4xl shadow-xl">
               📦
             </div>
-            <h3 className="mt-6 text-xl font-bold text-slate-900 dark:text-white">Không tìm thấy đơn hàng</h3>
+            <h3 className="mt-6 text-xl font-bold text-slate-800">Không tìm thấy đơn hàng</h3>
             <p className="mt-2 text-slate-500">Bạn chưa có đơn hàng nào ở trạng thái này.</p>
           </motion.div>
         ) : (
@@ -292,22 +292,22 @@ export default function OrderPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: idx * 0.05 }}
-                className="group relative overflow-hidden rounded-[2.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/55 p-6 shadow-sm transition-all hover:border-zinc-500/40 hover:shadow-xl"
+                className="group relative overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
               >
                 <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
                   <div className="flex-1 space-y-6">
                     <div className="flex flex-wrap items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-500/10">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
                         <Package className="h-6 w-6" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Mã đơn hàng</span>
-                          <span className="rounded-lg bg-purple-100 px-2 py-0.5 text-xs font-black text-purple-700 dark:bg-purple-500/20 dark:text-purple-300">
+                          <span className="rounded-lg bg-purple-100 px-2 py-0.5 text-xs font-black text-purple-700">
                             #{order.orderCode || order.orderId}
                           </span>
                         </div>
-                        <div className="mt-0.5 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                        <div className="mt-0.5 flex items-center gap-2 text-sm font-semibold text-slate-700">
                           <Clock className="h-3.5 w-3.5 text-slate-400" />
                           {formatDate(order.createdAt)}
                         </div>
@@ -317,7 +317,7 @@ export default function OrderPage() {
                     <div className="grid gap-4">
                       {(order.items || []).slice(0, 3).map((item, i) => (
                         <div key={i} className="flex items-center gap-4">
-                          <div className="relative aspect-[9/16] w-16 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                          <div className="relative aspect-[9/16] w-16 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
                             {(() => {
                               let product = productMap[Number(item.productId)];
                               if (!product && normalizeText(item.productName)) {
@@ -333,22 +333,22 @@ export default function OrderPage() {
                               return src ? (
                                 <img src={src} alt="" className="h-full w-full object-cover" />
                               ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-slate-100 dark:bg-slate-800">
+                                <div className="flex h-full w-full items-center justify-center bg-slate-100">
                                   <Package className="h-6 w-6 text-slate-300" />
                                 </div>
                               );
                             })()}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h4 className="truncate text-sm font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors">{item.productName}</h4>
+                            <h4 className="truncate text-sm font-bold text-slate-800 group-hover:text-purple-600 transition-colors">{item.productName}</h4>
                             <p className="mt-0.5 text-xs font-medium text-slate-500">
-                              Màu: <span className="text-slate-700 dark:text-slate-300">{item.colorName || "N/A"}</span> • SL: {item.quantity}
+                              Màu: <span className="text-slate-700">{item.colorName || "N/A"}</span> • SL: {item.quantity}
                             </p>
                           </div>
                         </div>
                       ))}
                       {(order.items || []).length > 3 && (
-                        <p className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                        <p className="text-xs font-bold text-purple-600">
                           + và {(order.items || []).length - 3} sản phẩm khác
                         </p>
                       )}

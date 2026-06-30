@@ -24,12 +24,12 @@ function getCover(n: NewsDto) {
 }
 
 const SkeletonCard = () => (
-  <div className="group relative overflow-hidden rounded-[2.5rem] customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/50 p-4 shadow-sm animate-pulse">
-    <div className="aspect-[16/10] w-full rounded-[1.8rem] bg-slate-200 dark:bg-slate-800" />
+  <div className="group relative overflow-hidden rounded-[2.5rem] border border-slate-200 bg-slate-50 p-4 shadow-sm animate-pulse">
+    <div className="aspect-[16/10] w-full rounded-[1.8rem] bg-slate-200" />
     <div className="mt-4 space-y-3">
-      <div className="h-4 w-1/4 rounded bg-slate-200 dark:bg-slate-800" />
-      <div className="h-6 w-full rounded bg-slate-200 dark:bg-slate-800" />
-      <div className="h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-800" />
+      <div className="h-4 w-1/4 rounded bg-slate-200" />
+      <div className="h-6 w-full rounded bg-slate-200" />
+      <div className="h-4 w-2/3 rounded bg-slate-200" />
     </div>
   </div>
 );
@@ -89,7 +89,7 @@ export default function NewPage() {
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1 text-xs font-bold text-cyan-600 dark:text-cyan-400 backdrop-blur-md"
+              className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-50 px-4 py-1 text-xs font-bold text-cyan-600 backdrop-blur-md"
             >
               <Zap className="h-3 w-3" />
               <span>CẬP NHẬT MỖI NGÀY</span>
@@ -99,9 +99,9 @@ export default function NewPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-3xl md:text-5xl font-black tracking-tight text-zinc-50"
+              className="text-3xl md:text-5xl font-black tracking-tight text-slate-800"
             >
-              Tin Tức <span className="bg-gradient-to-r from-cyan-500 to-fuchsia-500 bg-clip-text text-transparent">Công Nghệ</span>
+              Tin Tức <span className="bg-gradient-to-r from-cyan-600 to-fuchsia-600 bg-clip-text text-transparent">Công Nghệ</span>
             </motion.h1>
 
             <motion.div 
@@ -110,15 +110,15 @@ export default function NewPage() {
               transition={{ delay: 0.2 }}
               className="w-full max-w-lg relative group px-1"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/15 to-fuchsia-500/15 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700" />
-              <div className="relative flex items-center rounded-full border border-zinc-600/40 bg-zinc-800/70 shadow-lg shadow-black/15 overflow-hidden transition-all duration-500 focus-within:ring-2 focus-within:ring-zinc-500/25 focus-within:border-zinc-500/50">
-                <Search className="ml-4 h-4 w-4 shrink-0 text-zinc-400" />
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-fuchsia-500/10 blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700" />
+              <div className="relative flex items-center rounded-full border border-slate-200 bg-slate-50 shadow-sm overflow-hidden transition-all duration-500 focus-within:ring-2 focus-within:ring-slate-100 focus-within:border-slate-350">
+                <Search className="ml-4 h-4 w-4 shrink-0 text-slate-400" />
                 <input
                   type="text"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Tìm kiếm bài viết..."
-                  className="w-full h-11 border-none bg-transparent px-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+                  className="w-full h-11 border-none bg-transparent px-3 text-sm text-slate-800 outline-none placeholder:text-slate-400"
                 />
               </div>
             </motion.div>
@@ -128,7 +128,7 @@ export default function NewPage() {
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 pb-12 sm:pb-16">
         {error && (
-          <div className="mb-6 rounded-full border border-rose-200 bg-rose-50 px-6 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200 text-center">
+          <div className="mb-6 rounded-full border border-rose-200 bg-rose-50 px-6 py-3 text-sm text-rose-700 text-center">
             {error}
           </div>
         )}
@@ -141,10 +141,10 @@ export default function NewPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+            <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
               <Search className="h-8 w-8 text-slate-900" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Không tìm thấy kết quả</h3>
+            <h3 className="text-lg font-bold text-slate-900">Không tìm thấy kết quả</h3>
           </div>
         ) : (
           <div className="space-y-10">
@@ -157,7 +157,7 @@ export default function NewPage() {
                 transition={{ duration: 0.8 }}
               >
                 <Link href={`/new/${featured.newsId}`}>
-                  <div className="group relative grid gap-0 overflow-hidden rounded-2xl customer-card-surface border border-zinc-500/50 bg-zinc-800/55 shadow-xl transition-all duration-500 hover:shadow-black/30 lg:grid-cols-2 sm:rounded-[2.5rem] lg:rounded-[3.5rem]">
+                  <div className="group relative grid gap-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg transition-all duration-500 hover:shadow-slate-100 lg:grid-cols-2 sm:rounded-[2.5rem] lg:rounded-[3.5rem]">
                     <div className="relative aspect-[16/10] lg:h-full lg:aspect-auto overflow-hidden">
                       {getCover(featured) ? (
                         <img
@@ -166,7 +166,7 @@ export default function NewPage() {
                           className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
                         />
                       ) : (
-                          <div className="grid h-full place-items-center bg-slate-100 dark:bg-slate-800 text-slate-900">
+                          <div className="grid h-full place-items-center bg-slate-100 text-slate-900">
                             News Image
                           </div>
                         )}
@@ -175,25 +175,25 @@ export default function NewPage() {
 
                     <div className="flex flex-col justify-center p-8 lg:p-10 space-y-4">
                       <div className="flex items-center gap-3">
-                        <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-[10px] font-black uppercase tracking-wider">
+                        <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-600 text-[10px] font-black uppercase tracking-wider">
                           Nổi bật
                         </span>
-                        <div className="flex items-center text-slate-900 text-[11px] font-bold">
+                        <div className="flex items-center text-slate-500 text-[11px] font-bold">
                           <Calendar className="mr-1.5 h-3.5 w-3.5" />
                           {formatDate(featured.createdAt)}
                         </div>
                       </div>
 
-                      <h2 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white group-hover:text-cyan-500 transition-colors duration-300 leading-tight">
+                      <h2 className="text-2xl md:text-3xl font-black text-slate-800 group-hover:text-cyan-600 transition-colors duration-300 leading-tight">
                         {featured.newsTitle}
                       </h2>
 
-                      <p className="text-slate-900 dark:text-slate-900 line-clamp-2 text-base leading-relaxed">
+                      <p className="text-slate-600 line-clamp-2 text-base leading-relaxed">
                         {featured.newsDescribe || "Khám phá chi tiết bài viết để cập nhật những thông tin mới nhất."}
                       </p>
 
                       <div className="pt-2">
-                        <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black group/btn transition-transform hover:scale-105 active:scale-95">
+                        <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-indigo-600 text-white text-xs font-black group/btn transition-transform hover:scale-105 active:scale-95 hover:bg-indigo-700">
                           Đọc ngay
                           <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
                         </div>
@@ -206,9 +206,9 @@ export default function NewPage() {
 
             {/* Posts Grid */}
             <section className="space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-                <h2 className="text-xl font-black text-slate-900 dark:text-white">Gần đây</h2>
-                <div className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-black text-slate-900 dark:text-slate-400">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+                <h2 className="text-xl font-black text-slate-800">Gần đây</h2>
+                <div className="px-3 py-1 rounded-full bg-slate-100 text-[10px] font-black text-slate-600">
                   {rest.length} BÀI VIẾT
                 </div>
               </div>
@@ -226,9 +226,9 @@ export default function NewPage() {
                     >
                       <Link
                         href={`/new/${n.newsId}`}
-                        className="group mx-auto block w-full overflow-hidden rounded-3xl customer-card-surface border border-zinc-500/70 ring-1 ring-zinc-500/35 bg-zinc-800/60 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/25"
+                        className="group mx-auto block w-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-md"
                       >
-                        <div className="relative aspect-square overflow-hidden">
+                        <div className="relative aspect-square overflow-hidden bg-slate-50">
                           {getCover(n) ? (
                             <img
                               src={getCover(n)}
@@ -236,25 +236,25 @@ export default function NewPage() {
                               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                             />
                           ) : (
-                            <div className="grid h-full place-items-center bg-slate-100 dark:bg-slate-800 text-slate-900">News</div>
+                            <div className="grid h-full place-items-center text-slate-400">News</div>
                           )}
-                          <div className="absolute inset-0 bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                          <div className="absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                           <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-100 scale-95">
-                            <span className="inline-flex items-center justify-center rounded-3xl bg-gradient-to-r from-cyan-600 to-fuchsia-600 px-5 py-2 text-xs font-semibold text-white shadow-lg shadow-cyan-500/15">
+                            <span className="inline-flex items-center justify-center rounded-3xl bg-indigo-600 px-5 py-2 text-xs font-semibold text-white shadow-md">
                               Xem ngay
                             </span>
                           </div>
                         </div>
 
                         <div className="p-4">
-                          <h3 className="line-clamp-2 text-base font-semibold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                          <h3 className="line-clamp-2 text-base font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">
                             {n.newsTitle}
                           </h3>
-                          <p className="mt-2 line-clamp-3 text-xs text-slate-900 dark:text-slate-300">
+                          <p className="mt-2 line-clamp-3 text-xs text-slate-500">
                             {n.newsDescribe || "Đọc thêm để cập nhật thông tin công nghệ mới nhất..."}
                           </p>
-                          <div className="mt-3 text-[11px] text-slate-900 dark:text-slate-900">
+                          <div className="mt-3 text-[11px] text-slate-450">
                             {formatDate(n.createdAt)}
                           </div>
                         </div>
@@ -268,7 +268,7 @@ export default function NewPage() {
             <div className="flex justify-center pt-4">
               <Link
                 href="/home"
-                className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs transition-all hover:scale-105 active:scale-95 shadow-lg shadow-slate-200 dark:shadow-none"
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-slate-100 text-slate-700 font-black text-xs transition-all hover:scale-105 active:scale-95 border border-slate-200 shadow-sm hover:bg-slate-200"
               >
                 <Home className="h-4 w-4" />
                 VỀ TRANG CHỦ

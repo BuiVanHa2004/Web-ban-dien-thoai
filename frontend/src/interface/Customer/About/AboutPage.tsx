@@ -32,28 +32,28 @@ const features = [
     title: "Bảo hành chính hãng",
     description: "Cam kết 100% sản phẩm chính hãng với chế độ bảo hành toàn diện từ nhà sản xuất.",
     gradient: "from-blue-500/10 to-cyan-500/10",
-    iconColor: "text-blue-600 dark:text-blue-400"
+    iconColor: "text-blue-600"
   },
   {
     icon: Zap,
     title: "Giao hàng siêu tốc",
     description: "Giao hàng nhanh chóng trong 2 giờ nội thành, miễn phí ship toàn quốc.",
     gradient: "from-purple-500/10 to-pink-500/10",
-    iconColor: "text-purple-600 dark:text-purple-400"
+    iconColor: "text-purple-600"
   },
   {
     icon: Heart,
     title: "Hỗ trợ tận tâm",
     description: "Đội ngũ tư vấn chuyên nghiệp, nhiệt tình hỗ trợ 24/7 mọi lúc mọi nơi.",
     gradient: "from-rose-500/10 to-pink-500/10",
-    iconColor: "text-rose-600 dark:text-rose-400"
+    iconColor: "text-rose-600"
   },
   {
     icon: Star,
     title: "Giá cả cạnh tranh",
     description: "Cam kết giá tốt nhất thị trường với nhiều chương trình ưu đãi hấp dẫn.",
     gradient: "from-amber-500/10 to-orange-500/10",
-    iconColor: "text-amber-600 dark:text-amber-400"
+    iconColor: "text-amber-600"
   },
 ];
 
@@ -146,7 +146,7 @@ export default function AboutPage() {
             key={stat.label}
             variants={itemVariants}
             whileHover={{ scale: 1.05, y: -5 }}
-            className="group relative overflow-hidden rounded-3xl bg-zinc-800/55 p-8 shadow-none transition-all duration-500"
+            className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-500"
           >
             <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 transition-opacity duration-500 group-hover:opacity-10`} />
             
@@ -155,11 +155,11 @@ export default function AboutPage() {
                 <stat.icon className="h-7 w-7 text-white" />
               </div>
               
-              <div className="mb-2 text-4xl font-black text-white sm:text-5xl">
+              <div className="mb-2 text-4xl font-black text-slate-800 sm:text-5xl">
                 {stat.value}
               </div>
               
-              <div className="text-sm font-bold uppercase tracking-wider text-slate-400">
+              <div className="text-sm font-bold uppercase tracking-wider text-slate-500">
                 {stat.label}
               </div>
             </div>
@@ -176,10 +176,10 @@ export default function AboutPage() {
         className="mb-16 sm:mb-24"
       >
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-black text-white sm:text-5xl">
+          <h2 className="mb-4 text-3xl font-black text-slate-800 sm:text-5xl">
             Tại sao chọn <span className="text-purple-600">MyPhone Store</span>?
           </h2>
-          <p className="mx-auto max-w-2xl text-slate-400">
+          <p className="mx-auto max-w-2xl text-slate-500">
             Chúng tôi cam kết mang đến trải nghiệm mua sắm tuyệt vời nhất với những giá trị cốt lõi
           </p>
         </div>
@@ -193,20 +193,20 @@ export default function AboutPage() {
               viewport={{ margin: "-100px" }}
               transition={{ delay: index * 0.1, duration: 0.6 }}
               whileHover={{ y: -8 }}
-              className="group relative overflow-hidden rounded-3xl bg-zinc-800/55 p-8 shadow-none transition-all duration-500"
+              className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-500"
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
               
               <div className="relative z-10">
-                <div className={`mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5 backdrop-blur-sm transition-all duration-500 group-hover:scale-110 group-hover:bg-white/10`}>
+                <div className={`mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 transition-all duration-500 group-hover:scale-110 group-hover:bg-slate-100`}>
                   <feature.icon className={`h-8 w-8 ${feature.iconColor} transition-transform duration-500 group-hover:rotate-12`} />
                 </div>
                 
-                <h3 className="mb-3 text-xl font-black text-white">
+                <h3 className="mb-3 text-xl font-black text-slate-800">
                   {feature.title}
                 </h3>
                 
-                <p className="text-sm leading-relaxed text-slate-400">
+                <p className="text-sm leading-relaxed text-slate-500">
                   {feature.description}
                 </p>
               </div>
@@ -224,10 +224,10 @@ export default function AboutPage() {
         className="mb-16 sm:mb-24"
       >
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-black text-white sm:text-5xl">
+          <h2 className="mb-4 text-3xl font-black text-slate-800 sm:text-5xl">
             Hành trình <span className="text-purple-600">Phát triển</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-slate-400">
+          <p className="mx-auto max-w-2xl text-slate-500">
             Từ những ngày đầu khởi nghiệp đến vị thế hàng đầu như ngày hôm nay
           </p>
         </div>
@@ -242,7 +242,7 @@ export default function AboutPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ margin: "-100px" }}
                 transition={{ delay: index * 0.12, duration: 0.55 }}
-                className="relative overflow-hidden rounded-[2rem] bg-zinc-800/55 p-6 shadow-none sm:p-8"
+                className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
               >
                 <div className="flex items-start gap-4 sm:gap-5">
                   <div className="mt-0.5 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-pink-600 text-base font-black text-white shadow-lg sm:h-16 sm:w-16 sm:text-lg">
@@ -253,10 +253,10 @@ export default function AboutPage() {
                     whileHover={{ y: -3 }}
                     className="min-w-0 flex-1"
                   >
-                    <h3 className="mb-2 text-2xl font-black text-white">
+                    <h3 className="mb-2 text-2xl font-black text-slate-800">
                       {item.title}
                     </h3>
-                    <p className="max-w-3xl text-slate-400">
+                    <p className="max-w-3xl text-slate-500">
                       {item.description}
                     </p>
                   </motion.div>
